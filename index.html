@@ -525,55 +525,18 @@
     </div>
 
     <script>
-        // PWA 설치 기능
-        let deferredPrompt;
-        const installBanner = document.getElementById('installBanner');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBanner.classList.add('show');
-        });
-
-        installBanner.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBanner.classList.remove('show');
-            }
-        });
-
-        // 간단한 캐시 기능 (조용히 작동)
-        if ('caches' in window) {
-            window.addEventListener('load', () => {
-                caches.open('macau-travel-v1').then(cache => {
-                    cache.add(window.location.href);
-                    // 캐싱 성공 (조용히 작동)
-                }).catch(err => {
-                    // 캐싱 실패해도 앱은 정상 작동
-                });
+        // Service Worker 등록
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/myTravelNote/sw.js')
+            .then((registration) => {
+                console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+                console.log('SW registration failed: ', registrationError);
             });
-        }
-
-        // 스크롤 시 헤더 효과
-        let lastScrollTop = 0;
-        const header = document.querySelector('.header');
-
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                header.style.transform = 'translateY(-100%)';
-            } else {
-                header.style.transform = 'translateY(0)';
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-
-        // 부드러운 전환 효과
-        header.style.transition = 'transform 0.3s ease-in-out';
+    });
+}
     </script>
 </body>
 </html>
