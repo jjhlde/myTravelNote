@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
     
     <!-- 매니페스트 -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <style>
         * {
@@ -525,18 +525,69 @@
     </div>
 
     <script>
-        // Service Worker 등록
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/myTravelNote/sw.js')
-            .then((registration) => {
-                console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-                console.log('SW registration failed: ', registrationError);
+        // PWA 설치 기능
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.classList.add('show');
+        });
+
+        installBanner.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBanner.classList.remove('show');
+            }
+        });
+
+        // 간단한 캐시 기능 (ServiceWorker 없이)
+        if ('caches' in window) {
+            window.addEventListener('load', () => {
+                caches.open('macau-travel-v1').then(cache => {
+                    cache.add(window.location.href);
+                }).catch(err => {
+                    // 캐싱 실패해도 앱은 정상 작동
+                });
             });
-    });
-}
+        }
+
+        // 스크롤 시 헤더 애니메이션 (강화된 버전)
+        let lastScrollTop = 0;
+        let ticking = false;
+        const header = document.querySelector('.header');
+
+        function updateHeader() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // 아래로 스크롤할 때 헤더 숨기기
+                header.style.transform = 'translateY(-100%)';
+                header.style.opacity = '0.9';
+            } else {
+                // 위로 스크롤할 때 헤더 보이기
+                header.style.transform = 'translateY(0)';
+                header.style.opacity = '1';
+            }
+            
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // 음수 방지
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeader);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', requestTick, { passive: true });
+
+        // 헤더 전환 효과 설정
+        header.style.transition = 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out';
     </script>
 </body>
 </html>
