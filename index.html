@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마카오 가족여행 🇲🇴</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="마카오 가족여행">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    
+    <!-- 매니페스트 -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        'name': '마카오 가족여행',
+        'short_name': '마카오여행',
+        'description': '37개월 딸과 함께하는 마카오 3박4일 여행계획',
+        'start_url': '/',
+        'display': 'standalone',
+        'background_color': '#ffffff',
+        'theme_color': '#4F46E5',
+        'icons': [
+            {
+                'src': 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🇲🇴</text></svg>',
+                'sizes': '192x192',
+                'type': 'image/svg+xml'
+            }
+        ]
+    }">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .trip-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .trip-info div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .day-card {
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .day-header {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .day-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .day-header .date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .day-content {
+            padding: 20px;
+        }
+
+        .activity {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #4F46E5;
+        }
+
+        .activity:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-time {
+            color: #4F46E5;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .activity-desc {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background: linear-gradient(45deg, #FFD93D, #FF6B6B);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .budget-section {
+            background: #f0f9ff;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid #e0f2fe;
+        }
+
+        .budget-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .budget-total {
+            border-top: 2px solid #0369a1;
+            padding-top: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #0369a1;
+        }
+
+        .tips-section {
+            background: #fef3c7;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid #fcd34d;
+        }
+
+        .tips-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .tip-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .weather-alert {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .weather-title {
+            color: #dc2626;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .weather-desc {
+            color: #7f1d1d;
+            font-size: 14px;
+        }
+
+        .footer {
+            background: #f8fafc;
+            padding: 30px 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .install-banner {
+            background: #4F46E5;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            display: none;
+        }
+
+        .install-banner.show {
+            display: block;
+        }
+
+        .emoji {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .day-card {
+                margin: 15px;
+            }
+            
+            .budget-section, .tips-section, .weather-alert {
+                margin: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="install-banner" id="installBanner">
+            📱 홈 화면에 추가하여 앱처럼 사용하세요!
+        </div>
+        
+        <div class="header">
+            <h1>🇲🇴 마카오 가족여행</h1>
+            <p>37개월 딸과 함께하는 특별한 여행</p>
+            
+            <div class="trip-info">
+                <div><span>✈️ 출발</span><span>7/27 (토) 14:15</span></div>
+                <div><span>🏨 숙소</span><span>안다즈 마카오</span></div>
+                <div><span>🛬 귀국</span><span>7/30 (화) 18:10</span></div>
+                <div><span>👨‍👩‍👧 인원</span><span>부부 + 37개월 딸</span></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="weather-alert">
+                <div class="weather-title">🌧️ 7월 날씨 주의사항</div>
+                <div class="weather-desc">
+                    7월은 우기입니다. 한낮 햇볕이 강하다가도 갑자기 소나기가 내릴 수 있어요. 
+                    우산과 얇은 겉옷을 꼭 챙기고, 실내 활동 위주로 계획했습니다.
+                </div>
+            </div>
+
+            <!-- DAY 1 -->
+            <div class="day-card">
+                <div class="day-header">
+                    <h2>DAY 1</h2>
+                    <div class="date">7월 27일 (토) - 도착 & 적응</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity">
+                        <div class="activity-time">17:15 - 19:00</div>
+                        <div class="activity-title">🛬 마카오 도착 & 이동</div>
+                        <div class="activity-desc">
+                            마카오국제공항 → 안다즈 마카오<br>
+                            무료 셔틀버스 이용
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">19:30 - 21:00</div>
+                        <div class="activity-title">🍽️ 저녁 식사</div>
+                        <div class="activity-desc">
+                            안다즈 키친 또는 갤럭시 어반 키친<br>
+                            아이 친화적인 호텔 레스토랑
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">21:00 - 22:00</div>
+                        <div class="activity-title">🌙 호텔 적응</div>
+                        <div class="activity-desc">
+                            갤럭시 단지 야경 감상<br>
+                            아이 일찍 취침 준비
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAY 2 -->
+            <div class="day-card">
+                <div class="day-header" style="background: linear-gradient(45deg, #4ECDC4, #44A08D);">
+                    <h2>DAY 2</h2>
+                    <div class="date">7월 28일 (일) - 워터파크 데이</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity">
+                        <div class="highlight">무료 혜택!</div>
+                        <div class="activity-time">9:30 - 15:00</div>
+                        <div class="activity-title">🏊 그랜드 리조트 데크</div>
+                        <div class="activity-desc">
+                            <strong>안다즈 투숙객 무료!</strong><br>
+                            • 세계 최대 스카이탑 웨이브 풀<br>
+                            • 575m 유수풀 & 키즈존<br>
+                            • 백사장에서 모래놀이<br>
+                            ⏰ 오전 일찍 시작해서 소나기 전에 마무리
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">12:00 - 13:00</div>
+                        <div class="activity-title">🍽️ 워터파크 내 점심</div>
+                        <div class="activity-desc">키즈 메뉴 제공, 수영복 차림으로 편하게</div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">15:30 - 18:00</div>
+                        <div class="activity-title">🎨 팀랩 또는 갤럭시 쇼핑</div>
+                        <div class="activity-desc">
+                            실내 활동으로 더위 피하기<br>
+                            베네시안 팀랩 슈퍼네이처 또는<br>
+                            갤럭시 쇼핑 아케이드
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">18:30 - 20:00</div>
+                        <div class="activity-title">🍽️ 갤럭시 어반 키친</div>
+                        <div class="activity-desc">
+                            <strong>7세 이하 어린이 무료!</strong><br>
+                            인기 뷔페 레스토랑
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAY 3 -->
+            <div class="day-card">
+                <div class="day-header" style="background: linear-gradient(45deg, #A8E6CF, #7FCDCD);">
+                    <h2>DAY 3</h2>
+                    <div class="date">7월 29일 (월) - 관광 & 문화</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity">
+                        <div class="activity-time">9:30 - 11:30</div>
+                        <div class="activity-title">🔬 마카오 과학관</div>
+                        <div class="activity-desc">
+                            아이들 인터랙티브 전시<br>
+                            실내 활동으로 더위 피하기
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">12:00 - 13:00</div>
+                        <div class="activity-title">📸 세나도 광장</div>
+                        <div class="activity-desc">
+                            포르투갈풍 건물 사진 촬영<br>
+                            짧은 야외 관광 (30분 내외)
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">13:00 - 14:30</div>
+                        <div class="activity-title">🍽️ 웡치케이</div>
+                        <div class="activity-desc">
+                            JTBC '톡파원 25시' 소개 맛집<br>
+                            현지 포르투갈 요리
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">15:00 - 18:00</div>
+                        <div class="activity-title">🚣 베네시안 마카오</div>
+                        <div class="activity-desc">
+                            그랜드 카널 곤돌라 체험<br>
+                            실내 쇼핑몰에서 기념품 구매<br>
+                            <strong>아이가 정말 좋아해요!</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">18:30 - 20:00</div>
+                        <div class="activity-title">🍽️ 안다즈 키친</div>
+                        <div class="activity-desc">편안한 호텔 다이닝</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAY 4 -->
+            <div class="day-card">
+                <div class="day-header" style="background: linear-gradient(45deg, #FFB347, #FF6B6B);">
+                    <h2>DAY 4</h2>
+                    <div class="date">7월 30일 (화) - 출발</div>
+                </div>
+                <div class="day-content">
+                    <div class="activity">
+                        <div class="activity-time">9:00 - 14:00</div>
+                        <div class="activity-title">🛍️ 마지막 쇼핑</div>
+                        <div class="activity-desc">
+                            갤럭시 쇼핑 아케이드<br>
+                            늦은 체크아웃 요청<br>
+                            마지막 호텔 수영장 이용
+                        </div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">14:00 - 15:30</div>
+                        <div class="activity-title">✈️ 공항 이동</div>
+                        <div class="activity-desc">안다즈 → 마카오국제공항</div>
+                    </div>
+                    
+                    <div class="activity">
+                        <div class="activity-time">18:10 - 22:45</div>
+                        <div class="activity-title">🛬 귀국</div>
+                        <div class="activity-desc">마카오 출발 → 인천 도착</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 예산 정보 -->
+            <div class="budget-section">
+                <div class="budget-title">💰 예상 경비 (3인 기준)</div>
+                <div class="budget-item">
+                    <span>🏨 숙박비 (3박)</span>
+                    <span>45-70만원</span>
+                </div>
+                <div class="budget-item">
+                    <span>🎢 액티비티</span>
+                    <span>15-20만원</span>
+                </div>
+                <div class="budget-item">
+                    <span>🍽️ 식비</span>
+                    <span>25-35만원</span>
+                </div>
+                <div class="budget-item">
+                    <span>🚌 교통비</span>
+                    <span>5-10만원</span>
+                </div>
+                <div class="budget-item">
+                    <span>🛍️ 쇼핑 & 기타</span>
+                    <span>10-15만원</span>
+                </div>
+                <div class="budget-item budget-total">
+                    <span>💎 총 예상 경비</span>
+                    <span>75-120만원</span>
+                </div>
+            </div>
+
+            <!-- 팁 섹션 -->
+            <div class="tips-section">
+                <div class="tips-title">🌟 37개월 아이 여행 꿀팁</div>
+                <div class="tip-item">
+                    <strong>📱 준비물:</strong> 끈 달린 모자, 우산, 자외선 차단제, 간식
+                </div>
+                <div class="tip-item">
+                    <strong>⏰ 일정:</strong> 여유롭게 조정, 낮잠 시간 확보, 이른 취침
+                </div>
+                <div class="tip-item">
+                    <strong>🏊 안전:</strong> 수영장에서 항상 보호자 동반
+                </div>
+                <div class="tip-item">
+                    <strong>🍼 식사:</strong> 아이가 좋아하는 간식 충분히 준비
+                </div>
+                <div class="tip-item">
+                    <strong>☂️ 날씨:</strong> 태풍 경보 시 실내 활동으로 전환
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🎉 37개월 딸과 함께하는 특별한 마카오 여행이 되시길!</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                가족 모두가 즐거운 추억을 만들어가세요 ✨
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // PWA 설치 기능
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.classList.add('show');
+        });
+
+        installBanner.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBanner.classList.remove('show');
+            }
+        });
+
+        // 간단한 캐시 기능 (조용히 작동)
+        if ('caches' in window) {
+            window.addEventListener('load', () => {
+                caches.open('macau-travel-v1').then(cache => {
+                    cache.add(window.location.href);
+                    // 캐싱 성공 (조용히 작동)
+                }).catch(err => {
+                    // 캐싱 실패해도 앱은 정상 작동
+                });
+            });
+        }
+
+        // 스크롤 시 헤더 효과
+        let lastScrollTop = 0;
+        const header = document.querySelector('.header');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // 부드러운 전환 효과
+        header.style.transition = 'transform 0.3s ease-in-out';
+    </script>
+</body>
+</html>
