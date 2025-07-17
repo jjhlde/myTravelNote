@@ -785,8 +785,8 @@
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isInStandaloneMode = window.navigator.standalone === true;
 
-        // iOS Safari에서 첫 방문 시에만 팝업 표시
-        if (isIOS && !isInStandaloneMode && !hasSeenInstallGuide) {
+        // 모든 브라우저에서 첫 방문 시 팝업 표시 (테스트용)
+        if (!isInStandaloneMode && !hasSeenInstallGuide) {
             setTimeout(() => {
                 installGuideOverlay.classList.add('show');
             }, 1000); // 1초 후 표시
@@ -805,8 +805,13 @@
         // 지금 설치하기 버튼 클릭
         installNowBtn.addEventListener('click', () => {
             hideInstallGuide();
-            // iOS는 수동 설치만 가능하므로 안내 메시지 표시
-            alert('📱 하단의 공유 버튼을 눌러 "홈 화면에 추가"를 선택해주세요!');
+            if (isIOS) {
+                // iOS는 수동 설치만 가능
+                alert('📱 하단의 공유 버튼을 눌러 "홈 화면에 추가"를 선택해주세요!');
+            } else {
+                // Android/Desktop은 다른 안내
+                alert('📱 브라우저 메뉴에서 "홈 화면에 추가" 또는 "앱 설치"를 선택해주세요!');
+            }
         });
 
         // 배경 클릭으로 닫기
@@ -835,16 +840,9 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            
-            // Android는 다른 방식으로 설치 버튼 표시
-            if (!isIOS && !hasSeenInstallGuide) {
-                setTimeout(() => {
-                    installGuideOverlay.classList.add('show');
-                }, 1000);
-            }
         });
 
-        // Android용 설치 버튼 동작 수정
+        // Android용 자동 설치 기능
         if (!isIOS) {
             installNowBtn.addEventListener('click', async () => {
                 if (deferredPrompt) {
