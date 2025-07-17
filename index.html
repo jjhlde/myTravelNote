@@ -240,17 +240,219 @@
             font-size: 14px;
         }
 
-        .install-banner {
-            background: #4F46E5;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            cursor: pointer;
-            display: none;
+        .install-guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
         }
 
-        .install-banner.show {
-            display: block;
+        .install-guide-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .install-guide-popup {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 25px;
+            margin: 20px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .install-guide-overlay.show .install-guide-popup {
+            transform: scale(1) translateY(0);
+        }
+
+        .install-guide-popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4F46E5, #7C3AED, #EC4899);
+        }
+
+        .install-guide-header {
+            margin-bottom: 25px;
+        }
+
+        .install-guide-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .install-guide-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .install-guide-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .install-steps {
+            margin: 25px 0;
+        }
+
+        .install-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .install-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .step-icon {
+            font-size: 16px;
+            margin-left: 8px;
+        }
+
+        .install-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #9ca3af;
+            color: #374151;
+        }
+
+        .install-benefit {
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .benefit-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #15803d;
+            margin-bottom: 8px;
+        }
+
+        .benefit-list {
+            font-size: 12px;
+            color: #166534;
+            line-height: 1.4;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f3f4f6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
         }
 
         .emoji {
@@ -275,8 +477,55 @@
 </head>
 <body>
     <div class="container">
-        <div class="install-banner" id="installBanner">
-            📱 홈 화면에 추가하여 앱처럼 사용하세요!
+        <!-- PWA 설치 가이드 팝업 -->
+        <div class="install-guide-overlay" id="installGuideOverlay">
+            <div class="install-guide-popup">
+                <button class="close-btn" id="closeGuideBtn">✕</button>
+                
+                <div class="install-guide-header">
+                    <div class="install-guide-icon">📱</div>
+                    <div class="install-guide-title">앱으로 설치하세요!</div>
+                    <div class="install-guide-subtitle">
+                        마카오 여행계획을 언제든<br>
+                        빠르게 확인할 수 있어요
+                    </div>
+                </div>
+
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-text">하단 공유 버튼 터치 <span class="step-icon">⬆️</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-text">"홈 화면에 추가" 선택 <span class="step-icon">➕</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-text">오른쪽 상단 "추가" 터치 <span class="step-icon">✅</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="install-benefit">
+                    <div class="benefit-title">🌟 앱 설치 혜택</div>
+                    <div class="benefit-list">
+                        ✓ 마카오에서 오프라인 사용<br>
+                        ✓ 빠른 접속 (3초 → 1초)<br>
+                        ✓ 홈 화면에서 바로 실행
+                    </div>
+                </div>
+
+                <div class="install-buttons">
+                    <button class="btn-primary" id="installNowBtn">지금 설치하기</button>
+                    <button class="btn-secondary" id="skipInstallBtn">나중에</button>
+                </div>
+            </div>
         </div>
         
         <div class="header">
@@ -525,24 +774,87 @@
     </div>
 
     <script>
-        // PWA 설치 기능
+        // PWA 설치 가이드 팝업 관리
+        const installGuideOverlay = document.getElementById('installGuideOverlay');
+        const closeGuideBtn = document.getElementById('closeGuideBtn');
+        const installNowBtn = document.getElementById('installNowBtn');
+        const skipInstallBtn = document.getElementById('skipInstallBtn');
+
+        // 팝업 표시 여부 확인 (localStorage 사용)
+        const hasSeenInstallGuide = localStorage.getItem('macau-install-guide-seen');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isInStandaloneMode = window.navigator.standalone === true;
+
+        // iOS Safari에서 첫 방문 시에만 팝업 표시
+        if (isIOS && !isInStandaloneMode && !hasSeenInstallGuide) {
+            setTimeout(() => {
+                installGuideOverlay.classList.add('show');
+            }, 1000); // 1초 후 표시
+        }
+
+        // 닫기 버튼 클릭
+        closeGuideBtn.addEventListener('click', () => {
+            hideInstallGuide();
+        });
+
+        // 나중에 버튼 클릭
+        skipInstallBtn.addEventListener('click', () => {
+            hideInstallGuide();
+        });
+
+        // 지금 설치하기 버튼 클릭
+        installNowBtn.addEventListener('click', () => {
+            hideInstallGuide();
+            // iOS는 수동 설치만 가능하므로 안내 메시지 표시
+            alert('📱 하단의 공유 버튼을 눌러 "홈 화면에 추가"를 선택해주세요!');
+        });
+
+        // 배경 클릭으로 닫기
+        installGuideOverlay.addEventListener('click', (e) => {
+            if (e.target === installGuideOverlay) {
+                hideInstallGuide();
+            }
+        });
+
+        // ESC 키로 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && installGuideOverlay.classList.contains('show')) {
+                hideInstallGuide();
+            }
+        });
+
+        function hideInstallGuide() {
+            installGuideOverlay.classList.remove('show');
+            // 다시 보지 않도록 localStorage에 저장
+            localStorage.setItem('macau-install-guide-seen', 'true');
+        }
+
+        // Android Chrome PWA 설치 (기존 기능 유지)
         let deferredPrompt;
-        const installBanner = document.getElementById('installBanner');
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installBanner.classList.add('show');
-        });
-
-        installBanner.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBanner.classList.remove('show');
+            
+            // Android는 다른 방식으로 설치 버튼 표시
+            if (!isIOS && !hasSeenInstallGuide) {
+                setTimeout(() => {
+                    installGuideOverlay.classList.add('show');
+                }, 1000);
             }
         });
+
+        // Android용 설치 버튼 동작 수정
+        if (!isIOS) {
+            installNowBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    hideInstallGuide();
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                }
+            });
+        }
 
         // 간단한 캐시 기능 (ServiceWorker 없이)
         if ('caches' in window) {
