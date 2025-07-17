@@ -1,24 +1,22 @@
 {
   "name": "마카오 가족여행",
   "short_name": "마카오여행",
-  "description": "37개월 딸과 함께하는 마카오 3박4일 여행계획",
-  "start_url": "/myTravelNote/",
+  "description": "37개월 딸과 함께하는 마카오 여행계획",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4F46E5",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🇲🇴%3C/text%3E%3C/svg%3E",
+      "src": "https://raw.githubusercontent.com/jjhlde/myTravelNote/main/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🇲🇴%3C/text%3E%3C/svg%3E",
+      "src": "https://raw.githubusercontent.com/jjhlde/myTravelNote/main/icon-512.png", 
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
