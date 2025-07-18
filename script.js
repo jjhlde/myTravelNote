@@ -89,8 +89,58 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDragging = false;
     let isHorizontalSwipe = false;
 
+    // 페이지 파일 매핑
+    const pageFiles = [
+        'pages/info.html',
+        'pages/day1.html',
+        'pages/day2.html',
+        'pages/day3.html',
+        'pages/day4.html',
+        'pages/budget.html'
+    ];
+
+    // 페이지 로드 상태 추적
+    const loadedPages = new Set();
+
+    // 페이지 콘텐츠 로드 함수
+    async function loadPageContent(pageIndex) {
+        if (loadedPages.has(pageIndex)) return;
+
+        const pageElement = document.getElementById(`page-${pageIndex}`);
+        if (!pageElement) return;
+
+        try {
+            const response = await fetch(pageFiles[pageIndex]);
+            if (response.ok) {
+                const content = await response.text();
+                pageElement.innerHTML = content;
+                loadedPages.add(pageIndex);
+            } else {
+                pageElement.innerHTML = '<div class="error">페이지를 불러올 수 없습니다.</div>';
+            }
+        } catch (error) {
+            pageElement.innerHTML = '<div class="error">페이지 로딩 중 오류가 발생했습니다.</div>';
+        }
+    }
+
+    // 인접 페이지 미리 로드
+    async function preloadAdjacentPages(pageIndex) {
+        // 현재 페이지 로드
+        await loadPageContent(pageIndex);
+        
+        // 이전 페이지 미리 로드
+        if (pageIndex > 0) {
+            loadPageContent(pageIndex - 1);
+        }
+        
+        // 다음 페이지 미리 로드
+        if (pageIndex < pageFiles.length - 1) {
+            loadPageContent(pageIndex + 1);
+        }
+    }
+
     // 페이지 업데이트 함수
-    function updatePage(pageIndex) {
+    async function updatePage(pageIndex) {
         currentPage = Math.max(0, Math.min(5, pageIndex));
         const translateX = -currentPage * (100 / 6);
         pagesWrapper.style.transform = `translateX(${translateX}%)`;
@@ -104,7 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
         indicatorDots.forEach((dot, index) => {
             dot.classList.toggle('active', index === currentPage);
         });
+
+        // 현재 페이지와 인접 페이지 로드
+        await preloadAdjacentPages(currentPage);
     }
+
+    // 초기 페이지 로드
+    updatePage(0);
 
     // 탭 클릭 이벤트
     dayTabs.forEach((tab, index) => {
@@ -249,6 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('load', () => {
             caches.open('macau-travel-v1').then(cache => {
                 cache.add(window.location.href);
+                // 모든 페이지 파일도 캐시에 추가
+                pageFiles.forEach(file => cache.add(file));
             }).catch(err => {
                 // 캐싱 실패해도 앱은 정상 작동
             });
