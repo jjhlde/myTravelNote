@@ -181,6 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 스와이프 이벤트 (터치) - 세로 스크롤과 충돌 방지
     pagesWrapper.addEventListener('touchstart', (e) => {
+        // 사진 영역에서 터치 시작한 경우 페이지 스와이프 방지
+        if (e.target.closest('.place-images')) {
+            return;
+        }
+        
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         isDragging = false;
@@ -188,6 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     pagesWrapper.addEventListener('touchmove', (e) => {
+        // 사진 영역에서 터치 중인 경우 페이지 스와이프 방지
+        if (e.target.closest('.place-images')) {
+            return;
+        }
+        
         if (isDragging) {
             currentX = e.touches[0].clientX;
             e.preventDefault(); // 수평 스와이프 시에만 기본 동작 방지
@@ -212,7 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    pagesWrapper.addEventListener('touchend', () => {
+    pagesWrapper.addEventListener('touchend', (e) => {
+        // 사진 영역에서 터치 종료한 경우 페이지 스와이프 방지
+        if (e.target.closest('.place-images')) {
+            return;
+        }
+        
         if (!isDragging || !isHorizontalSwipe) return;
         isDragging = false;
         isHorizontalSwipe = false;
@@ -412,5 +427,123 @@ function initAllSliders() {
 function reinitializeSliders() {
     setTimeout(() => {
         initAllSliders();
+        // 이미지 팝업 기능 재초기화
+        initImagePopup();
     }, 500);
 }
+
+// 이미지 팝업 기능
+function initImagePopup() {
+    const images = document.querySelectorAll('.place-images-slider img');
+    
+    images.forEach(img => {
+        // 기존 이벤트 리스너 제거
+        img.removeEventListener('click', handleImageClick);
+        // 새로운 이벤트 리스너 추가
+        img.addEventListener('click', handleImageClick);
+    });
+}
+
+function handleImageClick(e) {
+    const img = e.target;
+    const popupOverlay = document.getElementById('imagePopupOverlay');
+    const popupImg = document.getElementById('popupImage');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupDescription = document.getElementById('popupDescription');
+    
+    if (popupOverlay && popupImg) {
+        popupImg.src = img.src;
+        popupImg.alt = img.alt;
+        
+        // 팝업 정보 설정
+        if (popupTitle) popupTitle.textContent = img.alt || '여행 사진';
+        if (popupDescription) popupDescription.textContent = '클릭하거나 ESC 키를 눌러 닫기';
+        
+        popupOverlay.classList.add('show');
+        
+        // 스크롤 방지
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// 이미지 팝업 닫기
+function closeImagePopup() {
+    const popupOverlay = document.getElementById('imagePopupOverlay');
+    
+    if (popupOverlay) {
+        popupOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// 구글맵 연동 함수
+function openGoogleMaps(query) {
+    const encodedQuery = encodeURIComponent(query);
+    const googleMapsUrl = `https://www.google.com/maps/search/${encodedQuery}`;
+    window.open(googleMapsUrl, '_blank');
+}
+
+// 모든 위치 버튼에 구글맵 연동
+function initLocationButtons() {
+    const locationButtons = document.querySelectorAll('.map-btn');
+    
+    locationButtons.forEach(btn => {
+        // 기존 href 제거하고 클릭 이벤트로 대체
+        const originalHref = btn.getAttribute('href');
+        if (originalHref && originalHref.includes('maps.google.com')) {
+            btn.removeAttribute('href');
+            btn.style.cursor = 'pointer';
+            
+            // 좌표 추출
+            const coordMatch = originalHref.match(/q=([^&]+)/);
+            if (coordMatch) {
+                const coords = coordMatch[1];
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openGoogleMaps(coords);
+                });
+            }
+        }
+        
+        // 텍스트에서 장소명 추출하여 구글맵 연동
+        const locationText = btn.textContent.trim().replace('📍', '').trim();
+        if (locationText && !btn.hasAttribute('href')) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openGoogleMaps(locationText + ' 마카오');
+            });
+        }
+    });
+}
+
+// DOM 로드 완료 시 팝업 관련 기능 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 이미지 팝업 초기화
+    initImagePopup();
+    
+    // 위치 버튼 초기화
+    initLocationButtons();
+    
+    // 팝업 닫기 이벤트
+    const popupOverlay = document.getElementById('imagePopupOverlay');
+    const popupClose = document.getElementById('popupClose');
+    
+    if (popupClose) {
+        popupClose.addEventListener('click', closeImagePopup);
+    }
+    
+    if (popupOverlay) {
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target === popupOverlay) {
+                closeImagePopup();
+            }
+        });
+    }
+    
+    // ESC 키로 팝업 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeImagePopup();
+        }
+    });
+});
