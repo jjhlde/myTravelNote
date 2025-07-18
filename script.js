@@ -157,6 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 현재 페이지와 인접 페이지 로드
         await preloadAdjacentPages(currentPage);
+        
+        // 슬라이더 재초기화
+        reinitializeSliders();
     }
 
     // 초기 페이지 로드
@@ -316,3 +319,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // 스크롤 시 헤더 애니메이션 제거 (헤더가 고정되지 않으므로)
     // 각 페이지는 독립적으로 스크롤됨
 });
+
+// 장소 이미지 슬라이더 기능
+let sliderStates = {};
+
+function initSlider(sliderId) {
+    if (!sliderStates[sliderId]) {
+        sliderStates[sliderId] = {
+            currentSlide: 0,
+            totalSlides: 0
+        };
+        
+        const slider = document.getElementById(sliderId);
+        if (slider) {
+            const images = slider.querySelectorAll('.place-images-slider img');
+            sliderStates[sliderId].totalSlides = images.length;
+        }
+    }
+}
+
+function showSlide(sliderId, slideIndex) {
+    initSlider(sliderId);
+    
+    const slider = document.getElementById(sliderId);
+    if (!slider) return;
+    
+    const sliderTrack = slider.querySelector('.place-images-slider');
+    const dots = slider.querySelectorAll('.place-images-dot');
+    const counter = slider.querySelector('.place-images-counter');
+    
+    const totalSlides = sliderStates[sliderId].totalSlides;
+    slideIndex = Math.max(0, Math.min(slideIndex, totalSlides - 1));
+    
+    sliderStates[sliderId].currentSlide = slideIndex;
+    
+    // 슬라이더 이동
+    sliderTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
+    
+    // 도트 활성화
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === slideIndex);
+    });
+    
+    // 카운터 업데이트
+    if (counter) {
+        counter.textContent = `${slideIndex + 1}/${totalSlides}`;
+    }
+}
+
+function nextSlide(sliderId) {
+    initSlider(sliderId);
+    const currentSlide = sliderStates[sliderId].currentSlide;
+    const totalSlides = sliderStates[sliderId].totalSlides;
+    
+    const nextSlide = currentSlide + 1 >= totalSlides ? 0 : currentSlide + 1;
+    showSlide(sliderId, nextSlide);
+}
+
+function prevSlide(sliderId) {
+    initSlider(sliderId);
+    const currentSlide = sliderStates[sliderId].currentSlide;
+    const totalSlides = sliderStates[sliderId].totalSlides;
+    
+    const prevSlide = currentSlide - 1 < 0 ? totalSlides - 1 : currentSlide - 1;
+    showSlide(sliderId, prevSlide);
+}
+
+// 슬라이더 자동 초기화 (페이지 로드 시)
+document.addEventListener('DOMContentLoaded', () => {
+    // 페이지 로드 완료 후 모든 슬라이더 초기화
+    setTimeout(() => {
+        const sliders = document.querySelectorAll('.place-images');
+        sliders.forEach(slider => {
+            const sliderId = slider.id;
+            if (sliderId) {
+                initSlider(sliderId);
+                showSlide(sliderId, 0);
+            }
+        });
+    }, 1000);
+});
+
+// 페이지 전환 시 슬라이더 재초기화
+function reinitializeSliders() {
+    setTimeout(() => {
+        const sliders = document.querySelectorAll('.place-images');
+        sliders.forEach(slider => {
+            const sliderId = slider.id;
+            if (sliderId && !sliderStates[sliderId]) {
+                initSlider(sliderId);
+                showSlide(sliderId, 0);
+            }
+        });
+    }, 500);
+}
