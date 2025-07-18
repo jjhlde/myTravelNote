@@ -1,0 +1,29 @@
+{
+  "name": "travelnote",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update-places": "node update-places.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jjhlde/myTravelNote.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jjhlde/myTravelNote/issues"
+  },
+  "homepage": "https://github.com/jjhlde/myTravelNote#readme",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1",
+    "path": "^0.12.7",
+    "sharp": "^0.33.0"
+  }
+}

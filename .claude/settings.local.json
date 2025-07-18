@@ -4,7 +4,14 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(mkdir:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm init:*)",
+      "Bash(git clone:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(echo $env:APPDATA)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

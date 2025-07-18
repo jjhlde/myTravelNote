@@ -1,0 +1,29 @@
+# API 키 및 설정 파일 - 보안상 중요!
+claude_desktop_config.json
+servers-archived/
+
+# 환경 변수 파일
+.env
+.env.local
+.env.*.local
+
+# API 키 관련 파일
+*api_key*
+*API_KEY*
+*config.json
+
+# Node.js 스크립트 파일 (보안)
+update-places.js
+*.config.js
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+*.log
