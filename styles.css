@@ -225,6 +225,58 @@ body {
     flex: 1;
 }
 
+/* Restaurant Photo Gallery */
+.restaurant-photos {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb #f3f4f6;
+}
+
+.restaurant-photos::-webkit-scrollbar {
+    height: 6px;
+}
+
+.restaurant-photos::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.restaurant-photos::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 3px;
+}
+
+.restaurant-photo {
+    width: 120px;
+    height: 90px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Review Box */
+.review-box {
+    background: #f8fafc;
+    border-left: 3px solid #4F46E5;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-style: italic;
+    color: #6b7280;
+}
+
+.review-rating {
+    color: #4F46E5;
+    font-weight: 600;
+    font-style: normal;
+    margin-bottom: 5px;
+}
+
 .highlight {
     background: linear-gradient(45deg, #FFD93D, #FF6B6B);
     color: white;
