@@ -189,6 +189,42 @@ body {
     line-height: 1.6;
 }
 
+/* Map Button */
+.map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #4F46E5;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+}
+
+.map-btn:hover {
+    background: #4338CA;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.location-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #1f2937;
+    flex: 1;
+}
+
 .highlight {
     background: linear-gradient(45deg, #FFD93D, #FF6B6B);
     color: white;
