@@ -387,29 +387,30 @@ function prevSlide(sliderId) {
 
 // 슬라이더 자동 초기화 (페이지 로드 시)
 document.addEventListener('DOMContentLoaded', () => {
-    // 페이지 로드 완료 후 모든 슬라이더 초기화
+    // 즉시 초기화
+    initAllSliders();
+    
+    // 추가 초기화 (페이지 로드 완료 후)
     setTimeout(() => {
-        const sliders = document.querySelectorAll('.place-images');
-        sliders.forEach(slider => {
-            const sliderId = slider.id;
-            if (sliderId) {
-                initSlider(sliderId);
-                showSlide(sliderId, 0);
-            }
-        });
-    }, 1000);
+        initAllSliders();
+    }, 500);
 });
+
+// 모든 슬라이더 초기화 함수
+function initAllSliders() {
+    const sliders = document.querySelectorAll('.place-images');
+    sliders.forEach(slider => {
+        const sliderId = slider.id;
+        if (sliderId) {
+            initSlider(sliderId);
+            showSlide(sliderId, 0);
+        }
+    });
+}
 
 // 페이지 전환 시 슬라이더 재초기화
 function reinitializeSliders() {
     setTimeout(() => {
-        const sliders = document.querySelectorAll('.place-images');
-        sliders.forEach(slider => {
-            const sliderId = slider.id;
-            if (sliderId && !sliderStates[sliderId]) {
-                initSlider(sliderId);
-                showSlide(sliderId, 0);
-            }
-        });
+        initAllSliders();
     }, 500);
 }
