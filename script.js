@@ -248,10 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const startInputSequence = () => {
             const userExamples = [
-                "도쿄 2박3일 가고싶어!",
-                "제주도로 힐링여행?",
-                "부산 맛집투어 어때?",
-                "오사카 쇼핑여행!"
+                "마카오 3박 4일 애기랑 같이 여행갈거야!"
             ];
             
             const randomExample = userExamples[Math.floor(Math.random() * userExamples.length)];
