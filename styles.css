@@ -1205,28 +1205,45 @@ body.chatbot-body::before {
 .chatbot-body .page-header {
     text-align: center;
     margin-bottom: 2rem;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 2;
+    padding: 0 1rem;
+}
+
+.chatbot-body .page-header::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    z-index: -1;
 }
 
 .chatbot-body .page-header h1 {
-    font-size: clamp(2.5rem, 5vw, 3.5rem);
-    font-weight: 900;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -1px;
-    text-shadow: none;
-    filter: drop-shadow(2px 2px 4px rgba(245, 124, 0, 0.2));
+    font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+    font-weight: 800;
+    margin-bottom: 1.2rem;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
 }
 
 .chatbot-body .page-header p {
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    font-weight: 600;
-    color: var(--text-color-dark);
-    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
-    opacity: 0.85;
+    font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
 }
 
 .chatbot-body .chat-window {
