@@ -277,9 +277,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 데모용 사용자 메시지 출력
                 setTimeout(() => {
                     addUserExampleMessage();
-                    // 자동으로 handleSendMessage 호출하여 다음 단계 진행
+                    // 자동으로 다음 단계 진행 (메시지 중복 방지를 위해 직접 호출)
                     setTimeout(() => {
-                        handleSendMessage();
+                        chatInput.value = ''; // 입력창 비우기
+                        showThinkingIndicator();
                     }, 1000);
                 }, 100);
             }, 150);
