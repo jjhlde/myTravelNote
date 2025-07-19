@@ -1,0 +1,38 @@
+# Sidekiq configuration file
+development:
+  :concurrency: 5
+  :max_retries: 3
+  :timeout: 30
+
+production:
+  :concurrency: 10
+  :max_retries: 5
+  :timeout: 30
+
+:queues:
+  - [critical, 6]
+  - [high, 4]
+  - [default, 2]
+  - [low, 1]
+  - [mailers, 3]
+
+# Job specific settings
+:limits:
+  PwaGenerationJob: 3
+  ImageCollectionJob: 5
+  DataEnhancementJob: 10
+
+# Dead job retention
+:dead_max_jobs: 10000
+
+# Scheduled jobs (cron-like)
+:schedule:
+  cleanup_old_plans:
+    cron: "0 2 * * *"  # 2 AM daily
+    class: CleanupOldPlansJob
+    queue: low
+  
+  analytics_aggregation:
+    cron: "0 * * * *"  # Every hour
+    class: AnalyticsAggregationJob
+    queue: low

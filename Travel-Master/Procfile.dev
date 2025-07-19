@@ -1,0 +1,5 @@
+web: bin/rails server -p 3000
+css: bin/rails tailwindcss:watch
+js: yarn build --watch
+worker: bundle exec sidekiq -C config/sidekiq.yml
+redis: redis-server

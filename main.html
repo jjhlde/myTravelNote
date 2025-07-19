@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마카오 가족여행 🇲🇴</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="마카오 가족여행">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    
+    <!-- 매니페스트 -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- CSS 파일 -->
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- PWA 설치 가이드 팝업 -->
+        <div class="install-guide-overlay" id="installGuideOverlay">
+            <div class="install-guide-popup">
+                <button class="close-btn" id="closeGuideBtn">✕</button>
+                
+                <div class="install-guide-header">
+                    <div class="install-guide-icon">📱</div>
+                    <div class="install-guide-title">앱으로 설치하세요!</div>
+                    <div class="install-guide-subtitle">
+                        마카오 여행계획을 언제든<br>
+                        빠르게 확인할 수 있어요
+                    </div>
+                </div>
+
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-text">하단 공유 버튼 터치 <span class="step-icon">⬆️</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-text">"홈 화면에 추가" 선택 <span class="step-icon">➕</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-text">오른쪽 상단 "추가" 터치 <span class="step-icon">✅</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="install-benefit">
+                    <div class="benefit-title">🌟 앱 설치 혜택</div>
+                    <div class="benefit-list">
+                        ✓ 마카오에서 오프라인 사용<br>
+                        ✓ 빠른 접속 (3초 → 1초)<br>
+                        ✓ 홈 화면에서 바로 실행
+                    </div>
+                </div>
+
+                <div class="install-buttons">
+                    <button class="btn-primary" id="installNowBtn">지금 설치하기</button>
+                    <button class="btn-secondary" id="skipInstallBtn">나중에</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header">
+            <h1>🇲🇴 마카오 가족여행</h1>
+            <p>37개월 딸과 함께하는 특별한 여행</p>
+
+            <div class="day-tabs">
+                <div class="day-tab active" data-page="0">📋 정보</div>
+                <div class="day-tab" data-page="1">1일차</div>
+                <div class="day-tab" data-page="2">2일차</div>
+                <div class="day-tab" data-page="3">3일차</div>
+                <div class="day-tab" data-page="4">4일차</div>
+                <div class="day-tab" data-page="5">💰 예산</div>
+            </div>
+        </div>
+
+        <div class="pages-container">
+            <div class="pages-wrapper" id="pagesWrapper">
+                <!-- 페이지 콘텐츠는 동적으로 로드됩니다 -->
+                <div class="page" id="page-0">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-1">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-2">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-3">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-4">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-5">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지 인디케이터 -->
+        <div class="page-indicator">
+            <div class="indicator-dot active" data-page="0"></div>
+            <div class="indicator-dot" data-page="1"></div>
+            <div class="indicator-dot" data-page="2"></div>
+            <div class="indicator-dot" data-page="3"></div>
+            <div class="indicator-dot" data-page="4"></div>
+            <div class="indicator-dot" data-page="5"></div>
+        </div>
+
+        <!-- 스와이프 가이드 -->
+        <div class="swipe-hint" id="swipeHint">👈 좌우로 스와이프해서 날짜 이동 👉</div>
+    </div>
+
+    <!-- 이미지 팝업 모달 -->
+    <div class="image-popup-overlay" id="imagePopupOverlay">
+        <div class="image-popup-content">
+            <img id="popupImage" class="image-popup-img" src="" alt="">
+            <button class="image-popup-close" id="popupClose">✕</button>
+            <div class="image-popup-info">
+                <div class="image-popup-title" id="popupTitle">여행 사진</div>
+                <div class="image-popup-description" id="popupDescription">클릭하거나 ESC 키를 눌러 닫기</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 파일 -->
+    <script src="./script.js"></script>
+</body>
+</html>

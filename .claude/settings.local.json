@@ -12,7 +12,9 @@
       "Bash(npm run build:*)",
       "Bash(echo $env:APPDATA)",
       "Bash(node:*)",
-      "Bash(claude mcp add:*)"
+      "Bash(claude mcp add:*)",
+      "Bash(python3:*)",
+      "Bash(lsof:*)"
     ],
     "deny": []
   }
