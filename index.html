@@ -21,9 +21,27 @@
 
     <main class="main-container">
         <header class="page-header">
+            <div class="brand-logo">
+                <i class="fa-solid fa-robot"></i>
+                <span class="brand-name">TripBot</span>
+            </div>
             <h1>대화 나눴더니<br/> 여행 앱이 짠!</h1>
             <p>여행 스타일 말하면 AI가 일정 완성</p>
             <p>내 폰에 전용 여행 앱까지 뚝딱!</p>
+            <div class="trust-indicators">
+                <span class="trust-item">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>AI 맞춤 제작</span>
+                </span>
+                <span class="trust-item">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>나만의 여행</span>
+                </span>
+                <span class="trust-item">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span>전용앱 제작</span>
+                </span>
+            </div>
         </header>
 
         <section class="chat-window">
@@ -32,7 +50,7 @@
             </div>
 
             <footer class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="">
+                <input type="text" id="chat-input" placeholder="" readonly>
                 <button type="submit" id="send-button" aria-label="전송">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>

@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         const showFinalMessage = () => {
-            const finalText = '이제 다 됐어요! 앱을 다운로드 해볼까요? 🎉';
+            const finalText = '이제 다 됐어요! 여행앱을 확인해보세요! 🎉';
             
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'bot');
@@ -185,13 +185,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageDiv.style.opacity = '1';
                 messageDiv.style.transform = 'translateY(0)';
                 
-                // 1초 후 main.html로 이동
+                // 1초 후 앱 확인 버튼 표시
                 setTimeout(() => {
-                    window.location.href = 'main.html';
+                    showAppCheckButton();
                 }, 1000);
             }, 100);
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        const showAppCheckButton = () => {
+            // 성취 카드 영역 생성
+            const actionButtonContainer = document.createElement('div');
+            actionButtonContainer.classList.add('action-button-container');
+            actionButtonContainer.innerHTML = `
+                <div class="achievement-card" onclick="checkTravelApp()">
+                    <div class="achievement-glow"></div>
+                    <div class="achievement-content">
+                        <div class="achievement-icon">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div class="achievement-text">
+                            <div class="achievement-title">맞춤 여행앱 준비 완료!</div>
+                            <div class="achievement-subtitle">나의 여행앱 보기</div>
+                        </div>
+                        <div class="achievement-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            actionButtonContainer.style.opacity = '0';
+            actionButtonContainer.style.transform = 'translateY(30px)';
+            actionButtonContainer.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            chatMessages.appendChild(actionButtonContainer);
+            
+            setTimeout(() => {
+                actionButtonContainer.style.opacity = '1';
+                actionButtonContainer.style.transform = 'translateY(0)';
+            }, 200);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        // 전역 함수로 등록
+        window.checkTravelApp = () => {
+            window.location.href = 'main.html';
         };
 
         // 로그인 모달 관련 코드 제거
@@ -222,6 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const typeIntoInput = (text, speed = 60) => {
             let i = 0;
             chatInput.value = '';
+            
+            // readonly를 임시로 해제하여 타이핑 효과 구현
+            chatInput.removeAttribute('readonly');
             chatInput.focus();
             
             const inputTypeInterval = setInterval(() => {
@@ -230,7 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (i >= text.length) {
                     clearInterval(inputTypeInterval);
-                    // 입력 완료 후 전송 버튼 클릭 효과 (더 빠르게)
+                    // 타이핑 완료 후 다시 readonly 설정
+                    chatInput.setAttribute('readonly', true);
+                    chatInput.blur(); // 포커스 해제
+                    
+                    // 입력 완료 후 전송 버튼 클릭 효과
                     setTimeout(() => {
                         animateSendButton();
                     }, 400);
@@ -240,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const animateSendButton = () => {
             // 버튼 클릭 애니메이션 (효과적이고 감각적인 피드백)
-            sendButton.style.transform = 'scale(0.85)';
+            sendButton.style.transform = 'scale(0.85) rotate(-5deg)';
             sendButton.style.background = '#ff5252';
             sendButton.style.boxShadow = '0 0 20px rgba(255, 107, 107, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2)';
             
@@ -263,9 +311,16 @@ document.addEventListener('DOMContentLoaded', () => {
             sendButton.appendChild(ripple);
             
             setTimeout(() => {
-                sendButton.style.transform = 'scale(1)';
-                sendButton.style.background = '#FF6B6B';
-                sendButton.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.3)';
+                sendButton.style.transform = 'scale(1.1) rotate(5deg)';
+                sendButton.style.background = 'linear-gradient(135deg, #F57C00, #FFA726)';
+                sendButton.style.boxShadow = '0 6px 20px rgba(245, 124, 0, 0.4)';
+                
+                // 최종 상태로 복귀
+                setTimeout(() => {
+                    sendButton.style.transform = '';
+                    sendButton.style.background = '';
+                    sendButton.style.boxShadow = '';
+                }, 200);
                 
                 // 리플 제거
                 setTimeout(() => {
@@ -277,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 데모용 사용자 메시지 출력
                 setTimeout(() => {
                     addUserExampleMessage();
-                    // 자동으로 다음 단계 진행 (메시지 중복 방지를 위해 직접 호출)
+                    // 자동으로 다음 단계 진행
                     setTimeout(() => {
                         chatInput.value = ''; // 입력창 비우기
                         showThinkingIndicator();
@@ -294,15 +349,19 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('message', 'user', 'example-message');
             messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid fa-user"></i></div><p>${messageText}</p>`;
             messageDiv.style.opacity = '0';
-            messageDiv.style.transform = 'translateY(20px) scale(0.95)';
+            messageDiv.style.transform = 'translateX(50px) scale(0.8)';
             
             chatMessages.appendChild(messageDiv);
             
             setTimeout(() => {
-                messageDiv.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                messageDiv.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
                 messageDiv.style.opacity = '1';
-                messageDiv.style.transform = 'translateY(0) scale(1)';
-            }, 200);
+                messageDiv.style.transform = 'translateX(0) scale(1)';
+                
+                // 메시지 등장 시 아바타 펄스 효과
+                const avatar = messageDiv.querySelector('.avatar');
+                avatar.style.animation = 'avatar-pulse 0.8s ease-out';
+            }, 100);
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
         };
@@ -326,13 +385,23 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         };
 
-        sendButton.addEventListener('click', handleSendMessage);
-        chatInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                handleSendMessage();
-            }
+        // 입력 비활성화 - 자동 대화 시퀀스만 진행
+        // sendButton.addEventListener('click', handleSendMessage);
+        // chatInput.addEventListener('keydown', (event) => {
+        //     if (event.key === 'Enter') {
+        //         handleSendMessage();
+        //     }
+        // });
+        
+        // 비활성화된 상태에서 클릭 시 안내 메시지 (선택사항)
+        sendButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
         });
-        // ideaButton event listener removed
+        
+        chatInput.addEventListener('keydown', (e) => {
+            e.preventDefault();
+        });
         
         // 페이지 로드 시 빈 화면에서 시작해서 동적으로 대화 생성
         const startConversation = () => {
