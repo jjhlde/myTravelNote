@@ -28,13 +28,170 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageText = chatInput.value.trim();
             if (messageText === '') return;
 
+            // 사용자 메시지 출력
             appendMessage('user', messageText);
-            chatInput.value = '';
+            chatInput.value = ''; // 입력창 비우기
             
-            // 짧은 딜레이 후 main.html로 이동
+            // AI 생각중 점점점 표시
             setTimeout(() => {
-                window.location.href = 'main.html';
-            }, 1000);
+                showThinkingIndicator();
+            }, 500);
+        };
+        
+        const showThinkingIndicator = () => {
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.classList.add('message', 'bot', 'thinking');
+            thinkingDiv.innerHTML = `
+                <div class="avatar"><i class="fa-solid fa-plane-departure"></i></div>
+                <div class="thinking-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            thinkingDiv.style.opacity = '0';
+            thinkingDiv.style.transform = 'translateY(20px)';
+            
+            chatMessages.appendChild(thinkingDiv);
+            
+            setTimeout(() => {
+                thinkingDiv.style.transition = 'all 0.3s ease';
+                thinkingDiv.style.opacity = '1';
+                thinkingDiv.style.transform = 'translateY(0)';
+                
+                // 2초 후 AI 답변으로 교체
+                setTimeout(() => {
+                    chatMessages.removeChild(thinkingDiv);
+                    showAIResponse();
+                }, 2000);
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        const showAIResponse = () => {
+            const responseText = '네, 잠시만 기다려 주세요. 여행 플랜을 금방 만들어드릴게요! 🚀';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot');
+            messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid fa-plane-departure"></i></div><p>${responseText}</p>`;
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateY(20px)';
+            
+            chatMessages.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.transition = 'all 0.4s ease';
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0)';
+                
+                // 1초 후 버튼 표시
+                setTimeout(() => {
+                    showAppCreateButton();
+                }, 1000);
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        const showAppCreateButton = () => {
+            // 독립적인 액션 버튼 영역 생성
+            const actionButtonContainer = document.createElement('div');
+            actionButtonContainer.classList.add('action-button-container');
+            actionButtonContainer.innerHTML = `
+                <button class="create-app-btn" onclick="startAppCreation()">
+                    <div class="btn-content">
+                        <div class="btn-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L13.09 8.26L19 9L13.09 9.74L12 16L10.91 9.74L5 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                                <path d="M19 15L20.09 18.26L23 19L20.09 19.74L19 23L17.91 19.74L15 19L17.91 18.26L19 15Z" fill="currentColor"/>
+                                <path d="M5 6L5.5 7.5L7 8L5.5 8.5L5 10L4.5 8.5L3 8L4.5 7.5L5 6Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="btn-text">
+                            <div class="btn-title">나만의 여행앱 만들기</div>
+                            <div class="btn-subtitle">AI가 맞춤 여행 앱을 제작해드려요</div>
+                        </div>
+                        <div class="btn-arrow">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+            `;
+            
+            actionButtonContainer.style.opacity = '0';
+            actionButtonContainer.style.transform = 'translateY(30px)';
+            actionButtonContainer.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            chatMessages.appendChild(actionButtonContainer);
+            
+            setTimeout(() => {
+                actionButtonContainer.style.opacity = '1';
+                actionButtonContainer.style.transform = 'translateY(0)';
+            }, 200);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        // 전역 함수로 등록
+        window.startAppCreation = () => {
+            // 로딩 화면 표시
+            showLoadingScreen();
+        };
+        
+        const showLoadingScreen = () => {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('message', 'bot', 'loading-message');
+            loadingDiv.innerHTML = `
+                <div class="avatar"><i class="fa-solid fa-plane-departure"></i></div>
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p>여행 앱을 제작 중입니다...</p>
+                </div>
+            `;
+            loadingDiv.style.opacity = '0';
+            loadingDiv.style.transform = 'translateY(20px)';
+            
+            chatMessages.appendChild(loadingDiv);
+            
+            setTimeout(() => {
+                loadingDiv.style.transition = 'all 0.4s ease';
+                loadingDiv.style.opacity = '1';
+                loadingDiv.style.transform = 'translateY(0)';
+                
+                // 3초 후 완료 메시지
+                setTimeout(() => {
+                    chatMessages.removeChild(loadingDiv);
+                    showFinalMessage();
+                }, 3000);
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+        
+        const showFinalMessage = () => {
+            const finalText = '이제 다 됐어요! 앱을 다운로드 해볼까요? 🎉';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot');
+            messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid fa-plane-departure"></i></div><p>${finalText}</p>`;
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateY(20px)';
+            
+            chatMessages.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.transition = 'all 0.4s ease';
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0)';
+                
+                // 1초 후 main.html로 이동
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 1000);
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         };
 
         // 로그인 모달 관련 코드 제거
@@ -44,64 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // handleGetIdea function removed - functionality moved to send button
 
-        const appendMessage = (sender, text) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender);
-            const icon = sender === 'bot' ? 'fa-plane-departure' : 'fa-user';
-            
-            if (sender === 'bot') {
-                // AI 메시지는 타이핑 애니메이션으로 표시
-                const avatar = document.createElement('div');
-                avatar.className = 'avatar';
-                avatar.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-                
-                const textElement = document.createElement('p');
-                textElement.className = 'typing-text';
-                
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(textElement);
-                chatMessages.appendChild(messageDiv);
-                
-                // 타이핑 애니메이션 실행
-                typeText(textElement, text);
-            } else {
-                // 사용자 메시지는 자연스럽게 등장
-                messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid ${icon}"></i></div><p>${text}</p>`;
-                messageDiv.style.opacity = '0';
-                messageDiv.style.transform = 'translateY(20px)';
-                chatMessages.appendChild(messageDiv);
-                
-                // 자연스러운 등장 애니메이션
-                setTimeout(() => {
-                    messageDiv.style.transition = 'all 0.4s ease-out';
-                    messageDiv.style.opacity = '1';
-                    messageDiv.style.transform = 'translateY(0)';
-                }, 100);
-            }
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
+        // 기존 appendMessage 함수 제거 (하단에 새로운 함수로 대체)
         
-        const typeText = (element, text, speed = 50) => {
-            let i = 0;
-            element.textContent = '';
-            
-            const typeInterval = setInterval(() => {
-                element.textContent += text.charAt(i);
-                i++;
-                
-                // 스크롤을 계속 하단으로 유지
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                if (i >= text.length) {
-                    clearInterval(typeInterval);
-                    // 타이핑 완료 후 입력창에 텍스트 자동 입력 시작
-                    setTimeout(() => {
-                        startInputSequence();
-                    }, 1000);
-                }
-            }, speed);
-        };
+        // 타이핑 애니메이션은 제거하고 부드러운 등장으로 변경
         
         const startInputSequence = () => {
             const userExamples = [
@@ -117,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             typeIntoInput(randomExample);
         };
         
-        const typeIntoInput = (text, speed = 100) => {
+        const typeIntoInput = (text, speed = 60) => {
             let i = 0;
             chatInput.value = '';
             chatInput.focus();
@@ -128,28 +230,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (i >= text.length) {
                     clearInterval(inputTypeInterval);
-                    // 입력 완료 후 전송 버튼 클릭 효과
+                    // 입력 완료 후 전송 버튼 클릭 효과 (더 빠르게)
                     setTimeout(() => {
                         animateSendButton();
-                    }, 800);
+                    }, 400);
                 }
             }, speed);
         };
         
         const animateSendButton = () => {
-            // 전송 버튼 클릭 애니메이션
-            sendButton.style.transform = 'scale(0.9)';
+            // 버튼 클릭 애니메이션 (효과적이고 감각적인 피드백)
+            sendButton.style.transform = 'scale(0.85)';
             sendButton.style.background = '#ff5252';
+            sendButton.style.boxShadow = '0 0 20px rgba(255, 107, 107, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2)';
+            
+            // 전송 이펙트 만들기
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.marginLeft = '-10px';
+            ripple.style.marginTop = '-10px';
+            ripple.style.pointerEvents = 'none';
+            
+            sendButton.style.position = 'relative';
+            sendButton.appendChild(ripple);
             
             setTimeout(() => {
                 sendButton.style.transform = 'scale(1)';
                 sendButton.style.background = '#FF6B6B';
+                sendButton.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.3)';
                 
-                // 데모용 사용자 메시지 출력 (실제 전송 로직 없이)
+                // 리플 제거
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 300);
+                
+                // 데모용 사용자 메시지 출력
                 setTimeout(() => {
                     addUserExampleMessage();
-                    // 입력창은 비우지 않음 - 실제 사용자가 다시 사용할 수 있도록
-                }, 200);
+                    // 자동으로 handleSendMessage 호출하여 다음 단계 진행
+                    setTimeout(() => {
+                        handleSendMessage();
+                    }, 1000);
+                }, 100);
             }, 150);
         };
         
@@ -174,9 +306,24 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         };
 
-        // 타이핑 인디케이터 관련 함수 비활성화 (추후 구현)
-        // const showTypingIndicator = () => { ... };
-        // const hideTypingIndicator = () => { ... };
+        // 이전 appendMessage 함수를 간단한 메시지 추가 함수로 변경
+        const appendMessage = (sender, text) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            const icon = sender === 'bot' ? 'fa-plane-departure' : 'fa-user';
+            messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid ${icon}"></i></div><p>${text}</p>`;
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateY(20px)';
+            chatMessages.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.transition = 'all 0.4s ease-out';
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0)';
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
 
         sendButton.addEventListener('click', handleSendMessage);
         chatInput.addEventListener('keydown', (event) => {
@@ -188,10 +335,34 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 페이지 로드 시 빈 화면에서 시작해서 동적으로 대화 생성
         const startConversation = () => {
-            // 2초 후 AI 메시지 등장
+            // 1초 후 AI 메시지 등장 (더 빠르게)
             setTimeout(() => {
-                appendMessage('bot', '어디로 여행 가시나요? 🌍');
-            }, 2000);
+                addAIMessageWithAnimation('어디로 여행 가시나요? 🌍');
+            }, 1000);
+        };
+        
+        // AI 메시지를 사용자 애니메이션처럼 추가
+        const addAIMessageWithAnimation = (text) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot');
+            messageDiv.innerHTML = `<div class="avatar"><i class="fa-solid fa-plane-departure"></i></div><p>${text}</p>`;
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateY(20px) scale(0.95)';
+            
+            chatMessages.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateY(0) scale(1)';
+                
+                // AI 메시지 완료 후 0.5초 후 입력 시퀀스 시작
+                setTimeout(() => {
+                    startInputSequence();
+                }, 500);
+            }, 100);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         };
         
         // 페이지 로드 후 대화 시작
