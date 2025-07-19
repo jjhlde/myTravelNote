@@ -6,94 +6,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const sendButton = document.getElementById('send-button');
         // const ideaButton = document.getElementById('idea-button'); // Removed
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+        // const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`; // 추후 구현
 
-        const callGeminiAPI = async (userPrompt, systemPrompt) => {
-            const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [{ text: userPrompt }]
-                }],
-                system_instruction: {
-                    parts: [{ text: systemPrompt }]
-                }
-            };
+        // Gemini API 호출 함수 비활성화 (추후 구현)
+        // const callGeminiAPI = async (userPrompt, systemPrompt) => { ... };
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+        // 시스템 프롬프트 로드 함수 비활성화 (추후 구현)
+        // const getSystemPrompt = async () => { ... };
 
-                if (!response.ok) {
-                    const errorBody = await response.text();
-                    console.error("API Error Response:", errorBody);
-                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-                }
+        // 로그인 모달 관련 변수 및 함수 비활성화 (추후 구현)
+        // const loginModalOverlay = document.getElementById('loginModalOverlay');
+        // const closeLoginModalBtn = document.getElementById('closeLoginModal');
+        // const googleLoginBtn = document.querySelector('.social-login-btn.google');
+        // const showLoginModal = () => { ... };
+        // const hideLoginModal = () => { ... };
 
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    return result.candidates[0].content.parts[0].text;
-                } else {
-                    console.error("Invalid API response structure:", result);
-                    return "죄송해요, 답변의 형식이 올바르지 않아요.";
-                }
-            } catch (error) {
-                console.error("Gemini API call failed:", error);
-                return "죄송해요, 네트워크 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
-            }
-        };
-
-        const getSystemPrompt = async () => {
-            try {
-                const response = await fetch('prompt.txt');
-                if (!response.ok) {
-                    console.error('Failed to fetch prompt.txt, using fallback.');
-                    return "You are a helpful travel planner.";
-                }
-                return await response.text();
-            } catch (error) {
-                console.error("Could not load system prompt:", error);
-                return "You are a helpful travel planner.";
-            }
-        };
-
-        const loginModalOverlay = document.getElementById('loginModalOverlay');
-        const closeLoginModalBtn = document.getElementById('closeLoginModal');
-        const googleLoginBtn = document.querySelector('.social-login-btn.google');
-
-        const showLoginModal = () => {
-            loginModalOverlay.classList.add('show');
-        };
-
-        const hideLoginModal = () => {
-            loginModalOverlay.classList.remove('show');
-        };
-
-        const proceedWithApiCall = async (messageText) => {
-            showTypingIndicator();
-
-            const systemPrompt = await getSystemPrompt();
-            const botResponse = await callGeminiAPI(messageText, systemPrompt);
-            
-            hideTypingIndicator();
-            
-            // 예시 메시지가 있다면 제거
-            const exampleMessage = document.querySelector('.example-message');
-            if (exampleMessage) {
-                exampleMessage.remove();
-            }
-            
-            appendMessage('bot', botResponse);
-            
-            chatInput.disabled = false;
-            sendButton.disabled = false;
-            chatInput.focus();
-        };
+        // API 호출 함수 비활성화 (추후 구현)
+        // const proceedWithApiCall = async (messageText) => { ... };
 
         const handleSendMessage = async () => {
             const messageText = chatInput.value.trim();
@@ -101,26 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             appendMessage('user', messageText);
             chatInput.value = '';
-            chatInput.disabled = true;
-            sendButton.disabled = true;
-
-            showLoginModal();
-
-            // Store the message text to be used after login/guest selection
-            loginModalOverlay.dataset.messageText = messageText;
+            
+            // 짧은 딜레이 후 main.html로 이동
+            setTimeout(() => {
+                window.location.href = 'main.html';
+            }, 1000);
         };
 
-        const handleLoginChoice = (e) => {
-            e.preventDefault();
-            hideLoginModal();
-            const messageText = loginModalOverlay.dataset.messageText;
-            if (messageText) {
-                proceedWithApiCall(messageText);
-            }
-        };
-
-        closeLoginModalBtn.addEventListener('click', hideLoginModal);
-        googleLoginBtn.addEventListener('click', handleLoginChoice);
+        // 로그인 모달 관련 코드 제거
+        // const handleLoginChoice = (e) => { ... }
+        // closeLoginModalBtn.addEventListener('click', hideLoginModal);
+        // googleLoginBtn.addEventListener('click', handleLoginChoice);
 
         // handleGetIdea function removed - functionality moved to send button
 
@@ -254,23 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         };
 
-        const showTypingIndicator = () => {
-            const typingDiv = document.createElement('div');
-            typingDiv.classList.add('message', 'bot', 'typing');
-            typingDiv.id = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="avatar"><i class="fa-solid fa-plane-departure"></i></div>
-                <div class="typing-indicator"><span></span><span></span><span></span></div>`;
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-        
-        const hideTypingIndicator = () => {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) {
-                chatMessages.removeChild(typingIndicator);
-            }
-        };
+        // 타이핑 인디케이터 관련 함수 비활성화 (추후 구현)
+        // const showTypingIndicator = () => { ... };
+        // const hideTypingIndicator = () => { ... };
 
         sendButton.addEventListener('click', handleSendMessage);
         chatInput.addEventListener('keydown', (event) => {
