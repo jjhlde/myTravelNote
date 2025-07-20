@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ruby --version)",
+      "Bash(rails --version)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "Bash(sudo apt:*)",
+      "Bash(git clone:*)",
+      "Bash(chmod:*)",
+      "Bash(docker:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(make:*)",
+      "Bash(cp:*)",
+      "Bash(curl:*)",
+      "Bash(sh:*)",
+      "Bash(rails secret)",
+      "Bash(sudo docker-compose:*)",
+      "Bash(grep:*)",
+      "Bash(source ~/.bashrc)",
+      "Bash(rbenv:*)",
+      "Bash(gcc:*)",
+      "Bash(dpkg:*)",
+      "Bash(ruby:*)",
+      "Bash(psql:*)",
+      "Bash(rm:*)",
+      "Bash(redis-cli:*)",
+      "Bash(redis-server:*)",
+      "Bash(dos2unix:*)",
+      "Bash(sed:*)",
+      "Bash(bash:*)",
+      "Bash(bundle install:*)",
+      "Bash(rails:*)",
+      "Bash(bundle update:*)"
+    ],
+    "deny": []
+  }
+}

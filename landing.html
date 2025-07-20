@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripBot - 대화로 만드는 나만의 여행 앱</title>
+    <!-- Google Fonts: Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="chatbot-body">
+    <div class="aurora-background">
+        <div class="aurora-shape shape1"></div>
+        <div class="aurora-shape shape2"></div>
+        <div class="aurora-shape shape3"></div>
+    </div>
+
+    <main class="main-container">
+        <header class="page-header">
+            <div class="brand-logo">
+                <i class="fa-solid fa-robot"></i>
+                <span class="brand-name">TripBot</span>
+            </div>
+            <h1>대화 나눴더니<br/> 여행 앱이 짠!</h1>
+            <p>여행 스타일 말하면 AI가 일정 완성</p>
+            <p>내 폰에 전용 여행 앱까지 뚝딱!</p>
+            <div class="trust-indicators">
+                <span class="trust-item">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>AI 맞춤 제작</span>
+                </span>
+                <span class="trust-item">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>나만의 여행</span>
+                </span>
+                <span class="trust-item">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span>전용앱 제작</span>
+                </span>
+            </div>
+        </header>
+
+        <section class="chat-window">
+            <div class="chat-messages" id="chat-messages">
+
+            </div>
+
+            <footer class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="" readonly>
+                <button type="submit" id="send-button" aria-label="전송">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </footer>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div class="login-modal-overlay" id="loginModalOverlay">
+        <div class="login-modal-content">
+            <button class="close-btn" id="closeLoginModal">&times;</button>
+            <div class="login-modal-header">
+                <i class="fa-solid fa-compass-drafting login-icon"></i>
+                <h2>당신이 꿈꾸던 여행,<br>AI로 현실이 되다.</h2>
+                <p>AI가 찾아낸 숨은 명소와 맛집으로<br>세상에 단 하나뿐인 당신의 여정을 만드세요.</p>
+            </div>
+            <div class="login-modal-buttons">
+                <button class="social-login-btn google">
+                    <i class="fa-brands fa-google"></i>
+                    <span>Google 계정으로 시작하기</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./script.js?v=1.0.2"></script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<h2 class="text-2xl font-bold text-slate-800 mb-6">여행 준비물</h2>
+<div id="todo-list-container" class="space-y-6">
+    <!-- 필수 준비물 카테고리 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">✈️ 출발 전 필수</h3>
+        <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" checked>
+                <span class="text-sm text-slate-700">여권 및 {{TRANSPORT_LABEL}} 티켓</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" checked>
+                <span class="text-sm text-slate-700">숙소 바우처 출력 또는 저장</span>
+            </label>
+            {{#if IS_INTERNATIONAL}}
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">{{CURRENCY_NAME}} 환전</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">해외 데이터 로밍 또는 유심</span>
+            </label>
+            {{/if}}
+        </div>
+    </div>
+
+    <!-- 개인용품 카테고리 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">👕 개인 용품</h3>
+        <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">날씨에 맞는 옷차림</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">편한 신발 (많이 걸을 예정)</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">개인 세면용품</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">상비약 (두통약, 소화제 등)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 아이용품 카테고리 (가족여행시에만) -->
+    {{#if HAS_CHILDREN}}
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">👶 {{CHILDREN_AGE}} 아이 용품</h3>
+        <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">기저귀, 물티슈, 휴대용 변기 커버</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">아이 전용 상비약 (해열제, 체온계, 밴드)</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">아이가 좋아하는 간식과 장난감</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">유모차 또는 아기띠</span>
+            </label>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 전자제품 카테고리 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">🔌 전자제품</h3>
+        <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">스마트폰 충전기</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">보조배터리</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">카메라 (또는 스마트폰으로 대체)</span>
+            </label>
+            {{#if IS_INTERNATIONAL}}
+            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                <span class="text-sm text-slate-700">멀티 어댑터 (해외용 플러그)</span>
+            </label>
+            {{/if}}
+        </div>
+    </div>
+
+    <!-- 맞춤 준비물 카테고리 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">🎯 {{DESTINATION}} 맞춤 준비물</h3>
+        <div class="space-y-3">
+            {{CUSTOM_ITEMS}}
+        </div>
+    </div>
+
+    <!-- 사용자 추가 카테고리 -->
+    <div id="user-categories">
+        <!-- 사용자가 추가한 카테고리들이 여기에 표시됩니다 -->
+    </div>
+</div>
+
+<!-- 새 준비물 추가 -->
+<div class="mt-8 flex gap-2">
+    <input id="new-todo-item" type="text" placeholder="새 준비물 추가" class="flex-1 p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+    <button id="add-todo-btn" class="bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가</button>
+</div>
+
+<!-- 카테고리 추가 -->
+<div class="mt-4 flex gap-2">
+    <input id="new-category-name" type="text" placeholder="새 카테고리 추가 (예: 수영용품)" class="flex-1 p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+    <button id="add-category-btn" class="bg-slate-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 transition">카테고리 추가</button>
+</div>
+
+<script>
+// 준비물 관리 JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const todoListContainer = document.getElementById('todo-list-container');
+    const userCategoriesContainer = document.getElementById('user-categories');
+    const newTodoInput = document.getElementById('new-todo-item');
+    const addTodoBtn = document.getElementById('add-todo-btn');
+    const newCategoryInput = document.getElementById('new-category-name');
+    const addCategoryBtn = document.getElementById('add-category-btn');
+
+    // 기본 카테고리 (사용자 추가용)
+    let userCategories = JSON.parse(localStorage.getItem('travel_todo_categories') || '{"기타": []}');
+
+    // 체크박스 상태 저장
+    function saveCheckboxStates() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const states = {};
+        checkboxes.forEach((checkbox, index) => {
+            states[index] = checkbox.checked;
+        });
+        localStorage.setItem('travel_todo_states', JSON.stringify(states));
+    }
+
+    // 체크박스 상태 복원
+    function restoreCheckboxStates() {
+        const states = JSON.parse(localStorage.getItem('travel_todo_states') || '{}');
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox, index) => {
+            if (states[index] !== undefined) {
+                checkbox.checked = states[index];
+            }
+        });
+    }
+
+    // 새 준비물 추가
+    addTodoBtn?.addEventListener('click', () => {
+        if (newTodoInput.value.trim()) {
+            if (!userCategories['기타']) {
+                userCategories['기타'] = [];
+            }
+            userCategories['기타'].push({
+                text: newTodoInput.value.trim(),
+                done: false,
+                id: Date.now()
+            });
+            localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+            renderUserCategories();
+            newTodoInput.value = '';
+        }
+    });
+
+    // 새 카테고리 추가
+    addCategoryBtn?.addEventListener('click', () => {
+        if (newCategoryInput.value.trim()) {
+            const categoryName = newCategoryInput.value.trim();
+            if (!userCategories[categoryName]) {
+                userCategories[categoryName] = [];
+                localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+                renderUserCategories();
+                newCategoryInput.value = '';
+            }
+        }
+    });
+
+    // 사용자 카테고리 렌더링
+    function renderUserCategories() {
+        if (!userCategoriesContainer) return;
+        
+        userCategoriesContainer.innerHTML = Object.keys(userCategories).map(categoryName => `
+            <div class="mt-6" data-category="${categoryName}">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 border-b pb-2 flex-1">📝 ${categoryName}</h3>
+                    <button class="delete-category-btn text-slate-400 hover:text-red-500 ml-4" data-category="${categoryName}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    ${userCategories[categoryName].map(item => `
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 shadow-sm" data-id="${item.id}">
+                            <label class="flex-1 flex items-center gap-3 has-[:checked]:text-slate-400 has-[:checked]:line-through">
+                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" ${item.done ? 'checked' : ''}>
+                                <span class="text-sm">${item.text}</span>
+                            </label>
+                            <button class="edit-todo-btn text-slate-400 hover:text-blue-500" data-category="${categoryName}" data-id="${item.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-todo-btn text-slate-400 hover:text-red-500" data-category="${categoryName}" data-id="${item.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `).join('')}
+                    <div class="flex gap-2 mt-3">
+                        <input type="text" placeholder="이 카테고리에 항목 추가" class="flex-1 p-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent category-item-input" data-category="${categoryName}">
+                        <button class="add-to-category-btn bg-orange-500 text-white font-medium py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm" data-category="${categoryName}">추가</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 이벤트 위임으로 동적 버튼 처리
+    document.addEventListener('click', (e) => {
+        // 카테고리별 항목 추가
+        if (e.target.classList.contains('add-to-category-btn')) {
+            const categoryName = e.target.dataset.category;
+            const input = document.querySelector(`.category-item-input[data-category="${categoryName}"]`);
+            if (input.value.trim()) {
+                userCategories[categoryName].push({
+                    text: input.value.trim(),
+                    done: false,
+                    id: Date.now()
+                });
+                localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+                renderUserCategories();
+            }
+        }
+
+        // 준비물 삭제
+        if (e.target.closest('.delete-todo-btn')) {
+            const btn = e.target.closest('.delete-todo-btn');
+            const categoryName = btn.dataset.category;
+            const itemId = parseInt(btn.dataset.id);
+            userCategories[categoryName] = userCategories[categoryName].filter(item => item.id !== itemId);
+            localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+            renderUserCategories();
+        }
+
+        // 준비물 편집
+        if (e.target.closest('.edit-todo-btn')) {
+            const btn = e.target.closest('.edit-todo-btn');
+            const categoryName = btn.dataset.category;
+            const itemId = parseInt(btn.dataset.id);
+            const item = userCategories[categoryName].find(item => item.id === itemId);
+            const newText = prompt('항목 수정:', item.text);
+            if (newText) {
+                item.text = newText;
+                localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+                renderUserCategories();
+            }
+        }
+
+        // 카테고리 삭제
+        if (e.target.closest('.delete-category-btn')) {
+            const categoryName = e.target.closest('.delete-category-btn').dataset.category;
+            if (confirm(`"${categoryName}" 카테고리를 삭제하시겠습니까?`)) {
+                delete userCategories[categoryName];
+                localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+                renderUserCategories();
+            }
+        }
+    });
+
+    // 체크박스 상태 변경 감지
+    document.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox') {
+            saveCheckboxStates();
+            
+            // 사용자 추가 항목의 체크박스 상태도 저장
+            if (e.target.closest('#user-categories')) {
+                const itemElement = e.target.closest('[data-id]');
+                if (itemElement) {
+                    const categoryElement = e.target.closest('[data-category]');
+                    const categoryName = categoryElement.dataset.category;
+                    const itemId = parseInt(itemElement.dataset.id);
+                    const item = userCategories[categoryName].find(item => item.id === itemId);
+                    if (item) {
+                        item.done = e.target.checked;
+                        localStorage.setItem('travel_todo_categories', JSON.stringify(userCategories));
+                    }
+                }
+            }
+        }
+    });
+
+    // Enter 키로 항목 추가
+    newTodoInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTodoBtn.click();
+        }
+    });
+
+    newCategoryInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addCategoryBtn.click();
+        }
+    });
+
+    // 초기 로드
+    renderUserCategories();
+    setTimeout(restoreCheckboxStates, 100); // DOM 완료 후 복원
+});
+</script>

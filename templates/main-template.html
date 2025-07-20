@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>{{TRIP_TITLE}}</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#F57C00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="{{TRIP_TITLE}}">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{DESTINATION_EMOJI}}</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{DESTINATION_EMOJI}}</text></svg>">
+    
+    <!-- 매니페스트 -->
+    <link rel="manifest" href="../manifest.json">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        .gradient-text {
+            background-image: linear-gradient(45deg, #F57C00, #FFB74D);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .page-container {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page-content {
+            flex-shrink: 0;
+            width: 100%;
+        }
+        .nav-tab.active {
+            color: #F57C00;
+            font-weight: 700;
+            border-color: #F57C00;
+        }
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+        .overlay {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .slider-arrow {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .image-slider-container:hover .slider-arrow {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto max-w-lg min-h-screen bg-white shadow-2xl shadow-slate-200 flex flex-col relative overflow-hidden">
+        
+        <!-- 상단 헤더 (고정) -->
+        <header id="main-header" class="sticky top-0 z-20 bg-white/95 backdrop-blur-lg border-b border-slate-100">
+            <div class="p-6 flex justify-between items-center">
+                <div class="flex-1 min-w-0">
+                    <h1 id="main-title" class="text-lg font-bold text-slate-900 truncate">{{TRIP_TITLE}}</h1>
+                    <p id="main-subtitle" class="text-xs text-slate-500 truncate">{{TRIP_SUBTITLE}}</p>
+                </div>
+                <button class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center flex-shrink-0 ml-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                </button>
+            </div>
+            <!-- 스크롤형 탭 네비게이션 -->
+            <div id="top-nav" class="px-4 border-t border-slate-100">
+                <div class="flex items-center gap-4 overflow-x-auto no-scrollbar">
+                    {{DAY_TABS}}
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 콘텐츠 영역 (스와이프 가능) -->
+        <main class="flex-1 overflow-hidden">
+            <div id="page-container" class="page-container h-full">
+                {{DAY_PAGES}}
+            </div>
+        </main>
+
+        <!-- 떠있는 하단 탭 -->
+        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+            <div id="bottom-nav" class="flex items-center gap-2 bg-white/70 backdrop-blur-xl p-2 rounded-full shadow-lg ring-1 ring-black/5">
+                <button data-sheet="info" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span class="text-xs font-medium">정보</span>
+                </button>
+                <button data-sheet="budget" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span class="text-xs font-medium">예산</span>
+                </button>
+                <button data-sheet="todo" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="text-xs font-medium">준비물</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- 바텀 시트 오버레이 -->
+        <div id="overlay" class="overlay fixed inset-0 bg-black/40 z-40"></div>
+
+        <!-- 정보 바텀 시트 -->
+        <div id="sheet-info" class="bottom-sheet fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl flex flex-col max-h-[85vh]">
+            <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
+                <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                {{INFO_CONTENT}}
+            </div>
+        </div>
+        
+        <!-- 예산 바텀 시트 -->
+        <div id="sheet-budget" class="bottom-sheet fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl flex flex-col max-h-[85vh]">
+            <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
+                <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                {{BUDGET_CONTENT}}
+            </div>
+        </div>
+
+        <!-- 준비물 바텀 시트 -->
+        <div id="sheet-todo" class="bottom-sheet fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl flex flex-col max-h-[85vh]">
+            <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
+                <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                {{TODO_CONTENT}}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../main-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+/* 
+ * 채티플랜 - AI 여행 플래너 챗봇 스타일시트
+ * Modern mobile-first design with glassmorphism effects
+ */
+
+:root {
+    /* Primary Colors */
+    --primary-color: #F57C00;
+    --primary-light: #FFB74D;
+    --trust-color: #1565C0;
+    --bg-color: #F4F7FC;
+    --text-dark: #212121;
+    --text-medium: #5f6c7b;
+    --text-light: #9E9E9E;
+    --border-color: rgba(255, 255, 255, 0.2);
+    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    /* Transitions */
+    --transition-fast: 0.3s ease;
+    --transition-smooth: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === RESET & BASE === */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+html, body { 
+    height: 100%; 
+    overflow: hidden; 
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--bg-color);
+}
+
+/* === MAIN CONTAINER === */
+.app-container {
+    max-width: 480px;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    box-shadow: 0 0 40px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* === BACKGROUND === */
+.background-blur {
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background-image: url('https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px);
+    opacity: 0.1;
+    z-index: -1;
+}
+
+/* === HEADER === */
+.main-header {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.brand-logo { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+.brand-logo .icon { 
+    font-size: 24px; 
+    color: var(--primary-color); 
+}
+
+.brand-logo .name { 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: var(--text-dark); 
+}
+
+.profile-icon img { 
+    width: 36px; 
+    height: 36px; 
+    border-radius: 50%; 
+    border: 2px solid var(--primary-color); 
+    cursor: pointer; 
+    transition: transform var(--transition-fast);
+}
+
+.profile-icon img:hover {
+    transform: scale(1.05);
+}
+
+/* === MAIN CONTENT === */
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 100px; /* Space for floating input */
+}
+
+/* === CHAT AREA === */
+.chat-container { 
+    padding: 20px 20px 0; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    flex-shrink: 0;
+}
+
+.message { 
+    display: flex; 
+    align-items: flex-end; 
+    gap: 10px; 
+    max-width: 85%; 
+    animation: message-fade-in 0.5s ease-out forwards;
+}
+
+.message.user { 
+    align-self: flex-end; 
+    flex-direction: row-reverse; 
+}
+
+.message .avatar { 
+    width: 36px; 
+    height: 36px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    flex-shrink: 0; 
+    font-size: 16px; 
+}
+
+.message.bot .avatar { 
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); 
+    color: #fff; 
+}
+
+.message.user .avatar { 
+    background: var(--trust-color); 
+    color: #fff; 
+}
+
+.message p { 
+    padding: 12px 16px; 
+    border-radius: 20px; 
+    line-height: 1.6; 
+    font-size: 15px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    word-wrap: break-word;
+}
+
+.message.bot p { 
+    background: linear-gradient(135deg, #fff, #f9f9f9); 
+    color: var(--text-dark); 
+    border-bottom-left-radius: 4px; 
+    border: 1px solid #eee; 
+}
+
+.message.user p { 
+    background: var(--trust-color); 
+    color: #fff; 
+    border-bottom-right-radius: 4px; 
+}
+
+/* === DISCOVERY AREA === */
+.discovery-container { 
+    padding: 20px 0 40px; 
+    flex-grow: 1;
+}
+
+.section-title { 
+    font-size: 20px; 
+    font-weight: 900; 
+    margin: 0 20px 16px; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    color: var(--text-dark);
+}
+
+.section-title i { 
+    color: var(--primary-color); 
+}
+
+/* Recommendation Cards */
+.recommendation-card { 
+    margin: 0 20px 32px; 
+    border-radius: 20px; 
+    overflow: hidden; 
+    box-shadow: var(--shadow-md); 
+    position: relative; 
+    cursor: pointer; 
+    transition: transform var(--transition-fast);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.recommendation-card img { 
+    width: 100%; 
+    height: 200px; 
+    object-fit: cover; 
+    display: block; 
+}
+
+.recommendation-info { 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    padding: 20px; 
+    color: #fff; 
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%); 
+}
+
+.recommendation-info h4 { 
+    font-size: 18px; 
+    font-weight: 700; 
+    margin-bottom: 4px; 
+}
+
+.recommendation-info p { 
+    font-size: 14px; 
+    opacity: 0.9; 
+}
+
+/* Popular Plans */
+.popular-plans-list { 
+    display: flex; 
+    gap: 16px; 
+    overflow-x: auto; 
+    padding: 0 20px 32px; 
+    scrollbar-width: none; 
+}
+
+.popular-plans-list::-webkit-scrollbar { 
+    display: none; 
+}
+
+.plan-card { 
+    flex: 0 0 220px; 
+    background: rgba(255, 255, 255, 0.6); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid var(--border-color); 
+    border-radius: 16px; 
+    box-shadow: var(--shadow-md); 
+    overflow: hidden; 
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.plan-card:hover {
+    transform: translateY(-2px);
+}
+
+.plan-card img { 
+    width: 100%; 
+    height: 120px; 
+    object-fit: cover; 
+}
+
+.plan-card-info { 
+    padding: 16px; 
+}
+
+.plan-card-info h5 { 
+    font-size: 15px; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    color: var(--text-dark);
+}
+
+.plan-card-info p { 
+    font-size: 13px; 
+    color: var(--text-medium); 
+}
+
+/* Tips Container */
+.tips-container { 
+    padding: 0 20px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
+
+.tip-card { 
+    background: rgba(255, 255, 255, 0.8); 
+    backdrop-filter: blur(5px); 
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    padding: 16px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    font-size: 14px; 
+    font-weight: 500; 
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--text-dark);
+}
+
+.tip-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(4px);
+}
+
+.tip-card i { 
+    color: var(--primary-color); 
+    font-size: 16px;
+    min-width: 20px;
+}
+
+/* === FLOATING CHAT INPUT === */
+.chat-input-area {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    border-radius: 34px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.chat-input { 
+    flex-grow: 1; 
+    background: transparent; 
+    border: none; 
+    outline: none; 
+    color: var(--text-dark); 
+    font-size: 15px; 
+    padding: 14px; 
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.chat-input::placeholder { 
+    color: var(--text-medium); 
+}
+
+.send-button { 
+    width: 52px; 
+    height: 52px; 
+    border-radius: 50%; 
+    border: none; 
+    cursor: pointer; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4);
+    color: white; 
+    font-size: 20px; 
+    flex-shrink: 0; 
+    transition: all var(--transition-fast);
+}
+
+.send-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(245, 124, 0, 0.5);
+}
+
+.send-button:active {
+    transform: scale(0.95);
+}
+
+.send-button:disabled {
+    background: var(--text-light);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* === TYPING INDICATOR === */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0s; }
+
+/* === ANIMATIONS === */
+@keyframes message-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes typing-bounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* === SCROLL CUSTOMIZATION === */
+.main-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.popular-plans-list::-webkit-scrollbar {
+    height: 4px;
+}
+
+.popular-plans-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.popular-plans-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 480px) {
+    .app-container {
+        max-width: 100%;
+        box-shadow: none;
+    }
+    
+    .main-header {
+        padding: 10px 16px;
+    }
+    
+    .chat-container {
+        padding: 16px 16px 0;
+    }
+    
+    .discovery-container {
+        padding: 16px 0 40px;
+    }
+    
+    .section-title {
+        margin: 0 16px 12px;
+        font-size: 18px;
+    }
+    
+    .recommendation-card {
+        margin: 0 16px 24px;
+    }
+    
+    .popular-plans-list {
+        padding: 0 16px 24px;
+    }
+    
+    .tips-container {
+        padding: 0 16px;
+    }
+    
+    .chat-input-area {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+    
+    .plan-card {
+        flex: 0 0 200px;
+    }
+}
+
+@media (max-width: 360px) {
+    .brand-logo .name {
+        font-size: 16px;
+    }
+    
+    .profile-icon img {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+    
+    .message p {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+    
+    .chat-input {
+        font-size: 14px;
+        padding: 12px;
+    }
+    
+    .send-button {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .plan-card {
+        flex: 0 0 180px;
+    }
+}
+
+/* === ACCESSIBILITY === */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles for keyboard navigation */
+.chat-input:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.send-button:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.tip-card:focus,
+.plan-card:focus,
+.recommendation-card:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .background-blur {
+        opacity: 0.05;
+    }
+    
+    .message.bot p,
+    .message.user p {
+        border: 2px solid currentColor;
+    }
+    
+    .tip-card,
+    .plan-card {
+        border: 2px solid var(--border-color);
+    }
+}
+
+/* Travel App Generation Button */
+.travel-app-button-container {
+    margin: 20px 0;
+    padding: 0 20px;
+}
+
+.travel-app-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.travel-app-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.travel-app-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+}
+
+.app-card-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.app-card-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.app-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.app-card-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.feature-icon {
+    font-size: 16px;
+}
+
+.feature-text {
+    opacity: 0.9;
+}
+
+.app-card-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.action-text {
+    font-weight: 500;
+}
+
+.action-arrow {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.travel-app-card:hover .action-arrow {
+    transform: translateX(5px);
+}

@@ -1,0 +1,251 @@
+<div class="page-content h-full overflow-y-auto p-6">
+    <div class="mb-8">
+        <h2 class="text-3xl font-extrabold gradient-text">DAY {{DAY_NUMBER}}</h2>
+        <p class="text-slate-500 font-medium">{{DAY_THEME}}</p>
+    </div>
+    
+    <div class="relative">
+        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-200"></div>
+        <div class="space-y-8">
+            {{ACTIVITIES}}
+        </div>
+    </div>
+</div>
+
+<!-- 활동 템플릿 -->
+<template id="activity-template">
+    <div class="relative pl-12">
+        <div class="absolute left-0 top-1.5 flex items-center">
+            <div class="w-8 h-8 {{ACTIVITY_COLOR}} rounded-full flex items-center justify-center ring-4 ring-white">
+                {{ACTIVITY_ICON}}
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+            <p class="text-sm font-semibold {{ACTIVITY_TEXT_COLOR}} mb-1">{{ACTIVITY_TIME}} ({{ACTIVITY_DURATION}}분)</p>
+            <h3 class="text-lg font-bold mb-3">{{ACTIVITY_TITLE}}</h3>
+            
+            <!-- 이미지 슬라이더 (사진이 있는 경우) -->
+            {{#if HAS_PHOTOS}}
+            <div class="relative -mx-5 mb-4 rounded-lg overflow-hidden image-slider-container">
+                <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar image-list">
+                    {{ACTIVITY_IMAGES}}
+                </div>
+                <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2 slider-dots">
+                    {{IMAGE_DOTS}}
+                </div>
+                <button class="slider-arrow absolute top-1/2 left-2 -translate-y-1/2 bg-black/30 text-white w-8 h-8 rounded-full flex items-center justify-center prev-btn">&lt;</button>
+                <button class="slider-arrow absolute top-1/2 right-2 -translate-y-1/2 bg-black/30 text-white w-8 h-8 rounded-full flex items-center justify-center next-btn">&gt;</button>
+            </div>
+            {{/if}}
+            
+            <!-- 활동 설명 -->
+            <p class="text-sm text-slate-600 leading-relaxed mb-4">{{ACTIVITY_DESCRIPTION}}</p>
+            
+            <!-- 장소 상세정보 (Places API 데이터가 있는 경우) -->
+            {{#if HAS_PLACE_DETAILS}}
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-amber-500">{{PLACE_RATING}}</span>
+                    <div class="flex text-amber-400">{{RATING_STARS}}</div>
+                    <span class="text-xs text-slate-500">({{REVIEW_COUNT}} 리뷰)</span>
+                </div>
+                <div class="flex items-start gap-2 text-sm text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>{{PLACE_ADDRESS}}</span>
+                </div>
+                
+                <!-- 리뷰 정보 -->
+                {{#if HAS_REVIEWS}}
+                <div class="border-t border-slate-100 pt-3">
+                    <p class="text-xs text-slate-500 mb-1">"{{REVIEW_TEXT}}"</p>
+                    <p class="text-xs text-slate-400 text-right">- {{REVIEW_AUTHOR}}</p>
+                </div>
+                {{/if}}
+                
+                <!-- 액션 버튼 -->
+                <div class="mt-4 flex gap-3">
+                    <a href="{{MAPS_LINK}}" target="_blank" class="flex-1 text-center bg-orange-50 text-orange-700 text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-100 transition">지도 보기</a>
+                    {{#if HAS_WEBSITE}}
+                    <a href="{{PLACE_WEBSITE}}" target="_blank" class="flex-1 text-center bg-slate-100 text-slate-700 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-200 transition">웹사이트</a>
+                    {{/if}}
+                </div>
+            </div>
+            {{/if}}
+            
+            <!-- 여행 팁 (있는 경우) -->
+            {{#if HAS_TIPS}}
+            <div class="mt-4 border-t border-slate-100 pt-3">
+                <h4 class="text-xs font-bold text-slate-500 mb-2">💡 전문가 팁</h4>
+                <ul class="list-disc list-inside text-xs text-slate-500 space-y-1">
+                    {{ACTIVITY_TIPS}}
+                </ul>
+            </div>
+            {{/if}}
+            
+            <!-- 대안 옵션 (있는 경우) -->
+            {{#if HAS_ALTERNATIVES}}
+            <div class="mt-4 border-t border-slate-100 pt-3">
+                <h4 class="text-xs font-bold text-slate-500 mb-2">🔄 다른 옵션</h4>
+                <div class="space-y-2">
+                    {{ALTERNATIVE_OPTIONS}}
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</template>
+
+<!-- 이미지 아이템 템플릿 -->
+<template id="image-item-template">
+    <div class="snap-center flex-shrink-0 w-full">
+        <img src="{{IMAGE_URL}}" class="w-full h-auto" alt="{{IMAGE_ALT}}" loading="lazy">
+    </div>
+</template>
+
+<!-- 이미지 닷 템플릿 -->
+<template id="image-dot-template">
+    <button class="w-2 h-2 rounded-full transition bg-white/50 {{#if IS_ACTIVE}}bg-white{{/if}}"></button>
+</template>
+
+<!-- 활동 팁 아이템 템플릿 -->
+<template id="tip-item-template">
+    <li>{{TIP_TEXT}}</li>
+</template>
+
+<!-- 대안 옵션 템플릿 -->
+<template id="alternative-template">
+    <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <p class="text-xs font-semibold text-slate-700">{{ALTERNATIVE_TITLE}}</p>
+        <p class="text-xs text-slate-500 mt-1">{{ALTERNATIVE_REASON}}</p>
+    </div>
+</template>
+
+<!-- 활동 타입별 아이콘 및 색상 -->
+<script>
+const activityIcons = {
+    transport: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-2.2-1.8-4-4-4H6c-2.2 0-4 1.8-4 4v3c0 .6.4 1 1 1h2"></path><circle cx="9" cy="17" r="2"></circle><circle cx="15" cy="17" r="2"></circle></svg>`, 
+        color: 'bg-blue-500',
+        textColor: 'text-blue-600'
+    },
+    hotel: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, 
+        color: 'bg-teal-500',
+        textColor: 'text-teal-600'
+    },
+    meal: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M17 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M3 13v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"></path></svg>`, 
+        color: 'bg-amber-500',
+        textColor: 'text-amber-600'
+    },
+    activity: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72z"></path><path d="m14 7 3 3"></path></svg>`, 
+        color: 'bg-rose-500',
+        textColor: 'text-rose-600'
+    },
+    sightseeing: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`, 
+        color: 'bg-purple-500',
+        textColor: 'text-purple-600'
+    },
+    shopping: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`, 
+        color: 'bg-pink-500',
+        textColor: 'text-pink-600'
+    },
+    rest: { 
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22h6a2 2 0 0 0 2-2v-2"></path><path d="M4 18v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><path d="M2 14h20"></path><path d="M6 14V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"></path></svg>`, 
+        color: 'bg-slate-500',
+        textColor: 'text-slate-600'
+    }
+};
+
+// 별점 렌더링 함수
+function renderStars(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    let starsHtml = '';
+    
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+    }
+    
+    if (hasHalfStar) {
+        starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.93-9.412l.93.93a.75.75 0 11-1.06 1.06L10 11.06l-.93.93a.75.75 0 01-1.06-1.06l.93-.93-.93-.93a.75.75 0 011.06-1.06l.93.93.93-.93a.75.75 0 111.06 1.06l-.93.93z" clip-rule="evenodd"></path></svg>';
+    }
+    
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '<svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+    }
+    
+    return starsHtml;
+}
+
+// 이미지 슬라이더 초기화 함수
+function initializeImageSliders() {
+    document.querySelectorAll('.image-slider-container').forEach(sliderContainer => {
+        const imageList = sliderContainer.querySelector('.image-list');
+        const prevBtn = sliderContainer.querySelector('.prev-btn');
+        const nextBtn = sliderContainer.querySelector('.next-btn');
+        const dotsContainer = sliderContainer.querySelector('.slider-dots');
+        const images = imageList.querySelectorAll('div');
+        
+        if (images.length <= 1) {
+            if(dotsContainer) dotsContainer.style.display = 'none';
+            if(prevBtn) prevBtn.style.display = 'none';
+            if(nextBtn) nextBtn.style.display = 'none';
+            return;
+        }
+        
+        let currentIndex = 0;
+        
+        // Dots 생성
+        dotsContainer.innerHTML = '';
+        images.forEach((_, i) => {
+            const dot = document.createElement('button');
+            dot.classList.add('w-2', 'h-2', 'rounded-full', 'transition', 'bg-white/50');
+            if (i === 0) dot.classList.add('bg-white');
+            dotsContainer.appendChild(dot);
+        });
+        
+        const dots = dotsContainer.querySelectorAll('button');
+        
+        const updateSlider = (smooth = true) => {
+            imageList.scrollTo({
+                left: imageList.offsetWidth * currentIndex,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('bg-white', i === currentIndex);
+                dot.classList.toggle('bg-white/50', i !== currentIndex);
+            });
+        };
+        
+        prevBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : images.length - 1;
+            updateSlider();
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex < images.length - 1) ? currentIndex + 1 : 0;
+            updateSlider();
+        });
+        
+        // 스크롤 이벤트로 Dot 업데이트
+        imageList.addEventListener('scroll', () => {
+            const newIndex = Math.round(imageList.scrollLeft / imageList.offsetWidth);
+            if(newIndex !== currentIndex) {
+                currentIndex = newIndex;
+                updateSlider(false);
+            }
+        });
+    });
+}
+
+// 페이지 로드 시 슬라이더 초기화
+document.addEventListener('DOMContentLoaded', initializeImageSliders);
+</script>

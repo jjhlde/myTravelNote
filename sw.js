@@ -1,8 +1,22 @@
-const CACHE_NAME = 'macau-travel-v1';
+const CACHE_NAME = 'travel-chatbot-v1';
 const urlsToCache = [
-  '/myTravelNote/',
-  '/myTravelNote/index.html',
-  '/myTravelNote/manifest.json'
+  './',
+  './chatbot.html',
+  './chatbot.css',
+  './chatbot.js',
+  './config.js',
+  './manifest.json',
+  './prompt2.txt',
+  './main-script.js',
+  './styles.css',
+  './pwa-template.css',
+  './pwa-script.js',
+  './templates/main-template.html',
+  './templates/info-template.html',
+  './templates/day-template.html',
+  './templates/budget-template.html',
+  './templates/todo-template.html',
+  './templates/manifest-template.json'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마카오 가족여행 🇲🇴</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="마카오 가족여행">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    
+    <!-- CSS 파일 -->
+    <link rel="stylesheet" href="./sample-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- PWA 설치 가이드 팝업 -->
+        <div class="install-guide-overlay" id="installGuideOverlay">
+            <div class="install-guide-popup">
+                <button class="close-btn" id="closeGuideBtn">✕</button>
+                
+                <div class="install-guide-header">
+                    <div class="install-guide-icon">📱</div>
+                    <div class="install-guide-title">앱으로 설치하세요!</div>
+                    <div class="install-guide-subtitle">
+                        마카오 여행계획을 언제든<br>
+                        빠르게 확인할 수 있어요
+                    </div>
+                </div>
+
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-text">하단 공유 버튼 터치 <span class="step-icon">⬆️</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-text">"홈 화면에 추가" 선택 <span class="step-icon">➕</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-text">오른쪽 상단 "추가" 터치 <span class="step-icon">✅</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="install-benefit">
+                    <div class="benefit-title">🌟 앱 설치 혜택</div>
+                    <div class="benefit-list">
+                        ✓ 마카오에서 오프라인 사용<br>
+                        ✓ 빠른 접속 (3초 → 1초)<br>
+                        ✓ 홈 화면에서 바로 실행
+                    </div>
+                </div>
+
+                <div class="install-buttons">
+                    <button class="btn-primary" id="installNowBtn">지금 설치하기</button>
+                    <button class="btn-secondary" id="skipInstallBtn">나중에</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header">
+            <h1>🇲🇴 마카오 가족여행</h1>
+            <p>37개월 딸과 함께하는 특별한 여행</p>
+
+            <div class="day-tabs">
+                <div class="day-tab active" data-page="0">📋 정보</div>
+                <div class="day-tab" data-page="1">1일차</div>
+                <div class="day-tab" data-page="2">2일차</div>
+                <div class="day-tab" data-page="3">3일차</div>
+                <div class="day-tab" data-page="4">4일차</div>
+                <div class="day-tab" data-page="5">💰 예산</div>
+            </div>
+        </div>
+
+        <div class="pages-container">
+            <div class="pages-wrapper" id="pagesWrapper">
+                <!-- 페이지 0: 정보 -->
+                <div class="page" id="page-0">
+                    <div class="page-content">
+                        <div class="day-header" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                            <h2>📋 여행 정보</h2>
+                            <div class="date">7월 27일~30일 (3박 4일)</div>
+                        </div>
+
+                        <div class="weather-alert">
+                            <div class="weather-title">🌧️ 7월 날씨 주의사항</div>
+                            <div class="weather-desc">
+                                7월은 우기입니다. 한낮 햇볕이 강하다가도 갑자기 소나기가 내릴 수 있어요. 
+                                우산과 얇은 겉옷을 꼭 챙기고, 실내 활동 위주로 계획했습니다.
+                            </div>
+                        </div>
+
+                        <div class="tips-section">
+                            <div class="tips-title">🌟 37개월 아이 여행 꿀팁</div>
+                            <div class="tip-item">
+                                <strong>📱 준비물:</strong> 끈 달린 모자, 우산, 자외선 차단제, 간식
+                            </div>
+                            <div class="tip-item">
+                                <strong>⏰ 일정:</strong> 여유롭게 조정, 낮잠 시간 확보, 이른 취침
+                            </div>
+                            <div class="tip-item">
+                                <strong>🏊 안전:</strong> 수영장에서 항상 보호자 동반
+                            </div>
+                            <div class="tip-item">
+                                <strong>🍼 식사:</strong> 아이가 좋아하는 간식 충분히 준비
+                            </div>
+                            <div class="tip-item">
+                                <strong>☂️ 날씨:</strong> 태풍 경보 시 실내 활동으로 전환
+                            </div>
+                        </div>
+
+                        <div class="tips-section">
+                            <div class="tips-title">✈️ 기본 정보</div>
+                            <div class="tip-item">
+                                <strong>출발:</strong> 7월 27일 (토) 14:15 ICN
+                            </div>
+                            <div class="tip-item">
+                                <strong>도착:</strong> 7월 27일 (토) 17:15 MFM
+                            </div>
+                            <div class="tip-item">
+                                <strong>숙소:</strong> 안다즈 마카오 (3박)
+                            </div>
+                            <div class="tip-item">
+                                <strong>귀국:</strong> 7월 30일 (화) 18:10 MFM → 22:45 ICN
+                            </div>
+                            <div class="tip-item">
+                                <strong>인원:</strong> 부부 + 37개월 딸 (총 3명)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 1: 1일차 -->
+                <div class="page" id="page-1">
+                    <div class="page-content">
+                        <div class="day-header">
+                            <h2>DAY 1</h2>
+                            <div class="date">7월 27일 (토) - 도착 & 적응</div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">17:15 - 17:45</div>
+                            <div class="location-info">
+                                <div class="location-title">🛬 마카오국제공항 도착</div>
+                            </div>
+                            <div class="activity-desc">
+                                <strong>입국 절차 및 짐 찾기</strong><br><br>
+                                • 입국심사 (약 15-20분)<br>
+                                • 수하물 수취 (약 10-15분)<br>
+                                • 환전 또는 ATM 이용<br>
+                                • 무료 WiFi 연결 확인<br>
+                                • 공항 내 편의점에서 물 구매
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">17:45 - 18:30</div>
+                            <div class="location-info">
+                                <div class="location-title">🚌 공항 → 안다즈 마카오 이동</div>
+                            </div>
+                            <div class="activity-desc">
+                                <strong>이동 옵션 (거리: 3.9km)</strong><br><br>
+                                
+                                <strong>옵션 1: 갤럭시 무료 셔틀버스 ⭐추천</strong><br>
+                                • 북쪽 출구로 나가서 Galaxy 셔틀 찾기<br>
+                                • 운행시간: 11:00-21:00 (15-20분 간격)<br>
+                                • 소요시간: 약 15-20분<br>
+                                • 💡 팁: 안다즈는 갤럭시 그룹 소속<br><br>
+                                
+                                <strong>옵션 2: LRT (경전철)</strong><br>
+                                • 공항역 → Cotai West역 (10분, $2)<br>
+                                • 역에서 도보 5분<br><br>
+                                
+                                <strong>옵션 3: 택시</strong><br>
+                                • 소요시간: 3-5분<br>
+                                • 예상 요금: $50-80 MOP
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">18:30 - 19:00</div>
+                            <div class="location-info">
+                                <div class="location-title">🏨 안다즈 마카오 체크인</div>
+                            </div>
+                            <div class="activity-desc">
+                                <strong>호텔 정보 (평점: 9.2/10 - Booking.com)</strong><br><br>
+                                • North Tower, Level 6 체크인 데스크<br>
+                                • 아이용 어메니티 요청 (치약, 슬리퍼)<br>
+                                • 무료 미니바 확인 (마카오 전통 과자 포함)<br>
+                                • 16:00-19:00 라운지 무료 스낵/음료<br>
+                                • Grand Resort Deck 무료 이용권 수령<br>
+                                • 객실 업그레이드 가능 여부 확인<br><br>
+                                
+                                💡 <strong>리뷰 하이라이트:</strong><br>
+                                "직원들이 매우 친절하고 아이 배려가 좋음"<br>
+                                "무료 미니바와 라운지가 훌륭함"
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">19:00 - 21:30</div>
+                            <div class="activity-title">🍽️ 저녁 식사 & 갤럭시 탐방</div>
+                            <div class="activity-desc">
+                                <strong>안다즈 키친 (호텔 6층) ⭐아이 동반 추천</strong><br>
+                                • 포르투갈-마카오 퓨전 요리<br>
+                                • 라이브 쿠킹 스테이션<br>
+                                • 디너: 18:00-22:30<br>
+                                • 예상 가격: 성인 $250-350 MOP<br><br>
+                                
+                                <strong>식사 후 갤럭시 단지 탐방</strong><br>
+                                • Fortune Diamond 로비 분수쇼 (20분마다)<br>
+                                • Crystal Lobby 야경 포토존<br>
+                                • 갤럭시 프롬나드 쇼핑 아케이드
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">21:30 - 22:00</div>
+                            <div class="activity-title">🛏️ 호텔 복귀 & 휴식</div>
+                            <div class="activity-desc">
+                                <strong>내일을 위한 준비</strong><br><br>
+                                • 아이 목욕 및 취침 준비<br>
+                                • 무료 미니바 간식 확인<br>
+                                • 내일 수영복, 수건 준비<br>
+                                • Grand Resort Deck 운영시간 확인<br>
+                                • 🌙 시차 적응 위해 일찍 취침
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 2: 2일차 -->
+                <div class="page" id="page-2">
+                    <div class="page-content">
+                        <div class="day-header">
+                            <h2>DAY 2</h2>
+                            <div class="date">7월 28일 (일) - 리조트 & 실내 활동</div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">09:00 - 10:00</div>
+                            <div class="activity-title">🍳 호텔 조식</div>
+                            <div class="activity-desc">
+                                <strong>안다즈 키친 조식 뷔페</strong><br><br>
+                                • 운영시간: 06:30-10:30<br>
+                                • 아시안 & 웨스턴 메뉴<br>
+                                • 신선한 과일, 아이 친화적 메뉴<br>
+                                • 마카오 전통 미닝치 (포르투갈식 계란 타르트)<br>
+                                • 테라스 좌석에서 프리미엄 뷰
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">10:00 - 12:30</div>
+                            <div class="activity-title">🏊 Grand Resort Deck</div>
+                            <div class="activity-desc">
+                                <strong>아시아 최대 스카이풀 & 워터파크</strong><br><br>
+                                • 150m 인공 해변 (White Sand Beach)<br>
+                                • 575m 유수풀 (Skytop Adventure Rapids)<br>
+                                • 키즈풀 & 어린이 워터슬라이드<br>
+                                • 무료 플로팅 기구 대여<br>
+                                • 그늘진 카바나 휴식 공간<br><br>
+                                
+                                💡 <strong>37개월 아이 추천 코스:</strong><br>
+                                1. 키즈풀에서 수심 확인 후 적응<br>
+                                2. 얕은 인공 해변에서 모래놀이<br>
+                                3. 부모와 함께 유수풀 체험<br>
+                                4. 카바나에서 휴식 & 간식
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">12:30 - 14:00</div>
+                            <div class="activity-title">🍜 점심 & 낮잠 시간</div>
+                            <div class="activity-desc">
+                                <strong>Praia Grande (리조트덱 내 레스토랑)</strong><br><br>
+                                • 수영장 바로 옆 레스토랑<br>
+                                • 아시안 퓨전 & 가벼운 식사<br>
+                                • 키즈 메뉴 & 하이체어 제공<br>
+                                • 예상 가격: $150-250 MOP<br><br>
+                                
+                                <strong>호텔 복귀 후 낮잠 (13:30-15:00)</strong><br>
+                                • 아이 체력 회복 & 오후 활동 준비<br>
+                                • 수영복 갈아입기 & 샤워
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">15:00 - 17:30</div>
+                            <div class="activity-title">🎮 갤럭시 맥세이 (Galaxy Macau Treasures)</div>
+                            <div class="activity-desc">
+                                <strong>실내 테마파크 & 어트랙션</strong><br><br>
+                                • UA 갤럭시 시네마 (최신 블록버스터)<br>
+                                • 갤럭시 프롬나드 쇼핑<br>
+                                • 키즈 놀이시설 (Galaxy Kids' Club)<br>
+                                • Fortune Diamond 쇼핑몰<br>
+                                • 에어컨이 완비된 실내 공간<br><br>
+                                
+                                💡 <strong>우천 시 대안 활동:</strong><br>
+                                • JW 갤럭시 스파 (부모 힐링 타임)<br>
+                                • 갤럭시 아트 갤러리 관람<br>
+                                • 인도어 시뮬레이션 게임
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">17:30 - 19:00</div>
+                            <div class="activity-title">🍽️ 얼리 디너</div>
+                            <div class="activity-desc">
+                                <strong>Café Panorama (갤럭시 맥세이 1층)</strong><br><br>
+                                • 캐주얼 다이닝 & 국제 요리<br>
+                                • 넓은 공간, 아이 동반 편리<br>
+                                • 파스타, 피자, 아시안 요리<br>
+                                • 예상 가격: $200-300 MOP<br>
+                                • 키즈 메뉴 & 하이체어 완비
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">19:00 - 20:30</div>
+                            <div class="activity-title">🌟 Fortune Diamond 분수쇼</div>
+                            <div class="activity-desc">
+                                <strong>아시아 최대 실내 분수쇼</strong><br><br>
+                                • 쇼 시간: 매시 정각 (20분간)<br>
+                                • 높이 27m, 360도 영상과 음악<br>
+                                • 무료 관람 (베스트 포지션 일찍 확보)<br>
+                                • 아이들이 좋아하는 화려한 조명<br>
+                                • 쇼 후 로비 카페에서 디저트
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">20:30 - 21:30</div>
+                            <div class="activity-title">🛏️ 호텔 복귀 & 휴식</div>
+                            <div class="activity-desc">
+                                <strong>하루 마무리</strong><br><br>
+                                • 아이 목욕 및 취침 준비<br>
+                                • 호텔 미니바 스낵 타임<br>
+                                • 내일 일정 간단 점검<br>
+                                • 일찍 취침으로 체력 회복
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 3: 3일차 -->
+                <div class="page" id="page-3">
+                    <div class="page-content">
+                        <div class="day-header">
+                            <h2>DAY 3</h2>
+                            <div class="date">7월 29일 (월) - 마카오 탐방</div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">09:00 - 10:00</div>
+                            <div class="activity-title">🍳 호텔 조식</div>
+                            <div class="activity-desc">
+                                <strong>안다즈 키친 조식 뷔페</strong><br><br>
+                                • 여유롭게 조식 후 체크아웃 준비<br>
+                                • 짐 정리 및 체크아웃 (11:00)<br>
+                                • 수하물 보관 서비스 이용<br>
+                                • 오늘은 마카오 시내 탐방 day!
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">10:00 - 12:30</div>
+                            <div class="activity-title">🚌 세나도 광장 & 구시가지</div>
+                            <div class="activity-desc">
+                                <strong>무료 셔틀 → 세나도 광장</strong><br><br>
+                                • 갤럭시 → 리스보아 셔틀 (15분)<br>
+                                • 도보로 세나도 광장까지 10분<br><br>
+                                
+                                <strong>세나도 광장 (Senado Square)</strong><br>
+                                • 유네스코 세계문화유산<br>
+                                • 포르투갈 타일 바닥의 아름다운 광장<br>
+                                • 파스텔 톤 유럽 건물들<br>
+                                • 아이와 사진 찍기 좋은 포토존<br><br>
+                                
+                                <strong>주변 명소 (도보 5분 내)</strong><br>
+                                • 성 도미닉 성당 (노란색 바로크 건물)<br>
+                                • 카모에스 광장<br>
+                                • 전통 중국 상점가
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">12:30 - 14:00</div>
+                            <div class="activity-title">🥧 마카오 전통 디저트</div>
+                            <div class="activity-desc">
+                                <strong>Lord Stow's Bakery (세나도 광장 지점)</strong><br><br>
+                                • 마카오 에그타르트 원조집<br>
+                                • 갓 구운 따뜻한 에그타르트<br>
+                                • 아이도 좋아하는 달콤한 맛<br>
+                                • 커피 & 아이스크림도 판매<br>
+                                • 가격: 에그타르트 $8-12 MOP<br><br>
+                                
+                                <strong>Rua da Cunha (관패거리)</strong><br>
+                                • 전통 간식 & 기념품 거리<br>
+                                • 육포, 아몬드 쿠키, 화과자<br>
+                                • 시식 가능한 상점들
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">14:00 - 16:00</div>
+                            <div class="activity-title">⛪ 성 바울 성당 유적</div>
+                            <div class="activity-desc">
+                                <strong>마카오의 상징적 랜드마크</strong><br><br>
+                                • 세나도 광장에서 도보 15분<br>
+                                • 17세기 바로크 양식의 성당 정면<br>
+                                • 68개 석계 올라가기 (아이 손잡고 천천히)<br>
+                                • 정면에서 인증샷 필수<br><br>
+                                
+                                <strong>몬테 요새 (옵션)</strong><br>
+                                • 성 바울 성당 뒤편 언덕<br>
+                                • 마카오 전경을 한눈에<br>
+                                • 더운 날씨 시 패스 가능<br>
+                                • 마카오 박물관 (에어컨 완비)
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">16:00 - 17:30</div>
+                            <div class="activity-title">🛍️ 시내 쇼핑 & 기념품</div>
+                            <div class="activity-desc">
+                                <strong>New Yaohan 백화점</strong><br><br>
+                                • 마카오 최대 백화점<br>
+                                • 지하 슈퍼마켓에서 현지 과자<br>
+                                • 아이 용품 & 장난감 코너<br>
+                                • 에어컨 완비로 더위 피하기<br><br>
+                                
+                                <strong>기념품 쇼핑 리스트</strong><br>
+                                • 마카오 에그타르트 믹스<br>
+                                • 포르투갈 와인 (면세)<br>
+                                • 중국 전통 차 (우롱차, 푸얼차)<br>
+                                • 마카오 엽서 & 냉장고 자석
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">17:30 - 19:00</div>
+                            <div class="activity-title">🍽️ 마지막 저녁 식사</div>
+                            <div class="activity-desc">
+                                <strong>A Lorcha (포르투갈 전통 요리)</strong><br><br>
+                                • 마카오 최고의 포르투갈 레스토랑<br>
+                                • 가족 친화적 분위기<br>
+                                • 추천 메뉴: 바칼라우 (대구 요리)<br>
+                                • 아이 메뉴: 그릴드 치킨, 라이스<br>
+                                • 예상 가격: $300-400 MOP<br><br>
+                                
+                                💡 <strong>대안:</strong> McDonals (세나도 광장)<br>
+                                • 아이가 피곤할 경우 간단한 식사
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">19:00 - 20:00</div>
+                            <div class="activity-title">🚌 호텔 복귀 & 짐 챙기기</div>
+                            <div class="activity-desc">
+                                <strong>갤럭시로 복귀</strong><br><br>
+                                • 리스보아 → 갤럭시 무료 셔틀<br>
+                                • 호텔에서 수하물 픽업<br>
+                                • 내일 공항 가는 준비<br>
+                                • 아이 짐 재정리 (놓친 물건 체크)<br>
+                                • 마지막 밤 일찍 취침
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 4: 4일차 -->
+                <div class="page" id="page-4">
+                    <div class="page-content">
+                        <div class="day-header">
+                            <h2>DAY 4</h2>
+                            <div class="date">7월 30일 (화) - 체크아웃 & 출발</div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">09:00 - 10:00</div>
+                            <div class="activity-title">🍳 마지막 조식</div>
+                            <div class="activity-desc">
+                                <strong>안다즈 키친 조식</strong><br><br>
+                                • 여유롭게 마지막 호텔 조식<br>
+                                • 아이가 좋아했던 메뉴 재방문<br>
+                                • 테이크아웃 커피 주문 가능<br>
+                                • 조식 후 즉시 체크아웃
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">10:00 - 11:00</div>
+                            <div class="activity-title">🏨 체크아웃 & 수하물 보관</div>
+                            <div class="activity-desc">
+                                <strong>체크아웃 절차</strong><br><br>
+                                • 미니바 & 추가 비용 정산<br>
+                                • 수하물 임시 보관 (17:00까지)<br>
+                                • 컨시어지에서 공항 교통편 확인<br>
+                                • 호텔 기념품 구매 (옵션)<br>
+                                • 로비에서 마지막 기념사진
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">11:00 - 14:00</div>
+                            <div class="activity-title">🏊 마지막 수영 & 휴식</div>
+                            <div class="activity-desc">
+                                <strong>Grand Resort Deck 마지막 이용</strong><br><br>
+                                • 수영복 갈아입고 마지막 수영<br>
+                                • 인공 해변에서 아이와 모래놀이<br>
+                                • 풀사이드에서 가벼운 점심<br>
+                                • 카바나에서 휴식 & 낮잠<br>
+                                • 14:00 샤워 후 옷 갈아입기<br><br>
+                                
+                                💡 <strong>팁:</strong> 수영복은 미리 말려서 패킹
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">14:00 - 16:00</div>
+                            <div class="activity-title">🛍️ 마지막 쇼핑</div>
+                            <div class="activity-desc">
+                                <strong>갤럭시 프롬나드 & 면세점</strong><br><br>
+                                • DFS 갤럭시 마카오 면세점<br>
+                                • 화장품, 향수, 초콜릿<br>
+                                • 마카오 특산품 (아몬드 쿠키)<br>
+                                • 공항 면세점과 가격 비교<br>
+                                • 무거운 물건은 배송 서비스 이용<br><br>
+                                
+                                <strong>마지막 간식</strong><br>
+                                • 스타벅스에서 아이스 아메리카노<br>
+                                • 아이 간식 & 기내용 물 구매
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">16:00 - 17:00</div>
+                            <div class="activity-title">🧳 짐 정리 & 공항 이동 준비</div>
+                            <div class="activity-desc">
+                                <strong>출발 준비</strong><br><br>
+                                • 호텔 로비에서 수하물 픽업<br>
+                                • 마지막 짐 점검 (충전기, 여권 등)<br>
+                                • 갤럭시 셔틀 이용해서 공항 이동<br>
+                                • 소요시간: 15-20분<br>
+                                • 17:00 공항 도착 목표 (1시간 전)
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">17:00 - 18:10</div>
+                            <div class="activity-title">✈️ 공항 체크인 & 출국</div>
+                            <div class="activity-desc">
+                                <strong>마카오국제공항 출국 절차</strong><br><br>
+                                • 대한항공 체크인 카운터<br>
+                                • 수하물 위탁 & 좌석 배정<br>
+                                • 출국 심사 (약 15-20분)<br>
+                                • 면세점 둘러보기 (옵션)<br>
+                                • 탑승구 A2에서 대기<br>
+                                • 18:10 KE694 탑승 시작<br><br>
+                                
+                                🍼 <strong>기내 준비:</strong><br>
+                                • 아이 간식 & 장난감<br>
+                                • 태블릿 & 헤드폰<br>
+                                • 여분 기저귀 (필요시)
+                            </div>
+                        </div>
+
+                        <div class="activity">
+                            <div class="activity-time">18:10 - 22:45</div>
+                            <div class="activity-title">🛫 인천 향발 & 도착</div>
+                            <div class="activity-desc">
+                                <strong>KE694 (18:10 MFM → 22:45 ICN)</strong><br><br>
+                                • 비행시간: 약 3시간 20분<br>
+                                • 기내식 제공 (아이 기내식 사전 요청)<br>
+                                • 아이 낮잠 시간 활용<br>
+                                • 도착 후 입국 심사 & 수하물 수취<br>
+                                • 23:30 공항 밖으로 나가서 집으로!<br><br>
+                                
+                                🏠 <strong>마카오 여행 완료!</strong><br>
+                                • 총 3박 4일의 알찬 가족 여행<br>
+                                • 37개월 딸과의 특별한 추억 만들기 성공!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지 5: 예산 -->
+                <div class="page" id="page-5">
+                    <div class="page-content">
+                        <div class="budget-section">
+                            <div class="budget-title">💰 여행 예산</div>
+                            
+                            <div class="budget-item budget-total">
+                                <span>총 예상 비용 (3명)</span>
+                                <span>약 200만원</span>
+                            </div>
+
+                            <div class="budget-item">
+                                <span>✈️ 항공료 (왕복)</span>
+                                <span>90만원</span>
+                            </div>
+                            
+                            <div class="budget-item">
+                                <span>🏨 숙박비 (3박)</span>
+                                <span>60만원</span>
+                            </div>
+                            
+                            <div class="budget-item">
+                                <span>🍽️ 식비</span>
+                                <span>25만원</span>
+                            </div>
+                            
+                            <div class="budget-item">
+                                <span>🚌 교통비</span>
+                                <span>5만원</span>
+                            </div>
+                            
+                            <div class="budget-item">
+                                <span>🎡 액티비티</span>
+                                <span>10만원</span>
+                            </div>
+                            
+                            <div class="budget-item">
+                                <span>🛍️ 쇼핑 & 기타</span>
+                                <span>10만원</span>
+                            </div>
+
+                            <div class="budget-notes">
+                                <div class="budget-notes-title">📋 예산 세부사항</div>
+                                <div class="budget-note">
+                                    <strong>항공료:</strong> 대한항공 왕복 (성인 2명 + 소아 1명)
+                                </div>
+                                <div class="budget-note">
+                                    <strong>숙박:</strong> 안다즈 마카오 디럭스룸 3박 (조식 포함)
+                                </div>
+                                <div class="budget-note">
+                                    <strong>식비:</strong> 1일 평균 8만원 (호텔 뷔페 위주)
+                                </div>
+                                <div class="budget-note">
+                                    <strong>교통:</strong> 공항셔틀, 시내버스, 택시 이용
+                                </div>
+                                <div class="budget-note">
+                                    <strong>액티비티:</strong> Grand Resort Deck, 관광지 입장료
+                                </div>
+                                <div class="budget-note">
+                                    <strong>팁:</strong> 환율 변동 및 예상외 지출을 위해 10% 여유 예산 확보
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지 인디케이터 -->
+        <div class="page-indicator">
+            <div class="indicator-dot active" data-page="0"></div>
+            <div class="indicator-dot" data-page="1"></div>
+            <div class="indicator-dot" data-page="2"></div>
+            <div class="indicator-dot" data-page="3"></div>
+            <div class="indicator-dot" data-page="4"></div>
+            <div class="indicator-dot" data-page="5"></div>
+        </div>
+
+        <!-- 스와이프 가이드 -->
+        <div class="swipe-hint" id="swipeHint">👈 좌우로 스와이프해서 날짜 이동 👉</div>
+    </div>
+
+    <!-- 간단한 정적 JavaScript -->
+    <script>
+        class StaticTravelApp {
+            constructor() {
+                this.currentPage = 0;
+                this.totalPages = 6;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.showSwipeHint();
+            }
+
+            setupEventListeners() {
+                // 탭 클릭 이벤트
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('day-tab')) {
+                        const pageIndex = parseInt(e.target.getAttribute('data-page'));
+                        this.switchToPage(pageIndex);
+                    }
+                    
+                    if (e.target.classList.contains('indicator-dot')) {
+                        const pageIndex = parseInt(e.target.getAttribute('data-page'));
+                        this.switchToPage(pageIndex);
+                    }
+                });
+
+                // 터치/스와이프 이벤트
+                this.setupSwipeEvents();
+
+                // PWA 설치 가이드 이벤트
+                this.setupInstallGuide();
+            }
+
+            switchToPage(pageIndex) {
+                if (pageIndex === this.currentPage || pageIndex < 0 || pageIndex >= this.totalPages) return;
+
+                this.currentPage = pageIndex;
+                this.updateUI();
+            }
+
+            updateUI() {
+                // 페이지 위치 업데이트
+                const wrapper = document.querySelector('.pages-wrapper');
+                if (wrapper) {
+                    wrapper.style.transform = `translateX(-${this.currentPage * (100 / this.totalPages)}%)`;
+                }
+
+                // 탭 활성화 상태 업데이트
+                const tabs = document.querySelectorAll('.day-tab');
+                tabs.forEach((tab, index) => {
+                    const tabPage = parseInt(tab.getAttribute('data-page'));
+                    tab.classList.toggle('active', tabPage === this.currentPage);
+                });
+
+                // 인디케이터 활성화 상태 업데이트
+                const indicators = document.querySelectorAll('.indicator-dot');
+                indicators.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentPage);
+                });
+            }
+
+            setupSwipeEvents() {
+                const wrapper = document.querySelector('.pages-wrapper');
+                if (!wrapper) return;
+
+                let startX = 0;
+                let startY = 0;
+                let isDragging = false;
+
+                // 터치 이벤트
+                wrapper.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                });
+
+                wrapper.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                });
+
+                wrapper.addEventListener('touchend', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    const endX = e.changedTouches[0].clientX;
+                    const endY = e.changedTouches[0].clientY;
+                    const deltaX = startX - endX;
+                    const deltaY = startY - endY;
+
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+                    if (Math.abs(deltaX) < 50) return;
+
+                    if (deltaX > 0 && this.currentPage < this.totalPages - 1) {
+                        this.switchToPage(this.currentPage + 1);
+                    } else if (deltaX < 0 && this.currentPage > 0) {
+                        this.switchToPage(this.currentPage - 1);
+                    }
+                });
+
+                // 마우스 이벤트 (데스크톱)
+                let mouseStartX = 0;
+                let isMouseDragging = false;
+
+                wrapper.addEventListener('mousedown', (e) => {
+                    mouseStartX = e.clientX;
+                    isMouseDragging = true;
+                    e.preventDefault();
+                });
+
+                wrapper.addEventListener('mousemove', (e) => {
+                    if (!isMouseDragging) return;
+                    e.preventDefault();
+                });
+
+                wrapper.addEventListener('mouseup', (e) => {
+                    if (!isMouseDragging) return;
+                    isMouseDragging = false;
+
+                    const deltaX = mouseStartX - e.clientX;
+                    if (Math.abs(deltaX) < 50) return;
+
+                    if (deltaX > 0 && this.currentPage < this.totalPages - 1) {
+                        this.switchToPage(this.currentPage + 1);
+                    } else if (deltaX < 0 && this.currentPage > 0) {
+                        this.switchToPage(this.currentPage - 1);
+                    }
+                });
+
+                wrapper.addEventListener('mouseleave', () => {
+                    isMouseDragging = false;
+                });
+            }
+
+            setupInstallGuide() {
+                const overlay = document.getElementById('installGuideOverlay');
+                const closeBtn = document.getElementById('closeGuideBtn');
+                const skipBtn = document.getElementById('skipInstallBtn');
+                const installBtn = document.getElementById('installNowBtn');
+
+                if (!overlay) return;
+
+                // 앱 로드 3초 후 설치 가이드 표시
+                setTimeout(() => {
+                    overlay.style.display = 'flex';
+                    setTimeout(() => overlay.classList.add('show'), 100);
+                }, 3000);
+
+                // 닫기 버튼
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.style.display = 'none', 300);
+                    });
+                }
+
+                // 나중에 버튼
+                if (skipBtn) {
+                    skipBtn.addEventListener('click', () => {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.style.display = 'none', 300);
+                    });
+                }
+
+                // 설치하기 버튼
+                if (installBtn) {
+                    installBtn.addEventListener('click', () => {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.style.display = 'none', 300);
+                        alert('브라우저의 공유 버튼(⬆️)을 터치한 후 "홈 화면에 추가"를 선택하세요!');
+                    });
+                }
+
+                // 오버레이 클릭시 닫기
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.style.display = 'none', 300);
+                    }
+                });
+            }
+
+            showSwipeHint() {
+                const hint = document.getElementById('swipeHint');
+                if (hint) {
+                    hint.classList.add('show');
+                    setTimeout(() => {
+                        hint.classList.remove('show');
+                    }, 4000);
+                }
+            }
+        }
+
+        // 앱 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 정적 마카오 여행 앱 시작');
+            new StaticTravelApp();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<h2 class="text-2xl font-bold text-slate-800 mb-6">여행 예산</h2>
+<div class="space-y-6">
+    <!-- 총 예산 표시 -->
+    <div class="bg-slate-100 p-5 rounded-xl">
+        <div class="flex justify-between items-center mb-2">
+            <div>
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    총 예산
+                    <button id="edit-budget-btn" class="text-slate-400 hover:text-orange-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path>
+                        </svg>
+                    </button>
+                </h3>
+                <p id="total-budget-display" class="text-xs text-slate-500">{{TOTAL_BUDGET_DISPLAY}}</p>
+            </div>
+            <span id="total-expense" class="font-bold text-orange-600 text-lg">{{CURRENT_EXPENSE}}</span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-2.5">
+            <div id="expense-progress" class="bg-gradient-to-r from-orange-400 to-amber-500 h-2.5 rounded-full transition-all" style="width: {{EXPENSE_PERCENTAGE}}%"></div>
+        </div>
+    </div>
+
+    <!-- 예산 카테고리 (AI 생성 정보) -->
+    {{#if HAS_BUDGET_BREAKDOWN}}
+    <div class="space-y-3">
+        <h3 class="font-bold text-slate-800 border-b pb-2">예상 비용 분석</h3>
+        
+        <!-- 교통비 -->
+        <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3-3-4-1.5-1.5-3-2-3-4 0-2 2-2 2-2"></path>
+                        <path d="M8.5 2.5a2.5 2.5 0 0 1 5 0"></path>
+                        <path d="M12 22V8"></path>
+                    </svg>
+                    <span class="font-medium text-slate-700">교통비</span>
+                </div>
+                <span class="font-bold text-blue-600">{{TRANSPORT_COST}}</span>
+            </div>
+            <p class="text-xs text-slate-500">{{TRANSPORT_DETAILS}}</p>
+        </div>
+
+        <!-- 숙박비 -->
+        <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span class="font-medium text-slate-700">숙박비</span>
+                </div>
+                <span class="font-bold text-green-600">{{ACCOMMODATION_COST}}</span>
+            </div>
+            <p class="text-xs text-slate-500">{{ACCOMMODATION_DETAILS}}</p>
+        </div>
+
+        <!-- 식비 -->
+        <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+                        <path d="M17 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+                        <path d="M3 13v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"></path>
+                    </svg>
+                    <span class="font-medium text-slate-700">식비</span>
+                </div>
+                <span class="font-bold text-amber-600">{{FOOD_COST}}</span>
+            </div>
+            <p class="text-xs text-slate-500">{{FOOD_DETAILS}}</p>
+        </div>
+
+        <!-- 관광/활동비 -->
+        <div class="p-4 bg-purple-50 rounded-lg border border-purple-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 6v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6"></path>
+                        <path d="M8 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2"></path>
+                        <path d="M8 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+                    </svg>
+                    <span class="font-medium text-slate-700">관광/활동비</span>
+                </div>
+                <span class="font-bold text-purple-600">{{ACTIVITY_COST}}</span>
+            </div>
+            <p class="text-xs text-slate-500">{{ACTIVITY_DETAILS}}</p>
+        </div>
+
+        <!-- 기타/쇼핑 -->
+        <div class="p-4 bg-rose-50 rounded-lg border border-rose-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l-1 7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 9z"></path>
+                    </svg>
+                    <span class="font-medium text-slate-700">기타/쇼핑</span>
+                </div>
+                <span class="font-bold text-rose-600">{{SHOPPING_COST}}</span>
+            </div>
+            <p class="text-xs text-slate-500">{{SHOPPING_DETAILS}}</p>
+        </div>
+    </div>
+    {{else}}
+    <!-- 예산 정보 없음 - 수동 입력 유도 -->
+    <div class="p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center">
+        <div class="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-400">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+        </div>
+        <h3 class="font-bold text-slate-800 mb-2">예산 계획을 세워보세요</h3>
+        <p class="text-sm text-slate-500 mb-4">AI가 제안하는 예산 분석이 없습니다.<br>직접 예산을 설정하고 지출을 관리해보세요.</p>
+        <button class="setup-budget-btn bg-orange-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+            예산 설정하기
+        </button>
+    </div>
+    {{/if}}
+
+    <!-- 실제 지출 목록 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">실제 지출 내역</h3>
+        <div id="expense-list" class="space-y-3">
+            <!-- 사용자가 추가한 지출 항목들이 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 지출 추가 폼 -->
+    <div>
+        <h3 class="font-bold text-slate-800 mt-8 mb-4 border-b pb-2">지출 추가</h3>
+        <div class="space-y-3">
+            <input id="expense-item" type="text" placeholder="항목 (예: 저녁 식사)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+            <input id="expense-amount" type="number" placeholder="금액 (원)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+            <button id="add-expense-btn" class="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가하기</button>
+        </div>
+    </div>
+
+    <!-- 예산 절약 팁 -->
+    <div class="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            💡 예산 절약 팁
+        </h3>
+        <div class="text-sm text-slate-600 leading-relaxed">
+            {{BUDGET_TIPS}}
+        </div>
+    </div>
+</div>
+
+<script>
+// 예산 관리 JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const totalBudgetDisplay = document.getElementById('total-budget-display');
+    const totalExpenseEl = document.getElementById('total-expense');
+    const expenseProgressEl = document.getElementById('expense-progress');
+    const expenseListEl = document.getElementById('expense-list');
+    const editBudgetBtn = document.getElementById('edit-budget-btn');
+    const addExpenseBtn = document.getElementById('add-expense-btn');
+    const expenseItemInput = document.getElementById('expense-item');
+    const expenseAmountInput = document.getElementById('expense-amount');
+
+    let totalBudget = {{TOTAL_BUDGET_VALUE}} || 1000000;
+    let expenses = JSON.parse(localStorage.getItem('travel_expenses') || '[]');
+
+    // 총 예산 편집
+    editBudgetBtn?.addEventListener('click', () => {
+        const newTotal = prompt('새로운 총 예산을 입력하세요:', totalBudget);
+        if (newTotal && !isNaN(newTotal)) {
+            totalBudget = parseInt(newTotal);
+            localStorage.setItem('travel_total_budget', totalBudget);
+            updateBudget();
+        }
+    });
+
+    // 지출 추가
+    addExpenseBtn?.addEventListener('click', () => {
+        if (expenseItemInput.value && expenseAmountInput.value > 0) {
+            expenses.push({
+                id: Date.now(),
+                item: expenseItemInput.value,
+                amount: parseInt(expenseAmountInput.value),
+                date: new Date().toISOString().split('T')[0]
+            });
+            localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+            updateBudget();
+            expenseItemInput.value = '';
+            expenseAmountInput.value = '';
+        }
+    });
+
+    // 지출 삭제/편집
+    expenseListEl?.addEventListener('click', (e) => {
+        const target = e.target.closest('button');
+        if (!target) return;
+
+        const id = parseInt(target.closest('[data-id]').dataset.id);
+        
+        if (target.dataset.action === 'delete') {
+            expenses = expenses.filter(exp => exp.id !== id);
+        } else if (target.dataset.action === 'edit') {
+            const expense = expenses.find(exp => exp.id === id);
+            const newItem = prompt('항목 수정:', expense.item);
+            const newAmount = prompt('금액 수정:', expense.amount);
+            
+            if (newItem) expense.item = newItem;
+            if (newAmount && !isNaN(newAmount)) expense.amount = parseInt(newAmount);
+        }
+        
+        localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+        updateBudget();
+    });
+
+    // 예산 업데이트 함수
+    function updateBudget() {
+        const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        
+        if (totalBudgetDisplay) {
+            totalBudgetDisplay.textContent = `₩${totalBudget.toLocaleString()}`;
+        }
+        
+        if (totalExpenseEl) {
+            totalExpenseEl.textContent = `₩${totalSpent.toLocaleString()}`;
+        }
+
+        const progress = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
+        if (expenseProgressEl) {
+            expenseProgressEl.style.width = `${progress}%`;
+        }
+
+        if (expenseListEl) {
+            expenseListEl.innerHTML = expenses.map(exp => `
+                <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-100" data-id="${exp.id}">
+                    <div>
+                        <p class="text-sm font-medium">${exp.item}</p>
+                        <p class="text-xs text-slate-500">${exp.date}</p>
+                        <p class="font-semibold text-sm text-slate-600">₩${exp.amount.toLocaleString()}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="edit" class="text-slate-400 hover:text-blue-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path>
+                            </svg>
+                        </button>
+                        <button data-action="delete" class="text-slate-400 hover:text-red-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // 초기 로드
+    updateBudget();
+});
+</script>

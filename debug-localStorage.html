@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage 디버그</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 10px; margin: 10px 0; }
+        .success { background: #e8f5e8; color: #2e7d2e; }
+        .error { background: #ffe8e8; color: #d32f2f; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        pre { background: #f8f8f8; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        button { background: #4caf50; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .clear { background: #f44336; }
+        .clear:hover { background: #d32f2f; }
+    </style>
+</head>
+<body>
+    <h1>🔍 localStorage 디버그 도구</h1>
+    
+    <div class="container">
+        <h3>📋 현재 작업</h3>
+        <button onclick="loadTestData()">테스트 데이터 생성</button>
+        <button onclick="checkStorage()">localStorage 확인</button>
+        <button onclick="clearStorage()" class="clear">localStorage 지우기</button>
+        <button onclick="testPWAScript()">PWA 스크립트 테스트</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const testTravelData = {
+            tripTitle: "🇲🇴 마카오 가족여행",
+            destination: "마카오",
+            duration: "2박 3일",
+            budget: "1인당 약 50만원",
+            destinationEmoji: "🇲🇴",
+            destinationFlag: "🇲🇴",
+            tips: [
+                "🎰 카지노는 21세 이상만 입장 가능해요",
+                "🍜 포르투갈 요리와 중국 요리가 잘 어우러진 마카오 음식을 꼭 드세요"
+            ],
+            days: [
+                {
+                    dayNumber: "1",
+                    theme: "도착 & 세나도 광장 탐방",
+                    timeline: [
+                        { time: "09:00", title: "인천공항 출발", description: "대한항공 KE693편으로 마카오 향발" },
+                        { time: "12:30", title: "마카오 도착", description: "마카오국제공항 도착 후 입국 수속" }
+                    ]
+                },
+                {
+                    dayNumber: "2", 
+                    theme: "문화유산 & 관광지 투어",
+                    timeline: [
+                        { time: "09:00", title: "호텔 조식", description: "파리지앙 마카오 호텔 뷔페 조식" }
+                    ]
+                }
+            ],
+            budget_breakdown: [
+                { icon: "✈️", category: "항공료", amount: "20만원" },
+                { icon: "🏨", category: "숙박비", amount: "15만원" }
+            ]
+        };
+
+        function addResult(type, title, content) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `container ${type}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            results.appendChild(div);
+        }
+
+        function loadTestData() {
+            try {
+                const key = 'generatedApp_test123';
+                localStorage.setItem(key, JSON.stringify(testTravelData));
+                addResult('success', '✅ 테스트 데이터 저장 완료', `키: ${key}\n크기: ${JSON.stringify(testTravelData).length} 문자`);
+                console.log('✅ 테스트 데이터 저장:', testTravelData);
+            } catch (error) {
+                addResult('error', '❌ 저장 실패', error.message);
+            }
+        }
+
+        function checkStorage() {
+            try {
+                const keys = Object.keys(localStorage);
+                let report = `총 ${keys.length}개의 키 발견:\n\n`;
+                
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    const size = value ? value.length : 0;
+                    report += `${key}: ${size} 문자\n`;
+                    
+                    if (key.startsWith('generatedApp_')) {
+                        try {
+                            const data = JSON.parse(value);
+                            report += `  ↳ 여행 제목: ${data.tripTitle || 'N/A'}\n`;
+                            report += `  ↳ 목적지: ${data.destination || 'N/A'}\n`;
+                            report += `  ↳ 일정 수: ${data.days?.length || 0}\n\n`;
+                        } catch (e) {
+                            report += `  ↳ JSON 파싱 실패: ${e.message}\n\n`;
+                        }
+                    }
+                });
+
+                addResult('info', '📦 localStorage 상태', report);
+            } catch (error) {
+                addResult('error', '❌ 확인 실패', error.message);
+            }
+        }
+
+        function clearStorage() {
+            if (confirm('localStorage를 모두 지우시겠습니까?')) {
+                localStorage.clear();
+                addResult('info', '🗑️ localStorage 지우기 완료', '모든 데이터가 삭제되었습니다.');
+            }
+        }
+
+        function testPWAScript() {
+            // PWA 스크립트의 로직을 시뮬레이션
+            const sessionId = 'test123';
+            const storageKey = `generatedApp_${sessionId}`;
+            
+            let report = `세션 ID: ${sessionId}\n`;
+            report += `스토리지 키: ${storageKey}\n\n`;
+
+            try {
+                const data = localStorage.getItem(storageKey);
+                report += `원본 데이터 존재: ${!!data}\n`;
+                
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    report += `JSON 파싱 성공: ✅\n`;
+                    report += `여행 제목: ${parsed.tripTitle}\n`;
+                    report += `목적지: ${parsed.destination}\n`;
+                    report += `기간: ${parsed.duration}\n`;
+                    report += `일정 수: ${parsed.days?.length || 0}\n`;
+                } else {
+                    report += `데이터 없음: ❌\n`;
+                    report += `사용 가능한 키들: ${Object.keys(localStorage).join(', ')}\n`;
+                }
+            } catch (error) {
+                report += `오류 발생: ${error.message}\n`;
+            }
+
+            addResult('info', '🧪 PWA 스크립트 시뮬레이션', report);
+        }
+
+        // 페이지 로드시 자동 확인
+        window.addEventListener('load', () => {
+            checkStorage();
+        });
+    </script>
+</body>
+</html>

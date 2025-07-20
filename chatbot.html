@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>채티플랜 - AI 여행 플래너</title>
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts - Pretendard for better Korean typography -->
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chatbot Stylesheet -->
+    <link rel="stylesheet" href="./chatbot.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- API Configuration -->
+    <script src="./config.js"></script>
+    
+    <!-- Meta tags for better SEO -->
+    <meta name="description" content="AI와 대화하며 만드는 나만의 여행 계획">
+    <meta name="keywords" content="여행, 계획, AI, 챗봇, 여행플래너">
+    <meta name="author" content="채티플랜">
+    
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="채티플랜 - AI 여행 플래너">
+    <meta property="og:description" content="AI와 대화하며 만드는 나만의 여행 계획">
+    <meta property="og:type" content="website">
+    
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#F57C00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="app-container">
+        <div class="background-blur"></div>
+
+        <header class="main-header">
+            <div class="brand-logo">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="#F57C00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="name">채티플랜</span>
+            </div>
+            <div class="profile-icon">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop" alt="User Profile">
+            </div>
+        </header>
+
+        <main class="main-content" id="main-content">
+            <div class="chat-container" id="chat-container">
+                <div class="message bot">
+                    <div class="avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p>홍길동님, 환영합니다! 오늘은 어디로 떠나볼까요? 🗺️</p>
+                </div>
+                <div class="message user">
+                    <div class="avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p>가족이랑 갈만한 일본 료칸 여행 추천해줘</p>
+                </div>
+            </div>
+            
+            <!-- <div class="discovery-container" id="discovery-container">
+                <div class="section-title">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>추천 여행지</span>
+                </div>
+                <div class="recommendation-card">
+                    <img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop" alt="도쿄 여행">
+                    <div class="recommendation-info">
+                        <h4>도쿄 3박 4일 가족여행</h4>
+                        <p>아이들과 함께하는 완벽한 도쿄 여행</p>
+                    </div>
+                </div>
+
+                <div class="section-title">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>인기 여행 계획</span>
+                </div>
+                <div class="popular-plans-list">
+                    <div class="plan-card">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop" alt="오사카">
+                        <div class="plan-card-info">
+                            <h5>오사카 미식 여행</h5>
+                            <p>2박 3일 • 맛집 투어</p>
+                        </div>
+                    </div>
+                    <div class="plan-card">
+                        <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop" alt="교토">
+                        <div class="plan-card-info">
+                            <h5>교토 전통 문화</h5>
+                            <p>3박 4일 • 문화 체험</p>
+                        </div>
+                    </div>
+                    <div class="plan-card">
+                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=2070&auto=format&fit=crop" alt="후쿠오카">
+                        <div class="plan-card-info">
+                            <h5>후쿠오카 힐링</h5>
+                            <p>2박 3일 • 온천 여행</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>여행 팁</span>
+                </div>
+                <div class="tips-container">
+                    <div class="tip-card">
+                        <i class="fa-solid fa-plane"></i>
+                        <span>항공료는 화요일에 예약하면 더 저렴해요</span>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fa-solid fa-hotel"></i>
+                        <span>숙소는 2-3개월 전에 미리 예약하세요</span>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>해외 결제 수수료 없는 카드를 준비하세요</span>
+                    </div>
+                </div>
+            </div> -->
+        </main>
+
+        <footer class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="어떤 여행을 꿈꾸시나요?" autocomplete="off" maxlength="200">
+            <button class="send-button" id="send-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="./chatbot.js"></script>
+</body>
+</html>

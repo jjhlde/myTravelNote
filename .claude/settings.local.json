@@ -1,22 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git push:*)",
-      "Bash(mkdir:*)",
-      "Bash(git commit:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(npm init:*)",
-      "Bash(git clone:*)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
-      "Bash(echo $env:APPDATA)",
+      "Bash(cp:*)",
+      "Bash(claude --version)",
+      "Bash(ls:*)",
       "Bash(node:*)",
-      "Bash(claude mcp add:*)",
-      "Bash(python3:*)",
-      "Bash(lsof:*)",
-      "Bash(pkill:*)"
+      "Bash(npm:*)",
+      "Bash(claude mcp:*)",
+      "Bash(echo $USERPROFILE)",
+      "Bash(python:*)",
+      "Bash(npx serve:*)",
+      "Bash(start python -m http.server 8000)",
+      "Bash(rm:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(mcp-installer install:*)",
+      "Bash(timeout:*)",
+      "Bash(grep:*)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
-  }
+  },
+  "hooks": {}
 }
