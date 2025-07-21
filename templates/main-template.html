@@ -7,6 +7,7 @@
     
     <!-- PWA 메타 태그 -->
     <meta name="theme-color" content="#F57C00">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="{{TRIP_TITLE}}">
@@ -16,7 +17,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{DESTINATION_EMOJI}}</text></svg>">
     
     <!-- 매니페스트 -->
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -133,8 +134,8 @@
             <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
             </div>
-            <div class="p-6 overflow-y-auto">
-                {{INFO_CONTENT}}
+            <div class="p-6 overflow-y-auto" id="info-content">
+                <!-- Info content will be loaded here -->
             </div>
         </div>
         
@@ -143,8 +144,8 @@
             <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
             </div>
-            <div class="p-6 overflow-y-auto">
-                {{BUDGET_CONTENT}}
+            <div class="p-6 overflow-y-auto" id="budget-content">
+                <!-- Budget content will be loaded here -->
             </div>
         </div>
 
@@ -153,14 +154,14 @@
             <div class="p-4 flex-shrink-0 border-b sticky top-0 bg-white rounded-t-2xl">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
             </div>
-            <div class="p-6 overflow-y-auto">
-                {{TODO_CONTENT}}
+            <div class="p-6 overflow-y-auto" id="todo-content">
+                <!-- Todo content will be loaded here -->
             </div>
         </div>
 
     </div>
 
     <!-- JavaScript -->
-    <script src="../main-script.js"></script>
+    <script src="/main-script.js"></script>
 </body>
 </html>

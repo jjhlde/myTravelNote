@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>테스트 PWA - 마카오 가족여행</title>
+    <title>Gemini API 테스트 - 2단계 지침 검증</title>
+    <script src="./config.js"></script>
     <style>
         * {
             margin: 0;
@@ -176,18 +177,87 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 20px 0;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            transform: translateY(-2px);
+        }
+        
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .response-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .response-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .json-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 id="trip-title">여행 계획 로딩 중...</h1>
-            <p id="trip-meta">📍 목적지 • 📅 기간</p>
+            <h1 id="trip-title">Gemini API 2단계 지침 테스트</h1>
+            <p id="trip-meta">📍 1단계 목업 데이터 → 2단계 Gemini API 호출 테스트</p>
         </div>
         
         <div class="content">
-            <div class="loading" id="loading">
-                🔄 여행 데이터를 불러오는 중...
+            <button class="test-button" id="test-button" onclick="testGeminiAPI()">
+                🧪 Gemini API 2단계 지침 테스트 실행
+            </button>
+            
+            <button class="test-button" id="test-data-button" onclick="testWithMockData()" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); margin-top: 15px;">
+                📁 mock_first_step_resp.json로 PWA 생성 테스트
+            </button>
+            
+            <button class="test-button" id="test-final-button" onclick="testWithFinalMockData()" style="background: linear-gradient(135deg, #00b894, #00cec9); margin-top: 15px;">
+                🚀 mock_resp.json(최종완성)으로 바로 PWA 생성
+            </button>
+            
+            <div class="loading" id="loading" style="display: none;">
+                🔄 Gemini API 호출 중...
+            </div>
+            
+            <div class="response-container" id="response-container" style="display: none;">
+                <div class="response-header">📋 Gemini API 응답 결과:</div>
+                <div class="json-output" id="json-output"></div>
             </div>
             
             <div class="stats" id="stats" style="display: none;">
@@ -210,163 +280,904 @@
     </div>
 
     <script>
-        // JSON 데이터 로드 및 렌더링
-        async function loadTravelPlan() {
+        // Mock 데이터 로드
+        async function loadMockData() {
             try {
-                const response = await fetch('./real_enriched_macau_v2.json');
-                const travelData = await response.json();
-                
-                renderTravelPlan(travelData);
-                document.getElementById('loading').style.display = 'none';
-                
+                const response = await fetch('./mock_first_step_req.json');
+                const mockData = await response.json();
+                return mockData;
             } catch (error) {
-                console.error('Error loading travel plan:', error);
-                document.getElementById('loading').innerHTML = 
-                    '<div class="error">❌ 여행 데이터를 불러올 수 없습니다.</div>';
+                console.error('Mock 데이터 로드 실패:', error);
+                throw new Error('Mock 데이터를 불러올 수 없습니다.');
             }
         }
         
-        function renderTravelPlan(data) {
-            // 헤더 정보 업데이트
-            document.getElementById('trip-title').textContent = data.mainPlan.planName;
-            document.getElementById('trip-meta').textContent = 
-                `📍 ${data.tripMeta.destination} • 📅 ${data.tripMeta.duration}`;
-            
-            // 통계 업데이트
-            const totalDays = data.mainPlan.dailyPlans.length;
-            const totalActivities = data.mainPlan.dailyPlans.reduce((sum, day) => 
-                sum + (day.activities ? day.activities.length : 0), 0);
-            const enrichedPlaces = countEnrichedPlaces(data);
-            
-            document.getElementById('total-days').textContent = totalDays;
-            document.getElementById('total-activities').textContent = totalActivities;
-            document.getElementById('enriched-places').textContent = enrichedPlaces;
-            document.getElementById('stats').style.display = 'grid';
-            
-            // 일별 계획 렌더링
-            const dailyPlansContainer = document.getElementById('daily-plans');
-            dailyPlansContainer.innerHTML = '';
-            
-            data.mainPlan.dailyPlans.forEach(day => {
-                const dayElement = createDayElement(day);
-                dailyPlansContainer.appendChild(dayElement);
-            });
+        // 2단계 지침 로드
+        async function loadSecondStepPrompt() {
+            try {
+                const response = await fetch('./prompts/second_step.txt');
+                const promptText = await response.text();
+                return promptText;
+            } catch (error) {
+                console.error('2단계 지침 로드 실패:', error);
+                throw new Error('2단계 지침을 불러올 수 없습니다.');
+            }
         }
         
-        function createDayElement(day) {
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'day-section';
+        // Gemini API 호출
+        async function callGeminiAPI(prompt, systemData) {
+            if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+                throw new Error('Gemini API 키가 설정되지 않았습니다. config.js 파일을 확인해주세요.');
+            }
             
-            dayDiv.innerHTML = `
-                <h2 class="day-title">DAY ${day.day} - ${day.dayTheme}</h2>
-                <p style="margin-bottom: 20px; color: #666;">${day.date}</p>
-            `;
-            
-            day.activities.forEach(activity => {
-                const activityElement = createActivityElement(activity);
-                dayDiv.appendChild(activityElement);
-            });
-            
-            return dayDiv;
-        }
-        
-        function createActivityElement(activity) {
-            const activityDiv = document.createElement('div');
-            activityDiv.className = 'activity';
-            
-            const placeDetailsHtml = activity.placeDetails ? 
-                createPlaceDetailsHtml(activity.placeDetails) : '';
-            
-            const tipsHtml = activity.tips && activity.tips.length > 0 ? `
-                <div class="tips">
-                    <h4>💡 팁</h4>
-                    <ul>
-                        ${activity.tips.map(tip => `<li>${tip}</li>`).join('')}
-                    </ul>
-                </div>
-            ` : '';
-            
-            activityDiv.innerHTML = `
-                <div class="activity-header">
-                    <div>
-                        <span class="activity-time">${activity.time}</span>
-                        <span class="activity-type">${getTypeLabel(activity.type)}</span>
-                    </div>
-                    <div style="font-size: 0.9em; color: #666;">
-                        ${activity.duration}분
-                    </div>
-                </div>
-                <h3>${activity.title}</h3>
-                <p style="margin: 10px 0;">${activity.description}</p>
-                ${placeDetailsHtml}
-                ${tipsHtml}
-            `;
-            
-            return activityDiv;
-        }
-        
-        function createPlaceDetailsHtml(placeDetails) {
-            if (!placeDetails.placeId && !placeDetails.name) return '';
-            
-            const photosHtml = placeDetails.photos && placeDetails.photos.length > 0 ? `
-                <div class="place-photos">
-                    ${placeDetails.photos.map(photo => 
-                        `<img src="${photo}" alt="장소 사진" onerror="this.style.display='none'">`
-                    ).join('')}
-                </div>
-            ` : '';
-            
-            const ratingHtml = placeDetails.rating ? 
-                `<div class="rating">⭐ ${placeDetails.rating}</div>` : '';
-            
-            return `
-                <div class="place-details">
-                    <h4>📍 ${placeDetails.name || '장소 정보'}</h4>
-                    ${photosHtml}
-                    <div class="place-info">
-                        <div>📧 ${placeDetails.address || '주소 정보 없음'}</div>
-                        ${ratingHtml}
-                        <div style="margin-top: 5px;">💬 ${placeDetails.reviews || '리뷰 없음'}</div>
-                        ${placeDetails.website ? `<div>🌐 <a href="${placeDetails.website}" target="_blank">공식 웹사이트</a></div>` : ''}
-                        <a href="${placeDetails.mapLink}" target="_blank" class="map-link">🗺️ 지도에서 보기</a>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function getTypeLabel(type) {
-            const labels = {
-                'transport': '🚗 이동',
-                'meal': '🍽️ 식사',
-                'sightseeing': '🏛️ 관광',
-                'activity': '🎯 활동',
-                'shopping': '🛍️ 쇼핑',
-                'rest': '😴 휴식'
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: prompt + '\n\n입력 데이터:\n' + JSON.stringify(systemData, null, 2)
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                }
             };
-            return labels[type] || type;
+            
+            const response = await fetch(CONFIG.GEMINI_API_URL + '?key=' + CONFIG.GEMINI_API_KEY, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Gemini API 호출 실패: ${response.status} - ${errorData}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                throw new Error('Gemini API 응답 형식이 올바르지 않습니다.');
+            }
+            
+            return data.candidates[0].content.parts[0].text;
         }
         
-        function countEnrichedPlaces(data) {
-            let count = 0;
-            
-            if (data.mainPlan && data.mainPlan.dailyPlans) {
-                data.mainPlan.dailyPlans.forEach(day => {
-                    if (day.activities) {
-                        day.activities.forEach(activity => {
-                            if (activity.placeDetails && 
-                                (activity.placeDetails.placeId || activity.placeDetails.name)) {
-                                count++;
-                            }
+        // Google Places API 연동 서비스
+        class PlaceEnrichmentService {
+            constructor() {
+                this.apiKey = CONFIG.GOOGLE_PLACES_API_KEY;
+                this.cache = new Map();
+                this.rateLimitDelay = 100;
+            }
+
+            async enrichTravelData(travelData) {
+                console.log('🌍 Places API로 여행 데이터 보강 시작:', travelData);
+                
+                try {
+                    const placeQueries = this.extractNewStructurePlaceQueries(travelData);
+                    console.log('📍 발견된 장소 쿼리:', placeQueries);
+                    
+                    if (placeQueries.length === 0) {
+                        console.log('⚠️ 장소 쿼리가 없어 API 호출을 건너뜍니다');
+                        return travelData;
+                    }
+                    
+                    const enrichedPlaces = await this.batchEnrichPlaces(placeQueries);
+                    const enrichedData = this.mergeNewStructurePlaceData(travelData, enrichedPlaces);
+                    
+                    console.log('✅ Places API 데이터 보강 완료');
+                    return enrichedData;
+                    
+                } catch (error) {
+                    console.error('❌ Places API 오류:', error);
+                    return travelData;
+                }
+            }
+
+            extractNewStructurePlaceQueries(travelData) {
+                const queries = [];
+                
+                // mainPlan에서 placeQuery 추출
+                if (travelData.mainPlan && travelData.mainPlan.dailyPlans) {
+                    travelData.mainPlan.dailyPlans.forEach((day, dayIndex) => {
+                        if (day.activities) {
+                            day.activities.forEach((activity, actIndex) => {
+                                // mainPlace에서 추출
+                                if (activity.mainPlace && activity.mainPlace.placeQuery) {
+                                    queries.push({
+                                        query: activity.mainPlace.placeQuery.trim(),
+                                        path: `mainPlan.dailyPlans[${dayIndex}].activities[${actIndex}].mainPlace`,
+                                        type: activity.type || 'general'
+                                    });
+                                }
+                                
+                                // alternativePlaces에서 추출
+                                if (activity.alternativePlaces && Array.isArray(activity.alternativePlaces)) {
+                                    activity.alternativePlaces.forEach((alt, altIndex) => {
+                                        if (alt.placeQuery) {
+                                            queries.push({
+                                                query: alt.placeQuery.trim(),
+                                                path: `mainPlan.dailyPlans[${dayIndex}].activities[${actIndex}].alternativePlaces[${altIndex}]`,
+                                                type: activity.type || 'general'
+                                            });
+                                        }
+                                    });
+                                }
+                                
+                                // meals에서 추출
+                                if (activity.meals && Array.isArray(activity.meals)) {
+                                    activity.meals.forEach((meal, mealIndex) => {
+                                        if (meal.placeQuery) {
+                                            queries.push({
+                                                query: meal.placeQuery.trim(),
+                                                path: `mainPlan.dailyPlans[${dayIndex}].activities[${actIndex}].meals[${mealIndex}]`,
+                                                type: 'meal'
+                                            });
+                                        }
+                                    });
+                                }
+                                
+                                // recommendedRestaurants에서 추출
+                                if (activity.recommendedRestaurants && Array.isArray(activity.recommendedRestaurants)) {
+                                    activity.recommendedRestaurants.forEach((restaurant, restIndex) => {
+                                        if (restaurant.placeQuery) {
+                                            queries.push({
+                                                query: restaurant.placeQuery.trim(),
+                                                path: `mainPlan.dailyPlans[${dayIndex}].activities[${actIndex}].recommendedRestaurants[${restIndex}]`,
+                                                type: 'restaurant'
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // accommodations에서 추출
+                if (travelData.accommodations && Array.isArray(travelData.accommodations)) {
+                    travelData.accommodations.forEach((acc, accIndex) => {
+                        if (acc.placeQuery) {
+                            queries.push({
+                                query: acc.placeQuery.trim(),
+                                path: `accommodations[${accIndex}]`,
+                                type: 'accommodation'
+                            });
+                        }
+                        
+                        // accommodation alternatives
+                        if (acc.alternatives && Array.isArray(acc.alternatives)) {
+                            acc.alternatives.forEach((alt, altIndex) => {
+                                if (alt.placeQuery) {
+                                    queries.push({
+                                        query: alt.placeQuery.trim(),
+                                        path: `accommodations[${accIndex}].alternatives[${altIndex}]`,
+                                        type: 'accommodation'
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                return queries;
+            }
+
+            async batchEnrichPlaces(placeQueries) {
+                const results = [];
+                
+                for (let i = 0; i < placeQueries.length; i++) {
+                    const placeQuery = placeQueries[i];
+                    
+                    try {
+                        if (this.cache.has(placeQuery.query)) {
+                            console.log(`📋 캐시에서 로드: ${placeQuery.query}`);
+                            results.push({
+                                ...placeQuery,
+                                placeData: this.cache.get(placeQuery.query)
+                            });
+                            continue;
+                        }
+                        
+                        console.log(`🔍 장소 검색: ${placeQuery.query} (타입: ${placeQuery.type})`);
+                        const placeData = await this.searchAndEnrichPlace(placeQuery.query, placeQuery.type);
+                        
+                        this.cache.set(placeQuery.query, placeData);
+                        
+                        results.push({
+                            ...placeQuery,
+                            placeData: placeData
+                        });
+                        
+                        if (i < placeQueries.length - 1) {
+                            await this.delay(this.rateLimitDelay);
+                        }
+                        
+                    } catch (error) {
+                        console.error(`💥 ${placeQuery.query} 처리 중 오류:`, error);
+                        results.push({
+                            ...placeQuery,
+                            placeData: this.createFallbackData(placeQuery.query)
                         });
                     }
+                }
+                
+                return results;
+            }
+
+            async searchAndEnrichPlace(query, type = 'general') {
+                try {
+                    const searchResult = await this.textSearch(query, type);
+                    if (!searchResult || !searchResult.place_id) {
+                        throw new Error('장소를 찾을 수 없습니다');
+                    }
+                    
+                    const placeDetails = await this.getPlaceDetails(searchResult.place_id, type);
+                    return placeDetails;
+                    
+                } catch (error) {
+                    console.warn(`⚠️ ${query} 검색 실패, 폴백 데이터 사용:`, error.message);
+                    return this.createFallbackData(query);
+                }
+            }
+
+            async textSearch(query, type = 'general') {
+                let typeFilter = '';
+                if (type === 'meal') {
+                    typeFilter = '&type=restaurant|food|meal_takeaway';
+                } else if (type === 'sightseeing') {
+                    typeFilter = '&type=tourist_attraction|museum|amusement_park';
+                } else if (type === 'accommodation') {
+                    typeFilter = '&type=lodging';
+                }
+                
+                // 서버 프록시를 통해 API 호출
+                const url = `/api/places/textsearch?query=${encodeURIComponent(query)}&key=${this.apiKey}&language=ko${typeFilter}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(`Places API 오류: ${data.error}`);
+                }
+                
+                if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+                    throw new Error(`장소 검색 실패: ${data.status}`);
+                }
+                
+                return data.results[0];
+            }
+
+            async getPlaceDetails(placeId, type = 'general') {
+                const essentialFields = [
+                    'place_id', 'name', 'formatted_address', 'geometry',
+                    'rating', 'user_ratings_total', 'photos', 'reviews', 'url'
+                ].join(',');
+                
+                // 서버 프록시를 통해 API 호출
+                const url = `/api/places/details?place_id=${placeId}&fields=${essentialFields}&key=${this.apiKey}&language=ko`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(`Places API 오류: ${data.error}`);
+                }
+                
+                if (data.status !== 'OK' || !data.result) {
+                    throw new Error(`장소 상세정보 실패: ${data.status}`);
+                }
+                
+                const place = data.result;
+                const photos = this.generatePhotoUrls(place.photos, 3);
+                
+                return {
+                    name: place.name || '장소명 없음',
+                    address: place.formatted_address || '주소 없음',
+                    rating: place.rating || null,
+                    reviewCount: place.user_ratings_total || 0,
+                    photos: photos,
+                    mapLink: place.url || this.generateMapsUrl(place.geometry?.location),
+                    placeId: place.place_id,
+                    reviews: this.formatSimpleReviews(place.reviews)
+                };
+            }
+
+            generatePhotoUrls(photos, maxCount = 3) {
+                if (!photos || !Array.isArray(photos)) return [];
+                
+                return photos.slice(0, maxCount).map(photo => {
+                    const maxWidth = 400;
+                    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photo.photo_reference}&key=${this.apiKey}`;
                 });
             }
+
+            generateMapsUrl(location) {
+                if (!location || !location.lat || !location.lng) return '';
+                return `https://www.google.com/maps?q=${location.lat},${location.lng}`;
+            }
+
+            formatSimpleReviews(reviews) {
+                if (!reviews || !Array.isArray(reviews)) return [];
+                
+                return reviews.slice(0, 2).map(review => ({
+                    author: review.author_name || '익명',
+                    rating: review.rating || 0,
+                    text: review.text ? (review.text.length > 80 ? review.text.substring(0, 80) + '...' : review.text) : '',
+                    date: review.relative_time_description || ''
+                }));
+            }
+
+            createFallbackData(originalQuery) {
+                return {
+                    name: originalQuery,
+                    address: '주소 정보 없음',
+                    rating: null,
+                    reviewCount: 0,
+                    photos: [],
+                    mapLink: '',
+                    placeId: null,
+                    reviews: [],
+                    fallback: true
+                };
+            }
+
+            mergeNewStructurePlaceData(travelData, enrichedPlaces) {
+                const result = JSON.parse(JSON.stringify(travelData));
+                
+                enrichedPlaces.forEach(enrichedPlace => {
+                    const path = enrichedPlace.path;
+                    const placeData = enrichedPlace.placeData;
+                    
+                    // 경로를 따라 데이터 병합
+                    this.setNestedProperty(result, path + '.placeDetails', placeData);
+                });
+                
+                return result;
+            }
+
+            setNestedProperty(obj, path, value) {
+                const keys = path.split('.');
+                let current = obj;
+                
+                for (let i = 0; i < keys.length - 1; i++) {
+                    const key = keys[i];
+                    
+                    if (key.includes('[') && key.includes(']')) {
+                        const [arrayKey, indexStr] = key.split('[');
+                        const index = parseInt(indexStr.replace(']', ''));
+                        
+                        if (!current[arrayKey]) current[arrayKey] = [];
+                        if (!current[arrayKey][index]) current[arrayKey][index] = {};
+                        current = current[arrayKey][index];
+                    } else {
+                        if (!current[key]) current[key] = {};
+                        current = current[key];
+                    }
+                }
+                
+                const lastKey = keys[keys.length - 1];
+                current[lastKey] = value;
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // 메인 테스트 함수
+        async function testGeminiAPI() {
+            const button = document.getElementById('test-button');
+            const loading = document.getElementById('loading');
+            const responseContainer = document.getElementById('response-container');
+            const jsonOutput = document.getElementById('json-output');
             
-            return count;
+            try {
+                // 버튼 비활성화 및 로딩 표시
+                button.disabled = true;
+                button.textContent = '🔄 테스트 진행 중...';
+                loading.style.display = 'block';
+                responseContainer.style.display = 'none';
+                
+                // 1. Mock 데이터 로드
+                console.log('1. Mock 데이터 로드 중...');
+                const mockData = await loadMockData();
+                console.log('Mock 데이터:', mockData);
+                
+                // 2. 2단계 지침 로드
+                console.log('2. 2단계 지침 로드 중...');
+                const prompt = await loadSecondStepPrompt();
+                console.log('2단계 지침 길이:', prompt.length);
+                
+                // 3. Gemini API 호출
+                console.log('3. Gemini API 호출 중...');
+                const apiResponse = await callGeminiAPI(prompt, mockData.systemData);
+                console.log('Gemini API 응답 길이:', apiResponse.length);
+                
+                // 4. API 응답 원문 저장 (localStorage에 원문 저장)
+                const rawResponseKey = `raw_gemini_response_${Date.now()}`;
+                localStorage.setItem(rawResponseKey, apiResponse);
+                console.log('4. API 응답 원문 저장 완료:', rawResponseKey);
+                
+                // 5. JSON 정리 및 파싱
+                const cleanedResponse = cleanGeminiResponse(apiResponse);
+                console.log('5. 정리된 응답:', cleanedResponse.substring(0, 200) + '...');
+                
+                let parsedJson;
+                try {
+                    parsedJson = JSON.parse(cleanedResponse);
+                    console.log('5. JSON 파싱 성공:', parsedJson);
+                } catch (parseError) {
+                    console.error('JSON 파싱 실패:', parseError);
+                    console.error('원문 응답 처음 500자:', apiResponse.substring(0, 500));
+                    
+                    // 원문을 localStorage에 더 저장
+                    localStorage.setItem('last_failed_response', apiResponse);
+                    throw new Error(`잘못된 JSON 형식: ${parseError.message}\n\n원문 응답이 localStorage에 '${rawResponseKey}' 키로 저장되었습니다.`);
+                }
+                
+                // 6. Places API로 데이터 보강
+                console.log('6. Places API 데이터 보강 중...');
+                const placeService = new PlaceEnrichmentService();
+                const enrichedData = await placeService.enrichTravelData(parsedJson);
+                console.log('6. Places API 보강 완료:', enrichedData);
+                
+                // 7. localStorage에 저장
+                const sessionId = 'test_' + Date.now();
+                localStorage.setItem(`enriched_travel_${sessionId}`, JSON.stringify(enrichedData));
+                console.log('7. localStorage 저장 완룼:', sessionId);
+                
+                // 8. 결과 표시 및 페이지 이동 옵션
+                loading.style.display = 'none';
+                responseContainer.style.display = 'block';
+                
+                jsonOutput.innerHTML = `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #155724; margin-bottom: 10px;">✅ 테스트 성공!</h4>
+                        <p style="color: #155724; margin-bottom: 10px;">2단계 Gemini API 호출 및 Places API 보강이 완료되었습니다.</p>
+                        <button onclick="viewEnrichedResult('${sessionId}')" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            📄 보강된 데이터 보기
+                        </button>
+                        <button onclick="viewRawResponse('${rawResponseKey}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            📁 API 원문 보기
+                        </button>
+                        <button onclick="openTemplateTest('${sessionId}')" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            🚀 템플릿 테스트 페이지로 이동
+                        </button>
+                    </div>
+                    <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
+${JSON.stringify(enrichedData, null, 2)}
+                    </div>
+                `;
+                
+                console.log('✅ 전체 테스트 완료!');
+                
+            } catch (error) {
+                console.error('테스트 실패:', error);
+                
+                loading.style.display = 'none';
+                responseContainer.style.display = 'block';
+                jsonOutput.textContent = `❌ 오류 발생:\n${error.message}`;
+                jsonOutput.style.color = '#e53e3e';
+                
+            } finally {
+                // 버튼 복원
+                button.disabled = false;
+                button.textContent = '🧪 Gemini API 2단계 지침 테스트 실행';
+            }
         }
         
-        // 페이지 로드 시 데이터 로드
-        document.addEventListener('DOMContentLoaded', loadTravelPlan);
+        // 보강된 데이터 보기 함수
+        function viewEnrichedResult(sessionId) {
+            const data = localStorage.getItem(`enriched_travel_${sessionId}`);
+            if (data) {
+                const jsonOutput = document.getElementById('json-output');
+                jsonOutput.innerHTML = `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <h4>📄 보강된 데이터 (Session: ${sessionId})</h4>
+                    </div>
+                    <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; max-height: 400px; overflow-y: auto;">
+${data}
+                    </div>
+                `;
+            } else {
+                alert('데이터를 찾을 수 없습니다.');
+            }
+        }
+        
+        // Gemini 응답 정리 함수
+        function cleanGeminiResponse(response) {
+            let cleaned = response.trim();
+            
+            // ```json 블록 제거
+            if (cleaned.startsWith('```json')) {
+                cleaned = cleaned.replace(/^```json\s*/, '');
+            }
+            if (cleaned.endsWith('```')) {
+                cleaned = cleaned.replace(/\s*```$/, '');
+            }
+            
+            // ```만 있는 경우도 제거
+            if (cleaned.startsWith('```')) {
+                cleaned = cleaned.replace(/^```\s*/, '');
+            }
+            if (cleaned.endsWith('```')) {
+                cleaned = cleaned.replace(/\s*```$/, '');
+            }
+            
+            return cleaned.trim();
+        }
+        
+        // API 원문 보기 함수
+        function viewRawResponse(rawResponseKey) {
+            const rawData = localStorage.getItem(rawResponseKey);
+            if (rawData) {
+                const jsonOutput = document.getElementById('json-output');
+                jsonOutput.innerHTML = `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <h4>📁 API 원문 응답 (Key: ${rawResponseKey})</h4>
+                        <p style="font-size: 0.9em; color: #666;">길이: ${rawData.length}자</p>
+                    </div>
+                    <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; max-height: 400px; overflow-y: auto;">
+${rawData}
+                    </div>
+                `;
+            } else {
+                alert('원문 데이터를 찾을 수 없습니다.');
+            }
+        }
+        
+        // mock_first_step_resp.json을 사용한 PWA 생성 테스트
+        async function testWithMockData() {
+            const button = document.getElementById('test-data-button');
+            const loading = document.getElementById('loading');
+            const responseContainer = document.getElementById('response-container');
+            const jsonOutput = document.getElementById('json-output');
+            
+            try {
+                // 버튼 비활성화 및 로딩 표시
+                button.disabled = true;
+                button.textContent = '🔄 mock_first_step_resp.json 데이터 처리 중...';
+                loading.style.display = 'block';
+                loading.textContent = '1️⃣ mock_first_step_resp.json 파일 로드 중...';
+                responseContainer.style.display = 'none';
+                
+                // 1. mock_first_step_resp.json에서 데이터 로드
+                console.log('1. mock_first_step_resp.json에서 데이터 로드 중...');
+                const response = await fetch('./mock_first_step_resp.json');
+                if (!response.ok) {
+                    throw new Error(`mock_first_step_resp.json 로드 실패: ${response.status}`);
+                }
+                const travelData = await response.json();
+                console.log('1. 로드된 데이터:', travelData);
+                
+                // 2. Places API로 데이터 보강 (옵션)
+                let enrichedData = travelData;
+                if (CONFIG.GOOGLE_PLACES_API_KEY && CONFIG.GOOGLE_PLACES_API_KEY !== 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
+                    loading.textContent = '2️⃣ Google Places API로 장소 정보 보강 중...';
+                    console.log('2. Places API로 데이터 보강 중...');
+                    const placeService = new PlaceEnrichmentService();
+                    enrichedData = await placeService.enrichTravelData(travelData);
+                    console.log('2. Places API 보강 완료:', enrichedData);
+                } else {
+                    loading.textContent = '2️⃣ Places API 키가 없어서 보강 생략 중...';
+                    console.log('2. Places API 키가 없어서 보강 생략');
+                }
+                
+                // 3. 서버로 완성된 JSON 전송하여 mock_resp.json 파일로 저장
+                loading.textContent = '3️⃣ 서버로 완성된 JSON 전송하여 파일 저장 중...';
+                console.log('3. 서버로 완성된 JSON 전송 중...');
+                const saveResponse = await fetch('/api/save-mock-response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(enrichedData)
+                });
+                
+                const saveResult = await saveResponse.json();
+                if (!saveResult.success) {
+                    throw new Error(`파일 저장 실패: ${saveResult.error}`);
+                }
+                console.log('3. mock_resp.json 파일 저장 완료:', saveResult);
+                
+                const sessionId = 'mockdata_' + Date.now();
+                
+                // 4. 결과 표시
+                loading.textContent = '✅ 모든 단계 완료! 결과를 표시합니다...';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    responseContainer.style.display = 'block';
+                }, 1000);
+                
+                jsonOutput.innerHTML = `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #155724; margin-bottom: 10px;">✅ mock_resp.json 파일 생성 성공!</h4>
+                        <p style="color: #155724; margin-bottom: 10px;">Places API로 보강된 데이터가 mock_resp.json 파일로 저장되었습니다.</p>
+                        <p style="color: #155724; margin-bottom: 15px;">📂 저장 위치: ${saveResult.filePath}</p>
+                        <button onclick="viewMockRespFile()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            📄 mock_resp.json 내용 보기
+                        </button>
+                        <button onclick="generatePWAFromMockResp()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            🚀 PWA HTML 생성하기
+                        </button>
+                        <button onclick="openTemplateTest('${sessionId}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            📋 기존 템플릿 테스트
+                        </button>
+                    </div>
+                    <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
+${JSON.stringify(enrichedData, null, 2)}
+                    </div>
+                `;
+                
+                console.log('✅ mock_first_step_resp.json PWA 생성 테스트 완료!');
+                
+            } catch (error) {
+                console.error('mock_first_step_resp.json 테스트 실패:', error);
+                
+                loading.style.display = 'none';
+                responseContainer.style.display = 'block';
+                jsonOutput.innerHTML = `
+                    <div style="padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                        <h4>❌ 테스트 실패</h4>
+                        <p style="margin: 10px 0;">${error.message}</p>
+                        <p style="font-size: 0.9em; color: #856404;">mock_first_step_resp.json 파일이 존재하고 올바른 JSON 형식인지 확인해주세요.</p>
+                    </div>
+                `;
+                
+            } finally {
+                // 버튼 복원
+                button.disabled = false;
+                button.textContent = '📁 mock_first_step_resp.json로 PWA 생성 테스트';
+            }
+        }
+        
+        // mock_resp.json(최종완성)으로 바로 PWA 생성 테스트
+        async function testWithFinalMockData() {
+            const button = document.getElementById('test-final-button');
+            const loading = document.getElementById('loading');
+            const responseContainer = document.getElementById('response-container');
+            const jsonOutput = document.getElementById('json-output');
+            
+            try {
+                // 버튼 비활성화 및 로딩 표시
+                button.disabled = true;
+                button.textContent = '🔄 최종 데이터로 PWA 생성 중...';
+                loading.style.display = 'block';
+                loading.textContent = '1️⃣ mock_resp.json 파일 로드 중...';
+                responseContainer.style.display = 'none';
+                
+                // 1. mock_resp.json에서 최종 완성된 데이터 로드
+                console.log('1. mock_resp.json에서 최종 완성된 데이터 로드 중...');
+                const response = await fetch('./mock_resp.json');
+                if (!response.ok) {
+                    throw new Error(`mock_resp.json 파일을 찾을 수 없습니다: ${response.status}`);
+                }
+                const finalTravelData = await response.json();
+                console.log('1. 최종 완성된 데이터 로드 완료:', finalTravelData);
+                
+                // 2. 세션 ID 생성 및 localStorage 직접 저장
+                loading.textContent = '2️⃣ PWA 데이터 준비 및 저장 중...';
+                console.log('2. mock_resp.json 데이터를 localStorage에 직접 저장');
+                
+                const sessionId = Date.now().toString();
+                
+                // mock_resp.json 데이터를 그대로 localStorage에 저장
+                localStorage.setItem(`generatedApp_${sessionId}`, JSON.stringify(finalTravelData));
+                console.log('2. localStorage 저장 완료:', `generatedApp_${sessionId}`);
+                
+                // 3. 결과 표시
+                loading.textContent = '✅ 최종 PWA 생성 완료! 결과를 표시합니다...';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    responseContainer.style.display = 'block';
+                }, 1000);
+                
+                jsonOutput.innerHTML = `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #155724; margin-bottom: 10px;">🚀 최종 완성 PWA 생성 성공!</h4>
+                        <p style="color: #155724; margin-bottom: 10px;">Places API가 완료된 최종 데이터로 PWA가 생성되었습니다.</p>
+                        <p style="color: #155724; margin-bottom: 15px;">📂 세션 ID: ${sessionId}</p>
+                        <button onclick="window.open('/templates/main-template.html?session=${sessionId}', '_blank')" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            🚀 완성된 PWA 바로 열기
+                        </button>
+                        <button onclick="viewMockRespFile()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            📄 최종 JSON 데이터 보기
+                        </button>
+                        <button onclick="openTemplateTest('${sessionId}')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            📋 템플릿 테스트 비교
+                        </button>
+                    </div>
+                    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; max-height: 300px; overflow-y: auto;">
+✅ 생성된 PWA 정보:
+• 제목: ${finalTravelData.tripMeta ? finalTravelData.tripMeta.destination + ' ' + finalTravelData.tripMeta.duration : '여행 계획'}
+• 목적지: ${finalTravelData.tripMeta ? finalTravelData.tripMeta.destination : '여행지'} 🇲🇴
+• 기간: ${finalTravelData.tripMeta ? finalTravelData.tripMeta.duration : '여행 기간'}
+• 일정: ${finalTravelData.mainPlan ? finalTravelData.mainPlan.dailyPlans.length + '개 일정' : '일정 정보 없음'}
+• 생성 시간: ${new Date().toLocaleString('ko-KR')}
+
+🔗 PWA URL: /templates/main-template.html?session=${sessionId}
+                    </div>
+                `;
+                
+                console.log('✅ mock_resp.json 최종 PWA 생성 테스트 완료!');
+                
+            } catch (error) {
+                console.error('최종 mock_resp.json PWA 생성 실패:', error);
+                
+                loading.style.display = 'none';
+                responseContainer.style.display = 'block';
+                jsonOutput.innerHTML = `
+                    <div style="padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                        <h4>❌ 최종 PWA 생성 실패</h4>
+                        <p style="margin: 10px 0;">${error.message}</p>
+                        <p style="font-size: 0.9em; color: #856404;">mock_resp.json 파일이 존재하고 올바른 JSON 형식인지 확인해주세요.</p>
+                    </div>
+                `;
+                
+            } finally {
+                // 버튼 복원
+                button.disabled = false;
+                button.textContent = '🚀 mock_resp.json(최종완성)으로 바로 PWA 생성';
+            }
+        }
+        
+        // 템플릿 테스트 페이지로 이동
+        function openTemplateTest(sessionId) {
+            // 세션 ID를 URL 파라미터로 전달
+            const url = `/template-test?session=${sessionId}`;
+            window.open(url, '_blank');
+        }
+        
+        // mock_resp.json 파일 내용 보기
+        async function viewMockRespFile() {
+            try {
+                const response = await fetch('./mock_resp.json');
+                if (!response.ok) {
+                    throw new Error(`mock_resp.json 파일을 찾을 수 없습니다: ${response.status}`);
+                }
+                const jsonData = await response.json();
+                
+                // 새 창에서 JSON 데이터 표시
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>mock_resp.json 내용</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow: auto; }
+                                h1 { color: #333; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>📄 mock_resp.json 파일 내용</h1>
+                            <pre>${JSON.stringify(jsonData, null, 2)}</pre>
+                        </body>
+                    </html>
+                `);
+            } catch (error) {
+                alert(`파일 읽기 실패: ${error.message}`);
+            }
+        }
+        
+        // mock_resp.json으로 PWA HTML 생성
+        async function generatePWAFromMockResp() {
+            try {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.textContent = '🔄 PWA 생성 중...';
+                
+                // mock_resp.json 파일 로드
+                const response = await fetch('./mock_resp.json');
+                if (!response.ok) {
+                    throw new Error(`mock_resp.json 파일을 찾을 수 없습니다: ${response.status}`);
+                }
+                const travelData = await response.json();
+                console.log('PWA 생성 데이터:', travelData);
+                
+                // 서버로 PWA 데이터 준비 요청 (localStorage 방식)
+                button.textContent = '🏗️ 서버에서 데이터 준비 중...';
+                const pwaResponse = await fetch('/api/generate-pwa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(travelData)
+                });
+                
+                const pwaResult = await pwaResponse.json();
+                if (!pwaResult.success) {
+                    throw new Error(`PWA 데이터 준비 실패: ${pwaResult.error}`);
+                }
+                
+                console.log('✅ PWA 데이터 준비 완료:', pwaResult);
+                
+                // localStorage에 여행 데이터 저장 (chatbot.js 방식)
+                button.textContent = '💾 로컬 저장소에 데이터 저장 중...';
+                localStorage.setItem(`generatedApp_${pwaResult.sessionId}`, JSON.stringify(pwaResult.travelData));
+                
+                // 성공 메시지와 함께 PWA 링크 제공
+                const resultDiv = document.createElement('div');
+                resultDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    z-index: 1000;
+                    max-width: 500px;
+                    text-align: center;
+                `;
+                
+                resultDiv.innerHTML = `
+                    <h3 style="color: #28a745; margin-bottom: 15px;">🎉 PWA 생성 완료!</h3>
+                    <p style="margin-bottom: 20px;">chatbot.js 방식으로 여행 데이터가 localStorage에 저장되었습니다.</p>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">
+                        📂 세션 ID: ${pwaResult.sessionId}
+                    </p>
+                    <div style="margin-bottom: 20px;">
+                        <a href="${pwaResult.pwaUrl}" target="_blank" 
+                           style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; 
+                                  text-decoration: none; border-radius: 8px; margin-right: 10px;">
+                            🚀 생성된 PWA 열기
+                        </a>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="background: #6c757d; color: white; padding: 12px 24px; 
+                                       border: none; border-radius: 8px; cursor: pointer;">
+                            닫기
+                        </button>
+                    </div>
+                    <p style="font-size: 0.8em; color: #999;">
+                        이제 템플릿 파일이 localStorage 데이터를 읽어서 동적으로 렌더링됩니다.
+                    </p>
+                `;
+                
+                document.body.appendChild(resultDiv);
+                
+                button.disabled = false;
+                button.textContent = originalText;
+                
+            } catch (error) {
+                console.error('PWA 생성 에러:', error);
+                alert(`PWA 생성 실패: ${error.message}`);
+                const button = event.target;
+                button.disabled = false;
+                button.textContent = '🚀 PWA HTML 생성하기';
+            }
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Gemini API 2단계 테스트 페이지 로드 완료');
+            
+            // API 키 체크
+            if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+                const responseContainer = document.getElementById('response-container');
+                const jsonOutput = document.getElementById('json-output');
+                
+                responseContainer.style.display = 'block';
+                jsonOutput.innerHTML = `
+                    <div style="padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+                        <h4>⚠️ API 키 설정 필요</h4>
+                        <p style="margin: 10px 0;">Gemini API 테스트를 위해 <code>config.js</code> 파일에서 다음 API 키들을 설정해주세요:</p>
+                        <ul style="margin-left: 20px;">
+                            <li><strong>GEMINI_API_KEY</strong>: Google Gemini API 키</li>
+                            <li><strong>GOOGLE_PLACES_API_KEY</strong>: Google Places API 키</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 0.9em;">API 키 설정 후 페이지를 새로고침해주세요.</p>
+                    </div>
+                `;
+            }
+        });
     </script>
 </body>
 </html>

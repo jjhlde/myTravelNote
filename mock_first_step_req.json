@@ -1,0 +1,14 @@
+{"userMessage": "좋습니다! 그럼 <마카오 그랜드 리조트 덱 중심의 가족 맞춤 여행> 컨셉으로 계획을 세워볼게요. 아래 내용이 맞는지 마지막으로 확인 부탁드려요!\n\n- 여행지: 마카오\n- 일정: 3박 4일 (정확한 날짜는 아직 미정으로, 추후 확정 가능)\n- 인원: 3인 가족 (성인 2명, 37개월 아동 1명)\n- 요청사항: 그랜드 리조트 덱 방문 및 아이와 함께 즐길 수 있는 활동 위주",
+"systemData": {
+ "destination": "마카오",
+ "startDate": "2025-08-01",
+ "endDate": "2025-08-04",
+ "travelers": {
+   "adults": 2,
+   "children_age": [3]
+ },
+ "tripType": "family",
+ "preferences": ["resort_focused", "kids_friendly"],
+ "notes_from_user": "그랜드 리조트 덱 방문을 선호하며, 37개월 아이와 함께 즐길 수 있는 활동 위주"
+}
+} 
