@@ -101,7 +101,7 @@
 <!-- 이미지 아이템 템플릿 -->
 <template id="image-item-template">
     <div class="snap-center flex-shrink-0 w-full">
-        <img src="{{IMAGE_URL}}" class="w-full h-auto" alt="{{IMAGE_ALT}}" loading="lazy">
+        <img src="{{IMAGE_URL}}" class="w-full h-auto" alt="{{IMAGE_ALT}}" loading="lazy" onerror="handleImageError(this)">
     </div>
 </template>
 
@@ -192,7 +192,7 @@ function createImageSlider(photos, altText) {
     return `
         <div class="relative image-slider-container bg-slate-100">
             <div id="${sliderId}" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar image-list">
-                ${photos.map(src => `<div class="snap-center flex-shrink-0 w-full aspect-video"><img src="${src}" class="w-full h-full object-cover cursor-pointer lightbox-trigger" alt="${altText}" loading="lazy"></div>`).join('')}
+                ${photos.map(src => `<div class="snap-center flex-shrink-0 w-full aspect-video"><img src="${src}" class="w-full h-full object-cover cursor-pointer lightbox-trigger" alt="${altText}" loading="lazy" onerror="handleImageError(this)"></div>`).join('')}
             </div>
             ${photos.length > 1 ? `
             <button class="slider-arrow absolute top-1/2 left-2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center prev-btn" data-slider="${sliderId}">&lt;</button>
@@ -264,6 +264,26 @@ function initializeImageSliders() {
             }
         });
     });
+}
+
+// 이미지 오류 처리 함수
+function handleImageError(imgElement) {
+    console.warn('이미지 로딩 실패:', imgElement.src);
+    
+    // 이미지 컨테이너 숨기기
+    const container = imgElement.closest('.snap-center');
+    if (container) {
+        container.style.display = 'none';
+    }
+    
+    // 슬라이더 컨테이너에 이미지가 없으면 전체 슬라이더 숨기기
+    const sliderContainer = imgElement.closest('.image-slider-container');
+    if (sliderContainer) {
+        const visibleImages = sliderContainer.querySelectorAll('.snap-center:not([style*="display: none"])');
+        if (visibleImages.length === 0) {
+            sliderContainer.style.display = 'none';
+        }
+    }
 }
 
 // 페이지 로드 시 슬라이더 초기화
