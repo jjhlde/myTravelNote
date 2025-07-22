@@ -5,7 +5,8 @@
   "main": "script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "update-places": "node update-places.js"
+    "update-places": "node update-places.js",
+    "places-proxy": "node places-proxy-server.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,9 @@
   "dependencies": {
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.21.2",
     "fs-extra": "^11.1.1",
     "node-fetch": "^2.7.0",
     "path": "^0.12.7",

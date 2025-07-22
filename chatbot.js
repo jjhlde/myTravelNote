@@ -1181,70 +1181,58 @@ function createMockPlaceData(placeQuery) {
 }
 
 /**
- * Unsplash API로 고품질 여행 사진 생성
+ * Place Details API로 사진과 리뷰 가져오기
  */
-async function generateUnsplashPhotos(placeName, placeQuery) {
+async function getPlaceDetailsWithPhotosAndReviews(placeId) {
     try {
-        // 검색 키워드 정리 (도시명, 관광지명 등 핵심 키워드만 추출)
-        let searchQuery = placeName || placeQuery;
+        console.log(`🔍 Place Details API 호출: ${placeId}`);
         
-        // 마카오 관련 검색어 매핑
-        const macauKeywords = {
-            'Galaxy Macau': 'macau casino resort',
-            'Venetian Macao': 'venetian macau casino',
-            'Senado Square': 'macau senado square',
-            'Ruins of St. Paul': 'macau ruins saint paul',
-            'Taipa Village': 'macau taipa village',
-            'Lord Stow': 'macau egg tart',
-            'Macau Tower': 'macau tower',
-            'A-Ma Temple': 'macau temple',
-            'Macau International Airport': 'macau airport'
-        };
+        const proxyUrl = 'http://localhost:3002/api/places/details';
+        const params = new URLSearchParams({
+            place_id: placeId,
+            key: CONFIG.GOOGLE_PLACES_API_KEY
+        });
         
-        // 키워드 매칭
-        const matchedKeyword = Object.keys(macauKeywords).find(key => 
-            searchQuery.toLowerCase().includes(key.toLowerCase())
-        );
+        const response = await fetch(`${proxyUrl}?${params.toString()}`);
         
-        if (matchedKeyword) {
-            searchQuery = macauKeywords[matchedKeyword];
-        } else if (searchQuery.toLowerCase().includes('macau')) {
-            searchQuery += ' macau';
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        console.log(`🖼️ Generating Unsplash images for: ${searchQuery}`);
+        const data = await response.json();
         
-        // 고정된 고품질 Unsplash 이미지 (마카오 여행 관련)
-        const macauImages = [
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600&h=400&fit=crop&crop=center'
-        ];
-        
-        // 랜덤하게 2-3개 선택
-        const selectedImages = [];
-        const numImages = Math.floor(Math.random() * 2) + 2; // 2-3개
-        const shuffled = [...macauImages].sort(() => 0.5 - Math.random());
-        
-        for (let i = 0; i < numImages && i < shuffled.length; i++) {
-            selectedImages.push(shuffled[i]);
+        if (data.status === 'OK' && data.result) {
+            const place = data.result;
+            
+            // 사진 URL 생성
+            const photos = place.photos ? place.photos.slice(0, 3).map(photo => 
+                `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photoreference=${photo.photo_reference}&key=${CONFIG.GOOGLE_PLACES_API_KEY}`
+            ) : [];
+            
+            // 리뷰 처리
+            const reviews = place.reviews ? place.reviews.slice(0, 3).map(review => 
+                `"${review.text.length > 100 ? review.text.substring(0, 100) + '...' : review.text}" (${review.rating}⭐ - ${review.author_name})`
+            ).join(' | ') : '리뷰 정보 없음';
+            
+            console.log(`   ✅ Place Details 성공: ${photos.length}개 사진, ${place.reviews?.length || 0}개 리뷰`);
+            
+            return {
+                photos: photos,
+                reviews: reviews,
+                rating: place.rating,
+                userRatingsTotal: place.user_ratings_total,
+                website: place.website,
+                openingHours: place.opening_hours?.weekday_text,
+                priceLevel: place.price_level
+            };
+        } else {
+            console.log(`   ⚠️ Place Details 결과 없음: ${data.status}`);
+            return null;
         }
-        
-        console.log(`   ✅ Generated ${selectedImages.length} Unsplash images`);
-        return selectedImages;
         
     } catch (error) {
-        console.error(`❌ Unsplash photo generation error:`, error);
-        // 폴백: 기본 마카오 이미지
-        return [
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop&crop=center',
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=400&fit=crop&crop=center'
-        ];
+        console.error(`❌ Place Details API 에러:`, error);
+        return null;
     }
 }
 
@@ -1255,17 +1243,13 @@ async function searchPlaceWithGoogleAPI(query) {
     try {
         console.log(`🌐 Google Places API 호출: "${query}"`);
         
-        const apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
+        const proxyUrl = 'http://localhost:3002/api/places/textsearch';
         const params = new URLSearchParams({
             query: query,
-            key: CONFIG.GOOGLE_PLACES_API_KEY,
-            language: 'ko',
-            fields: 'place_id,name,formatted_address,geometry,rating,photos,reviews,website,opening_hours,price_level,types'
+            key: CONFIG.GOOGLE_PLACES_API_KEY
         });
         
-        // CORS 문제로 인해 서버 프록시를 통해 호출하거나, 브라우저에서 직접 호출이 안될 수 있습니다.
-        // 일단 fetch로 시도해보고, 안되면 JSONP 방식이나 서버 프록시를 고려해야 합니다.
-        const response = await fetch(`${apiUrl}?${params.toString()}`);
+        const response = await fetch(`${proxyUrl}?${params.toString()}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1339,6 +1323,9 @@ async function enrichPlaceWithRealAPI(placeQuery, originalData = {}) {
         const placeData = await searchPlaceWithGoogleAPI(placeQuery);
         
         if (placeData) {
+            // Place Details API로 사진과 리뷰 가져오기
+            const placeDetails = await getPlaceDetailsWithPhotosAndReviews(placeData.place_id);
+            
             const enrichedData = {
                 ...originalData,
                 placeDetails: {
@@ -1349,20 +1336,19 @@ async function enrichPlaceWithRealAPI(placeQuery, originalData = {}) {
                         lat: placeData.geometry?.location?.lat || 0,
                         lng: placeData.geometry?.location?.lng || 0
                     },
-                    rating: placeData.rating || null,
-                    photos: placeData.photos ? await generateUnsplashPhotos(placeData.name, placeQuery) : [],
-                    reviews: placeData.reviews ? placeData.reviews.slice(0, 3).map(review => 
-                        `"${review.text}" (${review.rating}⭐)`
-                    ).join(' | ') : '리뷰 정보 없음',
-                    website: placeData.website || '',
+                    rating: placeDetails?.rating || placeData.rating || null,
+                    photos: placeDetails?.photos || [],
+                    reviews: placeDetails?.reviews || '리뷰 정보 없음',
+                    website: placeDetails?.website || placeData.website || '',
                     mapLink: `https://maps.google.com/?q=${encodeURIComponent(placeData.name + ' ' + (placeData.formatted_address || ''))}`,
-                    priceLevel: placeData.price_level || null,
-                    openingHours: placeData.opening_hours?.weekday_text || null,
-                    types: placeData.types || []
+                    priceLevel: placeDetails?.priceLevel || placeData.price_level || null,
+                    openingHours: placeDetails?.openingHours || placeData.opening_hours?.weekday_text || null,
+                    types: placeData.types || [],
+                    userRatingsTotal: placeDetails?.userRatingsTotal || null
                 }
             };
             
-            console.log(`   ✅ Real API Enriched: ${placeData.name}`);
+            console.log(`   ✅ Real API Enriched: ${placeData.name} (${placeDetails?.photos?.length || 0}개 사진, 리뷰 ${placeDetails?.userRatingsTotal || 0}개)`);
             return enrichedData;
         } else {
             // API에서 결과를 찾지 못한 경우 기본 정보만 반환
