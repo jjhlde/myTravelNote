@@ -479,6 +479,10 @@ async function startDetailedPlanGeneration(travelData) {
             localStorage.setItem(`step2_parsed_${step2SessionId}`, JSON.stringify(parsedDetailedPlan));
             console.log(`💾 2단계 파싱된 데이터 저장됨: step2_parsed_${step2SessionId}`);
             
+            // JSON 파일로 다운로드 저장
+            await downloadJSONFile(parsedDetailedPlan, `step2_detailed_plan_${step2SessionId}.json`);
+            console.log(`📁 2단계 JSON 파일 저장 완료: step2_detailed_plan_${step2SessionId}.json`);
+            
             if (parsedDetailedPlan.responseType === 'preview') {
                 // 프리뷰 모드: 기존 showPreviewCard 함수 사용
                 console.log('▶️ 프리뷰 카드 표시 시작...');
@@ -601,9 +605,18 @@ function showFinalConfirmationCard(finalData) {
             // PWA 생성 로딩 시작
             const pwaLoadingInterval = startPwaLoadingAnimation();
             
+            // 확정하기 전 원본 데이터 JSON 파일 저장
+            const confirmSessionId = Date.now();
+            await downloadJSONFile(finalData, `step3_before_enrichment_${confirmSessionId}.json`);
+            console.log(`📁 확정 전 원본 JSON 파일 저장 완료: step3_before_enrichment_${confirmSessionId}.json`);
+            
             // Places API 호출로 placeDetails 보강
             console.log('📍 Places API로 장소 정보 보강 중...');
             const enrichedData = await enrichWithPlacesAPI(finalData);
+            
+            // 보강된 데이터 JSON 파일 저장
+            await downloadJSONFile(enrichedData, `step3_after_enrichment_${confirmSessionId}.json`);
+            console.log(`📁 보강 후 JSON 파일 저장 완료: step3_after_enrichment_${confirmSessionId}.json`);
             
             // 보강된 데이터를 localStorage에 저장 (PWA에서 사용)
             const enrichedSessionId = Date.now();
@@ -981,6 +994,34 @@ function generateTodoList(destination) {
     return baseTodos;
 }
 
+// --- 파일 저장 유틸리티 함수 ---
+
+/**
+ * JSON 데이터를 파일로 다운로드
+ */
+async function downloadJSONFile(jsonData, filename) {
+    try {
+        const jsonString = JSON.stringify(jsonData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        URL.revokeObjectURL(url);
+        
+        console.log(`✅ JSON 파일 다운로드 완료: ${filename}`);
+    } catch (error) {
+        console.error(`❌ JSON 파일 다운로드 실패: ${filename}`, error);
+    }
+}
+
 // --- Place API 연동 함수들 ---
 
 /**
@@ -1198,34 +1239,65 @@ async function enrichWithPlacesAPI(finalData) {
                     for (let actIndex = 0; actIndex < day.activities.length; actIndex++) {
                         const activity = day.activities[actIndex];
                         console.log(`   🎯 Activity ${actIndex + 1}:`, activity);
-                        console.log(`   🔍 플래이스 관련 필드들:`);
-                        console.log(`     - placeQuery:`, activity.placeQuery);
-                        console.log(`     - placeName:`, activity.placeName);
-                        console.log(`     - location:`, activity.location);
-                        console.log(`     - venue:`, activity.venue);
-                        console.log(`     - restaurant:`, activity.restaurant);
+                        console.log(`   🔍 정확한 필드 구조 체크 (second_step.txt 기준):`);
+                        console.log(`     - activityType:`, activity.activityType);
+                        console.log(`     - transportation?.placeQuery:`, activity.transportation?.placeQuery);
+                        console.log(`     - mainLocation?.placeQuery:`, activity.mainLocation?.placeQuery);
+                        console.log(`     - options 개수:`, activity.options?.length);
                         
-                        // 다양한 필드명 체크
-                        const searchQuery = activity.placeQuery || activity.placeName || activity.location || activity.venue || activity.restaurant;
+                        // second_step.txt 구조에 맞는 정확한 처리
+                        let processedInActivity = 0;
                         
-                        if (searchQuery) {
-                            console.log(`   ✅ 검색어 발견: "${searchQuery}"`);
-                            const enriched = await enrichPlaceWithMockData(searchQuery, activity);
-                            Object.assign(activity, enriched);
-                            processedCount++;
-                        } else {
-                            console.log(`   ❌ 검색 가능한 장소 정보 없음`);
+                        // 1. transport 활동: transportation.placeQuery 처리
+                        if (activity.activityType === 'transport' && activity.transportation?.placeQuery) {
+                            console.log(`   🚗 transport 장소 처리: "${activity.transportation.placeQuery}"`);
+                            const enriched = await enrichPlaceWithMockData(activity.transportation.placeQuery);
+                            activity.transportation.placeDetails = enriched.placeDetails;
+                            processedInActivity++;
                         }
                         
-                        // alternatives 처리
+                        // 2. attraction/rest 활동: mainLocation.placeQuery 처리
+                        if ((activity.activityType === 'attraction' || activity.activityType === 'rest') && activity.mainLocation?.placeQuery) {
+                            console.log(`   🏛️ attraction 메인 장소 처리: "${activity.mainLocation.placeQuery}"`);
+                            const enriched = await enrichPlaceWithMockData(activity.mainLocation.placeQuery);
+                            activity.mainLocation.placeDetails = enriched.placeDetails;
+                            processedInActivity++;
+                        }
+                        
+                        // 3. 모든 활동: options[].placeQuery 처리
+                        if (activity.options && activity.options.length > 0) {
+                            console.log(`   🎯 options 처리 중... (${activity.options.length}개)`);
+                            for (let optIndex = 0; optIndex < activity.options.length; optIndex++) {
+                                const option = activity.options[optIndex];
+                                if (option.placeQuery) {
+                                    console.log(`     📍 Option ${optIndex + 1}: "${option.placeQuery}"`);
+                                    const enriched = await enrichPlaceWithMockData(option.placeQuery);
+                                    option.placeDetails = enriched.placeDetails;
+                                    processedInActivity++;
+                                } else {
+                                    console.log(`     ❌ Option ${optIndex + 1}: placeQuery 없음`);
+                                }
+                            }
+                        }
+                        
+                        if (processedInActivity > 0) {
+                            console.log(`   ✅ Activity ${actIndex + 1}에서 ${processedInActivity}개 장소 처리됨`);
+                            processedCount += processedInActivity;
+                        } else {
+                            console.log(`   ❌ Activity ${actIndex + 1}: 처리 가능한 장소 정보 없음`);
+                        }
+                        
+                        // alternatives 처리 (second_step.txt에는 없지만 legacy 지원)
                         if (activity.alternatives && activity.alternatives.length > 0) {
                             console.log(`   🔄 alternatives 처리 중... (${activity.alternatives.length}개)`);
                             for (const alt of activity.alternatives) {
-                                const altSearchQuery = alt.placeQuery || alt.placeName || alt.location || alt.venue || alt.restaurant;
-                                if (altSearchQuery) {
-                                    const enriched = await enrichPlaceWithMockData(altSearchQuery);
+                                if (alt.placeQuery) {
+                                    console.log(`     🔀 Alternative: "${alt.placeQuery}"`);
+                                    const enriched = await enrichPlaceWithMockData(alt.placeQuery);
                                     alt.placeDetails = enriched.placeDetails;
                                     processedCount++;
+                                } else {
+                                    console.log(`     ❌ Alternative: placeQuery 없음`);
                                 }
                             }
                         }
@@ -1421,6 +1493,23 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             chattyPlanKeys.forEach(key => localStorage.removeItem(key));
             console.log(`🗑️ ${chattyPlanKeys.length}개의 ChattyPlan 데이터를 삭제했습니다.`);
+        },
+        
+        // JSON 파일로 다운로드
+        downloadData: (key, filename) => {
+            const data = localStorage.getItem(key);
+            if (data) {
+                try {
+                    const parsedData = JSON.parse(data);
+                    const finalFilename = filename || `${key}_${Date.now()}.json`;
+                    downloadJSONFile(parsedData, finalFilename);
+                    console.log(`📁 ${key} 데이터를 ${finalFilename}으로 다운로드했습니다.`);
+                } catch (e) {
+                    console.log(`❌ ${key} 데이터 파싱 실패:`, e.message);
+                }
+            } else {
+                console.log(`❌ ${key} 데이터를 찾을 수 없습니다.`);
+            }
         }
     };
     
@@ -1428,5 +1517,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('  window.debugChattyPlan.showAllData() - 모든 데이터 목록');
     console.log('  window.debugChattyPlan.showData("키이름") - 특정 데이터 보기');
     console.log('  window.debugChattyPlan.retryParse("키이름") - 파싱 재시도');
+    console.log('  window.debugChattyPlan.downloadData("키이름", "파일명.json") - JSON 파일 다운로드');
     console.log('  window.debugChattyPlan.clearData() - 데이터 정리');
 });
