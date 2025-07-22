@@ -1181,33 +1181,167 @@ function createMockPlaceData(placeQuery) {
 }
 
 /**
- * 목업 데이터로 Places enrichment
+ * Google Places API Text Search 호출
  */
-async function enrichPlaceWithMockData(placeQuery, originalData = {}) {
-    console.log(`🔍 Processing place: ${placeQuery}`);
-    
-    // 실제 API 호출 시뮬레이션을 위한 지연
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
-    
-    const mockPlaceData = createMockPlaceData(placeQuery);
-    
-    const enrichedData = {
-        ...originalData,
-        placeDetails: {
-            placeId: mockPlaceData.placeId,
-            name: mockPlaceData.name,
-            address: mockPlaceData.address,
-            coordinates: mockPlaceData.coordinates,
-            rating: mockPlaceData.rating,
-            photos: mockPlaceData.photos,
-            reviews: mockPlaceData.reviews,
-            website: mockPlaceData.website,
-            mapLink: mockPlaceData.mapLink
+async function searchPlaceWithGoogleAPI(query) {
+    try {
+        console.log(`🌐 Google Places API 호출: "${query}"`);
+        
+        const apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
+        const params = new URLSearchParams({
+            query: query,
+            key: CONFIG.GOOGLE_PLACES_API_KEY,
+            language: 'ko',
+            fields: 'place_id,name,formatted_address,geometry,rating,photos,reviews,website,opening_hours,price_level,types'
+        });
+        
+        // CORS 문제로 인해 서버 프록시를 통해 호출하거나, 브라우저에서 직접 호출이 안될 수 있습니다.
+        // 일단 fetch로 시도해보고, 안되면 JSONP 방식이나 서버 프록시를 고려해야 합니다.
+        const response = await fetch(`${apiUrl}?${params.toString()}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    };
+        
+        const data = await response.json();
+        
+        if (data.status === 'OK' && data.results && data.results.length > 0) {
+            console.log(`   ✅ Places API 응답 성공: ${data.results[0].name}`);
+            return data.results[0]; // 첫 번째 결과 반환
+        } else {
+            console.log(`   ⚠️ Places API 결과 없음: ${data.status}`);
+            return null;
+        }
+        
+    } catch (error) {
+        console.error(`❌ Places API 호출 실패:`, error);
+        
+        // CORS 오류인 경우 대안적인 접근 방법 제안
+        if (error.message.includes('CORS') || error.name === 'TypeError') {
+            console.log('🔄 CORS 오류로 인해 서버 프록시 또는 JSONP 방식 필요');
+            
+            // 임시로 목업 데이터 반환 (실제 서비스에서는 서버 프록시 구현 필요)
+            console.log('🔄 임시로 목업 데이터로 폴백...');
+            return await searchPlaceWithMockData(query);
+        }
+        
+        throw error;
+    }
+}
+
+/**
+ * CORS 문제 시 목업 데이터로 폴백 (임시 방안)
+ */
+async function searchPlaceWithMockData(query) {
+    console.log(`🔄 Mock data fallback for: ${query}`);
+    const mockPlaceData = createMockPlaceData(query);
     
-    console.log(`   ✅ Enriched: ${mockPlaceData.name}`);
-    return enrichedData;
+    // Google Places API 응답 형식으로 변환
+    return {
+        place_id: mockPlaceData.placeId,
+        name: mockPlaceData.name,
+        formatted_address: mockPlaceData.address,
+        geometry: {
+            location: {
+                lat: mockPlaceData.coordinates.lat,
+                lng: mockPlaceData.coordinates.lng
+            }
+        },
+        rating: mockPlaceData.rating,
+        photos: mockPlaceData.photos.map((url, index) => ({
+            photo_reference: `mock_photo_ref_${index}`,
+            url: url
+        })),
+        reviews: mockPlaceData.reviews ? [
+            { text: mockPlaceData.reviews, rating: mockPlaceData.rating }
+        ] : [],
+        website: mockPlaceData.website,
+        types: ['establishment', 'point_of_interest']
+    };
+}
+
+/**
+ * 실제 Google Places API로 장소 정보 보강
+ */
+async function enrichPlaceWithRealAPI(placeQuery, originalData = {}) {
+    console.log(`🔍 Processing place with real API: ${placeQuery}`);
+    
+    try {
+        // Google Places API Text Search 호출
+        const placeData = await searchPlaceWithGoogleAPI(placeQuery);
+        
+        if (placeData) {
+            const enrichedData = {
+                ...originalData,
+                placeDetails: {
+                    placeId: placeData.place_id,
+                    name: placeData.name,
+                    address: placeData.formatted_address || placeData.vicinity || '',
+                    coordinates: {
+                        lat: placeData.geometry?.location?.lat || 0,
+                        lng: placeData.geometry?.location?.lng || 0
+                    },
+                    rating: placeData.rating || null,
+                    photos: placeData.photos ? placeData.photos.slice(0, 3).map(photo => 
+                        `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${CONFIG.GOOGLE_PLACES_API_KEY}`
+                    ) : [],
+                    reviews: placeData.reviews ? placeData.reviews.slice(0, 3).map(review => 
+                        `"${review.text}" (${review.rating}⭐)`
+                    ).join(' | ') : '리뷰 정보 없음',
+                    website: placeData.website || '',
+                    mapLink: `https://maps.google.com/?q=${encodeURIComponent(placeData.name + ' ' + (placeData.formatted_address || ''))}`,
+                    priceLevel: placeData.price_level || null,
+                    openingHours: placeData.opening_hours?.weekday_text || null,
+                    types: placeData.types || []
+                }
+            };
+            
+            console.log(`   ✅ Real API Enriched: ${placeData.name}`);
+            return enrichedData;
+        } else {
+            // API에서 결과를 찾지 못한 경우 기본 정보만 반환
+            console.log(`   ⚠️ No results from API for: ${placeQuery}`);
+            return {
+                ...originalData,
+                placeDetails: {
+                    placeId: '',
+                    name: placeQuery,
+                    address: 'Address not found',
+                    coordinates: { lat: 0, lng: 0 },
+                    rating: null,
+                    photos: [],
+                    reviews: 'No reviews available',
+                    website: '',
+                    mapLink: `https://maps.google.com/?q=${encodeURIComponent(placeQuery)}`,
+                    priceLevel: null,
+                    openingHours: null,
+                    types: []
+                }
+            };
+        }
+    } catch (error) {
+        console.error(`❌ Places API error for ${placeQuery}:`, error);
+        
+        // 오류 발생 시 기본 정보 반환
+        return {
+            ...originalData,
+            placeDetails: {
+                placeId: '',
+                name: placeQuery,
+                address: 'API Error - Address unavailable',
+                coordinates: { lat: 0, lng: 0 },
+                rating: null,
+                photos: [],
+                reviews: 'API Error - Reviews unavailable',
+                website: '',
+                mapLink: `https://maps.google.com/?q=${encodeURIComponent(placeQuery)}`,
+                priceLevel: null,
+                openingHours: null,
+                types: [],
+                error: error.message
+            }
+        };
+    }
 }
 
 /**
@@ -1251,7 +1385,7 @@ async function enrichWithPlacesAPI(finalData) {
                         // 1. transport 활동: transportation.placeQuery 처리
                         if (activity.activityType === 'transport' && activity.transportation?.placeQuery) {
                             console.log(`   🚗 transport 장소 처리: "${activity.transportation.placeQuery}"`);
-                            const enriched = await enrichPlaceWithMockData(activity.transportation.placeQuery);
+                            const enriched = await enrichPlaceWithRealAPI(activity.transportation.placeQuery);
                             activity.transportation.placeDetails = enriched.placeDetails;
                             processedInActivity++;
                         }
@@ -1259,7 +1393,7 @@ async function enrichWithPlacesAPI(finalData) {
                         // 2. attraction/rest 활동: mainLocation.placeQuery 처리
                         if ((activity.activityType === 'attraction' || activity.activityType === 'rest') && activity.mainLocation?.placeQuery) {
                             console.log(`   🏛️ attraction 메인 장소 처리: "${activity.mainLocation.placeQuery}"`);
-                            const enriched = await enrichPlaceWithMockData(activity.mainLocation.placeQuery);
+                            const enriched = await enrichPlaceWithRealAPI(activity.mainLocation.placeQuery);
                             activity.mainLocation.placeDetails = enriched.placeDetails;
                             processedInActivity++;
                         }
@@ -1271,7 +1405,7 @@ async function enrichWithPlacesAPI(finalData) {
                                 const option = activity.options[optIndex];
                                 if (option.placeQuery) {
                                     console.log(`     📍 Option ${optIndex + 1}: "${option.placeQuery}"`);
-                                    const enriched = await enrichPlaceWithMockData(option.placeQuery);
+                                    const enriched = await enrichPlaceWithRealAPI(option.placeQuery);
                                     option.placeDetails = enriched.placeDetails;
                                     processedInActivity++;
                                 } else {
@@ -1293,7 +1427,7 @@ async function enrichWithPlacesAPI(finalData) {
                             for (const alt of activity.alternatives) {
                                 if (alt.placeQuery) {
                                     console.log(`     🔀 Alternative: "${alt.placeQuery}"`);
-                                    const enriched = await enrichPlaceWithMockData(alt.placeQuery);
+                                    const enriched = await enrichPlaceWithRealAPI(alt.placeQuery);
                                     alt.placeDetails = enriched.placeDetails;
                                     processedCount++;
                                 } else {
@@ -1318,7 +1452,7 @@ async function enrichWithPlacesAPI(finalData) {
                 const searchQuery = accommodation.placeQuery || accommodation.placeName || accommodation.name || accommodation.hotelName;
                 if (searchQuery) {
                     console.log('🏨 숙박시설 처리:', searchQuery);
-                    const enriched = await enrichPlaceWithMockData(searchQuery, accommodation);
+                    const enriched = await enrichPlaceWithRealAPI(searchQuery, accommodation);
                     Object.assign(accommodation, enriched);
                     processedCount++;
                 }
