@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>채티플랜 - AI 여행 플래너 (UI 데모)</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="chatbot.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 플랜 생성 로딩 오버레이 -->
+        <div class="loading-overlay hidden" id="plan-loading-overlay">
+            <div class="loading-modal">
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--background-color);
+            position: relative; /* 로딩 오버레이를 위한 기준점 */
+            overflow: hidden;
+        }
+
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-background);
+            position: sticky; top: 0; z-index: 10;
+        }
+
+        .brand-logo { display: flex; align-items: center; font-weight: 800; font-size: 20px; }
+        .brand-logo .icon { margin-right: 8px; }
+        .profile-icon img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 16px; }
+        .chat-container { display: flex; flex-direction: column; gap: 16px; }
+
+        .message { display: flex; gap: 10px; max-width: 98%; align-items: flex-end; }
+        .message .avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; background: var(--brand-gradient);
+        }
+        
+        .message p {
+            margin: 0; padding: 12px 16px;
+            border-radius: var(--border-radius-main);
+            line-height: 1.6; 
+            word-break: keep-all; /* 모바일 줄바꿈 최적화 */
+        }
+
+        .message.bot p, .message.bot .message-content {
+            background-color: var(--card-background);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-soft);
+            border-top-left-radius: 4px;
+        }
+        
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message.user .avatar { background: #4c80f1; }
+        .message.user p { background: var(--brand-color); color: white; border-top-right-radius: 4px; }
+
+        .chat-input-area {
+            display: flex; padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--card-background);
+        }
+        .chat-input {
+            flex-grow: 1; border: 1px solid #dcdcdc; border-radius: 20px;
+            padding: 10px 16px; font-size: 16px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: var(--brand-color); }
+        .send-button {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: var(--brand-color); color: white;
+            margin-left: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .send-button:hover { background: #e65100; }
+        
+        /* --- 샘플 프롬프트 UI --- */
+        .sample-prompts-container {
+            margin-bottom: 24px;
+        }
+        .sample-prompts-container h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 0 0 12px 4px;
+        }
+        .sample-prompts-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 16px; /* 그림자를 위한 공간 */
+            margin: 0 -16px; /* 부모 패딩 상쇄 */
+            padding-left: 16px;
+            padding-right: 16px;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .sample-prompts-scroll::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        .sample-card {
+            flex: 0 0 150px;
+            height: 200px;
+            border-radius: var(--border-radius-main);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-medium);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .sample-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px -4px rgb(0 0 0 / 0.1);
+        }
+        .sample-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            z-index: 1;
+        }
+        .sample-card .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 30%, transparent 70%);
+            z-index: 2;
+        }
+        .sample-card .content {
+            position: relative;
+            z-index: 3;
+            padding: 16px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .sample-card .icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sample-card .text {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* --- 구분선 (개선) --- */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 24px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .divider:not(:empty)::before {
+            margin-right: .75em;
+        }
+        .divider:not(:empty)::after {
+            margin-left: .75em;
+        }
+        .divider i {
+            font-size: 12px;
+            color: #ddd;
+        }
+
+
+        /* --- 1단계: 요청 확인 메시지 (디자인 개선) --- */
+        .request-summary-message .message-content {
+            padding: 0;
+            overflow: hidden;
+            border-radius: var(--border-radius-main);
+            box-shadow: var(--shadow-medium);
+            border-top-left-radius: 4px;
+            background: var(--card-background);
+        }
+        .summary-card-image {
+            height: 120px;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .summary-card-image img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .summary-card-image::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 20%, transparent 80%);
+            z-index: 2;
+        }
+        .summary-card-image h3 {
+            position: relative;
+            z-index: 3;
+            color: white;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .summary-card-details {
+            padding: 20px;
+        }
+        .request-summary-message p {
+            padding: 0;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-shadow: none; /* 텍스트 쉐도우 제거 */
+        }
+        .request-summary-message ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 16px;
+        }
+        .request-summary-message li {
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+        }
+        .request-summary-message li i {
+            color: var(--brand-color);
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .request-summary-message li strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .request-summary-message .action-button-container {
+            padding-top: 24px;
+        }
+        .action-button-container button {
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--border-radius-small);
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Pretendard', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: var(--brand-color);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 111, 0, 0.3);
+        }
+        .action-button-container button:hover { background-color: #e65100; }
+        .action-button-container button:active { transform: scale(0.98); }
+
+        /* --- 로딩 UI 공통 --- */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(247, 248, 250, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none; /* 로딩 중 클릭 방지 */
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .loading-modal {
+            background: var(--card-background);
+            border-radius: var(--border-radius-main);
+            padding: 32px;
+            box-shadow: var(--shadow-medium);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            width: 250px;
+        }
+        .loading-icon-container {
+            font-size: 28px;
+            color: var(--brand-color);
+            position: relative;
+            width: 40px;
+            height: 40px;
+        }
+        .loading-icon-container i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            opacity: 0;
+        }
+        .loading-icon-container i.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        /* --- PWA 로딩 UI (신규) --- */
+        #pwa-loading-overlay .loading-icon-container {
+            font-size: 36px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--brand-gradient);
+            transition: width 1.5s ease-out;
+        }
+
+
+        /* --- 2단계: 프리뷰 카드 --- */
+        .message-content.preview-card {
+            padding: 0; overflow: hidden; width: 100%;
+            background: var(--card-background);
+            border-radius: var(--border-radius-main);
+            box-shadow: var(--shadow-medium);
+            border-top-left-radius: 4px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: card-fade-in 0.5s ease-out forwards;
+        }
+        @keyframes card-fade-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .preview-card .preview-header {
+            position: relative;
+            padding: 24px;
+            background: var(--brand-gradient);
+            overflow: hidden;
+        }
+        
+        .preview-card .preview-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: move-pattern 20s linear infinite;
+        }
+
+        @keyframes move-pattern {
+            from { background-position: 0 0; }
+            to { background-position: 120px 60px; }
+        }
+        
+        .preview-header .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .preview-card .preview-header h3 {
+            margin: 0 0 8px 0; font-size: 26px; font-weight: 800;
+            color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .preview-card .preview-header p {
+            padding: 4px 10px; margin: 0; font-size: 15px;
+            color: white; 
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .preview-card .preview-body { padding: 24px; display: grid; gap: 16px; }
+
+        .preview-section {
+            background-color: #fcfcfc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-small);
+            padding: 16px;
+        }
+        
+        .preview-section h4 {
+            margin: 0 0 12px 0; font-size: 16px; font-weight: 600;
+            color: var(--text-primary); display: flex; align-items: center;
+        }
+        .preview-section h4 i {
+            margin-right: 8px; color: var(--brand-color);
+            width: 20px; text-align: center;
+        }
+
+        .preview-section ul { margin: 0; padding: 0; list-style: none; }
+        
+        .day-plan-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .day-plan-item:last-child { margin-bottom: 0; }
+        
+        .day-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .day-number span {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--brand-color);
+        }
+        .day-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .day-summary {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .day-route {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+        }
+        .day-route i {
+            margin-right: 6px;
+            font-size: 12px;
+        }
+        
+        .highlights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .highlight-chip {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius-small);
+            padding: 10px;
+            font-size: 14px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .preview-card .confirmation-buttons {
+            display: flex; gap: 12px;
+            padding: 16px 24px;
+            background-color: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .confirmation-buttons button {
+            flex-grow: 1; padding: 14px;
+            border-radius: var(--border-radius-small);
+            font-size: 16px; font-weight: bold;
+            font-family: 'Pretendard', sans-serif;
+            cursor: pointer; transition: all 0.2s ease; border: none;
+        }
+        .confirmation-buttons button:active { transform: scale(0.98); }
+
+        .confirm-btn {
+            background: var(--brand-color);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 111, 0, 0.3);
+        }
+        .confirm-btn:hover { background-color: #e65100; }
+
+        .modify-btn { background-color: #e9ecef; color: var(--text-secondary); }
+        .modify-btn:hover { background-color: #dee2e6; }
+
+        /* --- 최종 확정 카드 (개선) --- */
+        .plan-confirmed-message .message-content {
+            padding: 0;
+            overflow: hidden;
+        }
+        .plan-confirmed-message .summary-card-details {
+            text-align: center;
+        }
+        .plan-confirmed-message h3 {
+            font-size: 20px;
+            margin: 0 0 8px 0;
+        }
+        .plan-confirmed-message p {
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .plan-confirmed-message .action-button-container button {
+            background: var(--brand-gradient);
+        }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 플랜 생성 로딩 오버레이 -->
+        <div class="loading-overlay hidden" id="plan-loading-overlay">
+            <div class="loading-modal">
+                <div class="loading-icon-container" id="plan-loading-icon-container">
+                    <i class="fa-solid fa-plane active"></i>
+                    <i class="fa-solid fa-bed"></i>
+                    <i class="fa-solid fa-utensils"></i>
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <span class="loading-text" id="plan-loading-text">항공편 정보를 확인 중입니다...</span>
+            </div>
+        </div>
+        
+        <!-- PWA 생성 로딩 오버레이 -->
+        <div class="loading-overlay hidden" id="pwa-loading-overlay">
+            <div class="loading-modal">
+                <div class="loading-icon-container">
+                    <i class="fa-solid fa-mobile-screen-button active"></i>
+                </div>
+                <span class="loading-text" id="pwa-loading-text">PWA 앱을 만들고 있어요...</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="pwa-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <header class="main-header">
+            <div class="brand-logo">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="#FF6F00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="name">채티플랜</span>
+            </div>
+            <div class="profile-icon">
+                <img src="https://placehold.co/40x40/EFEFEF/333?text=U" alt="User Profile">
+            </div>
+        </header>
+
+        <main class="main-content" id="main-content">
+            <div class="sample-prompts-container">
+                <h4>이렇게 시작해 보세요! ✨</h4>
+                <div class="sample-prompts-scroll">
+                    <div class="sample-card" data-prompt="도쿄 2박 3일 맛집 소개해줘">
+                        <img src="https://images.unsplash.com/photo-1559899143-b1e1a5565345?q=80&w=1887&auto=format&fit=crop" alt="맛집 여행">
+                        <div class="overlay"></div>
+                        <div class="content">
+                            <div class="icon"><i class="fa-solid fa-utensils"></i></div>
+                            <div class="text">도쿄 2박 3일 맛집 소개해줘</div>
+                        </div>
+                    </div>
+                    <div class="sample-card" data-prompt="여자친구랑 갈만한 파리 3박 4일 로맨틱 여행">
+                        <img src="https://images.unsplash.com/photo-1502602898657-3e91760c0341?q=80&w=2070&auto=format&fit=crop" alt="커플 여행">
+                        <div class="overlay"></div>
+                        <div class="content">
+                            <div class="icon"><i class="fa-solid fa-heart"></i></div>
+                            <div class="text">여자친구랑 갈만한 파리 3박 4일 로맨틱 여행</div>
+                        </div>
+                    </div>
+                    <div class="sample-card" data-prompt="부모님 모시고 갈만한 베트남 효도 여행지 추천">
+                        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop" alt="가족 여행">
+                        <div class="overlay"></div>
+                        <div class="content">
+                            <div class="icon"><i class="fa-solid fa-people-group"></i></div>
+                            <div class="text">부모님 모시고 갈만한 베트남 효도 여행지 추천</div>
+                        </div>
+                    </div>
+                     <div class="sample-card" data-prompt="혼자 제주도 뚜벅이 여행 계획 짜줘">
+                        <img src="https://images.unsplash.com/photo-1579169825453-8d4b4653cc2c?q=80&w=1887&auto=format&fit=crop" alt="나홀로 여행">
+                        <div class="overlay"></div>
+                        <div class="content">
+                            <div class="icon"><i class="fa-solid fa-person-walking"></i></div>
+                            <div class="text">혼자 제주도 뚜벅이 여행 계획 짜줘</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="divider"><i class="fa-solid fa-star"></i></div>
+
+            <div class="chat-container" id="chat-container">
+                <div class="message bot">
+                    <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <p>안녕하세요! 어떤 여행을 꿈꾸시나요? 🗺️</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="또는 직접 입력해 보세요" autocomplete="off">
+            <button class="send-button" id="send-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </footer>
+    </div>
+
+    <script src="chatbot.js"></script>
+</body>
+</html>
+        };
+        
+        const mockStep2Response = {
+            "summary": {
+                "destination": "도쿄 4박 5일",
+                "period": "2025-09-25 ~ 2025-09-29",
+                "travelers": "성인 1명",
+                "dayPlans": [
+                    { "day": 1, "summary": "도착 및 게임쇼 준비", "route": "나리타 공항 → 신주쿠 호텔 → 저녁 식사" },
+                    { "day": 2, "summary": "도쿄 게임쇼 & 아키하바라", "route": "마쿠하리 멧세 → 아키하바라 전자상가" },
+                    { "day": 3, "summary": "시부야 & 하라주쿠 탐방", "route": "메이지 신궁 → 시부야 스크램블 → 닌텐도 스토어" },
+                    { "day": 4, "summary": "미식과 쇼핑", "route": "츠키지 시장 → 긴자 쇼핑 → 신주쿠 야경" }
+                ],
+                "highlights": [ "도쿄 게임쇼", "현지인 맛집", "아키하바라", "시부야 스카이" ]
+            }
+        };
+
+        // --- DOM 요소 ---
+        const mainContent = document.getElementById('main-content');
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const planLoadingOverlay = document.getElementById('plan-loading-overlay');
+        const pwaLoadingOverlay = document.getElementById('pwa-loading-overlay');
+        
+        const scrollToBottom = () => { mainContent.scrollTop = mainContent.scrollHeight; };
+
+        // --- 1단계: 요청 확인 메시지 생성 및 표시 ---
+        const showRequestSummary = (userMessage) => {
+            const messageId = `msg-${Date.now()}`;
+            const summaryCardHTML = `
+                <div class="message bot request-summary-message" id="${messageId}">
+                    <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div class="message-content">
+                        <div class="summary-card-image">
+                           <img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop" alt="도쿄 배경 이미지">
+                           <h3>도쿄 여행</h3>
+                        </div>
+                        <div class="summary-card-details">
+                            <p>${userMessage}</p>
+                            <ul>
+                                <li><i class="fa-solid fa-calendar-days"></i><strong>일정:</strong> 2025-09-25 ~ 2025-09-29 (4박 5일)</li>
+                                <li><i class="fa-solid fa-user"></i><strong>인원:</strong> 성인 1명</li>
+                                <li><i class="fa-solid fa-plane"></i><strong>교통:</strong> 대한항공 (시간 미정)</li>
+                                <li><i class="fa-solid fa-check"></i><strong>요청사항:</strong> 게임쇼, 현지인 맛집</li>
+                            </ul>
+                            <div class="action-button-container">
+                                <button class="create-plan-btn">좋아요! 상세 플랜 짜줘 🪄</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', summaryCardHTML);
+            scrollToBottom();
+
+            const newCard = document.getElementById(messageId);
+            const createPlanBtn = newCard.querySelector('.create-plan-btn');
+            createPlanBtn.addEventListener('click', () => {
+                const loadingInterval = startPlanLoadingAnimation();
+                setTimeout(() => {
+                    stopPlanLoadingAnimation(loadingInterval);
+                    newCard.classList.add('hidden');
+                    showPreviewCard(mockStep2Response.summary);
+                }, 4500);
+            });
+        };
+
+        // --- 2단계: 프리뷰 생성 로딩 애니메이션 ---
+        const startPlanLoadingAnimation = () => {
+            const loadingIconContainer = document.getElementById('plan-loading-icon-container');
+            const loadingText = document.getElementById('plan-loading-text');
+            const icons = loadingIconContainer.querySelectorAll('i');
+            const texts = [
+                "항공편 정보를 확인 중입니다...", "최적의 숙소를 검색 중입니다...",
+                "현지 맛집을 수집 중입니다...", "최고의 동선을 분석 중입니다..."
+            ];
+            let currentIndex = 0;
+
+            planLoadingOverlay.classList.remove('hidden');
+            setTimeout(() => planLoadingOverlay.classList.add('active'), 10);
+
+            const intervalId = setInterval(() => {
+                icons.forEach(icon => icon.classList.remove('active'));
+                currentIndex = (currentIndex + 1) % icons.length;
+                icons[currentIndex].classList.add('active');
+                loadingText.textContent = texts[currentIndex];
+            }, 1500);
+
+            return intervalId;
+        };
+        
+        const stopPlanLoadingAnimation = (intervalId) => {
+            clearInterval(intervalId);
+            planLoadingOverlay.classList.remove('active');
+            setTimeout(() => planLoadingOverlay.classList.add('hidden'), 300);
+        };
+        
+        // --- 3단계: PWA 생성 로딩 애니메이션 ---
+        const startPwaLoadingAnimation = () => {
+            const loadingText = document.getElementById('pwa-loading-text');
+            const progressBar = document.getElementById('pwa-progress-bar');
+            const texts = [
+                "앱 아이콘을 생성하는 중...",
+                "오프라인 데이터를 저장하는 중...",
+                "최종 패키징을 진행하는 중..."
+            ];
+            let textIndex = 0;
+            let progress = 0;
+
+            pwaLoadingOverlay.classList.remove('hidden');
+            setTimeout(() => pwaLoadingOverlay.classList.add('active'), 10);
+            
+            loadingText.textContent = texts[textIndex];
+            setTimeout(() => { progressBar.style.width = '30%'; }, 100);
+
+            const intervalId = setInterval(() => {
+                textIndex++;
+                progress += 35;
+                if(textIndex < texts.length) {
+                    loadingText.textContent = texts[textIndex];
+                    progressBar.style.width = `${progress}%`;
+                } else {
+                    progressBar.style.width = '100%';
+                }
+            }, 1500);
+
+            return intervalId;
+        };
+        
+        const stopPwaLoadingAnimation = (intervalId) => {
+            clearInterval(intervalId);
+            pwaLoadingOverlay.classList.remove('active');
+            setTimeout(() => pwaLoadingOverlay.classList.add('hidden'), 300);
+        };
+
+
+        // --- 2단계: 프리뷰 카드 표시 ---
+        const showPreviewCard = (summary) => {
+            const messageId = `msg-${Date.now()}`;
+            const previewCardHTML = `
+                <div class="message bot" id="${messageId}">
+                    <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div class="message-content preview-card">
+                        <div class="preview-header">
+                            <div class="header-content">
+                                <h3>${summary.destination}</h3>
+                                <p>${summary.period} / ${summary.travelers}</p>
+                            </div>
+                        </div>
+                        <div class="preview-body">
+                            <div class="preview-section">
+                                <h4><i class="fa-solid fa-map-signs"></i>일정 요약</h4>
+                                <ul class="preview-day-plans"></ul>
+                            </div>
+                            <div class="preview-section">
+                                <h4><i class="fa-solid fa-star"></i>여행 하이라이트</h4>
+                                <div class="highlights-grid"></div>
+                            </div>
+                        </div>
+                        <div class="confirmation-buttons">
+                            <button class="confirm-btn">나만의 여행 앱 만들기 🚀</button>
+                            <button class="modify-btn">수정하기</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', previewCardHTML);
+            
+            const newCard = document.getElementById(messageId);
+            
+            const dayPlansList = newCard.querySelector('.preview-day-plans');
+            dayPlansList.innerHTML = '';
+            summary.dayPlans.forEach(plan => {
+                const li = document.createElement('li');
+                li.className = 'day-plan-item';
+                li.innerHTML = `
+                    <div class="day-number">
+                        DAY<span>${plan.day}</span>
+                    </div>
+                    <div class="day-details">
+                        <div class="day-summary">${plan.summary}</div>
+                        <div class="day-route">
+                            <i class="fa-solid fa-route"></i>
+                            ${plan.route}
+                        </div>
+                    </div>
+                `;
+                dayPlansList.appendChild(li);
+            });
+
+            const highlightsGrid = newCard.querySelector('.highlights-grid');
+            highlightsGrid.innerHTML = '';
+            summary.highlights.forEach(highlight => {
+                const div = document.createElement('div');
+                div.className = 'highlight-chip';
+                div.textContent = highlight;
+                highlightsGrid.appendChild(div);
+            });
+            
+            scrollToBottom();
+
+            // 버튼 이벤트 리스너 추가
+            newCard.querySelector('.confirm-btn').addEventListener('click', () => {
+                newCard.classList.add('hidden');
+                const pwaLoadingInterval = startPwaLoadingAnimation();
+                setTimeout(() => {
+                    stopPwaLoadingAnimation(pwaLoadingInterval);
+                    showFinalMessage();
+                }, 4500);
+            });
+
+            newCard.querySelector('.modify-btn').addEventListener('click', () => {
+                newCard.classList.add('hidden');
+                showModificationPrompt();
+            });
+        };
+
+        const showFinalMessage = () => {
+             const finalMessageHTML = `
+                <div class="message bot plan-confirmed-message">
+                    <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div class="message-content">
+                         <div class="summary-card-image">
+                           <img src="https://images.unsplash.com/photo-1513407030348-c983a97b98d8?q=80&w=2072&auto=format&fit=crop" alt="여행 앱 완성 이미지">
+                           <h3>나만의 여행 앱 완성!</h3>
+                        </div>
+                        <div class="summary-card-details">
+                            <p>당신만의 특별한 여행 앱이 준비되었어요. 아래 버튼으로 바로 확인하고, 홈 화면에 추가해서 편하게 사용하세요!</p>
+                            <div class="action-button-container">
+                                <button onclick="alert('앱 링크가 열립니다!')">링크 열기 & 홈 화면에 추가</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             `;
+             chatContainer.insertAdjacentHTML('beforeend', finalMessageHTML);
+             scrollToBottom();
+        };
+
+        const showModificationPrompt = () => {
+            const modificationMessageHTML = `
+                <div class="message bot">
+                     <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.5094 2.80808 14.9546 3.37524 16.25M8.5 16.5L11.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                     <p>알겠습니다. 어느 부분을 수정하고 싶으신가요? 편하게 말씀해주세요. 😊</p>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', modificationMessageHTML);
+            chatInput.focus();
+            scrollToBottom();
+        };
+
+        // --- 채팅 기능 구현 ---
+        const handleSendMessage = (messageText = chatInput.value.trim()) => {
+            if (!messageText) return;
+
+            const userMessageHTML = `
+                <div class="message user">
+                    <div class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <p>${messageText}</p>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', userMessageHTML);
+            chatInput.value = '';
+            scrollToBottom();
+
+            // AI 응답 시뮬레이션
+            setTimeout(() => {
+                showRequestSummary(mockStep1Response.userMessage);
+            }, 1000);
+        };
+        
+        sendButton.addEventListener('click', () => handleSendMessage());
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+
+        // 샘플 카드 클릭 이벤트
+        document.querySelectorAll('.sample-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const promptText = card.dataset.prompt;
+                handleSendMessage(promptText);
+            });
+        });
+
+    </script>
+</body>
+</html>

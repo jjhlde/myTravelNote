@@ -358,16 +358,23 @@
                 console.log('🌍 Places API로 여행 데이터 보강 시작:', travelData);
                 
                 try {
-                    const placeQueries = this.extractNewStructurePlaceQueries(travelData);
-                    console.log('📍 발견된 장소 쿼리:', placeQueries);
+                    const queryResult = this.extractNewStructurePlaceQueries(travelData);
+                    console.log('📍 발견된 장소 쿼리:', queryResult);
                     
-                    if (placeQueries.length === 0) {
+                    // 구조가 바뀌었는지 확인 (이전 버전 호환성)
+                    const allQueries = queryResult.allQueries || queryResult;
+                    const uniqueQueries = queryResult.uniqueQueries || queryResult;
+                    
+                    if (uniqueQueries.length === 0) {
                         console.log('⚠️ 장소 쿼리가 없어 API 호출을 건너뜍니다');
                         return travelData;
                     }
                     
-                    const enrichedPlaces = await this.batchEnrichPlaces(placeQueries);
-                    const enrichedData = this.mergeNewStructurePlaceData(travelData, enrichedPlaces);
+                    // 캐시를 위해 고유 쿼리만 API 호출
+                    const enrichedPlaces = await this.batchEnrichPlaces(uniqueQueries);
+                    
+                    // 캐시에서 모든 위치에 데이터 적용
+                    const enrichedData = this.mergeNewStructurePlaceDataWithCache(travelData, allQueries, enrichedPlaces);
                     
                     console.log('✅ Places API 데이터 보강 완료');
                     return enrichedData;
@@ -379,9 +386,76 @@
             }
 
             extractNewStructurePlaceQueries(travelData) {
-                const queries = [];
+                console.log('🔍 재귀 함수로 모든 placeQuery 추출 중...');
                 
-                // mainPlan에서 placeQuery 추출
+                // 재귀 함수로 모든 placeQuery 추출
+                function extractPlaceQueries(obj, result = [], currentPath = '', parentActivity = null) {
+                    if (Array.isArray(obj)) {
+                        obj.forEach((item, index) => {
+                            extractPlaceQueries(item, result, `${currentPath}[${index}]`, parentActivity);
+                        });
+                    } else if (obj && typeof obj === 'object') {
+                        // 현재 객체가 활동인지 확인
+                        const currentActivity = obj.activityType ? obj : parentActivity;
+                        
+                        for (const key in obj) {
+                            const value = obj[key];
+                            const path = currentPath ? `${currentPath}.${key}` : key;
+
+                            if (key === 'placeQuery' && value) {
+                                let inferredType = 'general';
+                                
+                                // 1. 상위 활동 기반 분류 (핵심 분류)
+                                if (currentActivity?.activityType === 'meal') {
+                                    inferredType = 'restaurant';
+                                } else if (currentActivity?.activityType === 'transport') {
+                                    inferredType = 'transport';
+                                } else if (currentActivity?.activityType === 'attraction') {
+                                    inferredType = 'attraction';
+                                } else if (currentActivity?.activityType === 'shopping') {
+                                    inferredType = 'shopping';
+                                } else if (currentActivity?.activityType === 'rest') {
+                                    inferredType = 'accommodation';
+                                }
+                                
+                                // 2. dailyTips 영역의 spots는 모두 'spot' 타입으로
+                                if (path.includes('dailyTips') && path.includes('spots')) {
+                                    inferredType = 'spot';
+                                }
+
+                                result.push({
+                                    query: value.trim(),
+                                    path: path,
+                                    type: inferredType,
+                                    activity: currentActivity?.activityName || 'Unknown'
+                                });
+                            } else {
+                                extractPlaceQueries(value, result, path, currentActivity);
+                            }
+                        }
+                    }
+                    return result;
+                }
+                
+                const allQueries = extractPlaceQueries(travelData);
+                
+                // 캐시를 위한 고유 쿼리 목록 생성 (API 호출용)
+                const uniqueQueries = [];
+                const seenQueries = new Set();
+                
+                allQueries.forEach(item => {
+                    if (!seenQueries.has(item.query)) {
+                        seenQueries.add(item.query);
+                        uniqueQueries.push(item);
+                    }
+                });
+                
+                console.log(`📊 총 ${allQueries.length}개 발견, 고유 쿼리 ${uniqueQueries.length}개 (API 호출용)`);
+                console.log(`🔄 캐시 시스템을 통해 ${allQueries.length}개 위치에 모두 데이터 적용 예정`);
+                
+                return { allQueries, uniqueQueries };
+                
+                // mainPlan에서 placeQuery 추출 (기존 구조 유지)
                 if (travelData.mainPlan && travelData.mainPlan.dailyPlans) {
                     travelData.mainPlan.dailyPlans.forEach((day, dayIndex) => {
                         if (day.activities) {
@@ -633,10 +707,48 @@
                     const path = enrichedPlace.path;
                     const placeData = enrichedPlace.placeData;
                     
+                    // placeQuery 경로를 placeDetails 경로로 변환
+                    const placeDetailsPath = path.replace('.placeQuery', '.placeDetails');
+                    
                     // 경로를 따라 데이터 병합
-                    this.setNestedProperty(result, path + '.placeDetails', placeData);
+                    this.setNestedProperty(result, placeDetailsPath, placeData);
                 });
                 
+                return result;
+            }
+
+            mergeNewStructurePlaceDataWithCache(travelData, allQueries, enrichedPlaces) {
+                console.log('🔄 캐시 시스템을 통해 데이터 병합 시작');
+                
+                const result = JSON.parse(JSON.stringify(travelData));
+                
+                // 캐시 Map 생성 (query → placeData)
+                const placeCache = new Map();
+                enrichedPlaces.forEach(enrichedPlace => {
+                    placeCache.set(enrichedPlace.query, enrichedPlace.placeData);
+                });
+                
+                console.log(`📦 캐시에 ${placeCache.size}개 장소 데이터 저장됨`);
+                
+                // 모든 쿼리 위치에 캐시에서 데이터 적용
+                let appliedCount = 0;
+                allQueries.forEach(queryItem => {
+                    const cachedData = placeCache.get(queryItem.query);
+                    if (cachedData) {
+                        // placeQuery 경로를 placeDetails 경로로 변환
+                        const placeDetailsPath = queryItem.path.replace('.placeQuery', '.placeDetails');
+                        
+                        // 경로를 따라 데이터 병합
+                        this.setNestedProperty(result, placeDetailsPath, cachedData);
+                        appliedCount++;
+                        
+                        console.log(`✅ 캐시 적용: ${queryItem.query} → ${placeDetailsPath}`);
+                    } else {
+                        console.warn(`⚠️ 캐시에서 데이터를 찾을 수 없음: ${queryItem.query}`);
+                    }
+                });
+                
+                console.log(`🎯 총 ${allQueries.length}개 위치 중 ${appliedCount}개에 데이터 적용 완료`);
                 return result;
             }
 

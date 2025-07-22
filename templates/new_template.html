@@ -279,7 +279,9 @@
                 pageContainer.style.transform = `translateX(-${index * 100}%)`;
                 navTabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
                 const activeTab = navTabs[index];
-                activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                if (activeTab) {
+                    activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
                 initializeSliders();
             };
             navContainer.addEventListener('click', (e) => { if (e.target.classList.contains('nav-tab')) { switchPage(parseInt(e.target.dataset.index)); } });

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 플로우 테스트 및 검증</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">TripCrafter PWA 시스템 테스트</h1>
+        
+        <!-- 테스트 결과 표시 영역 -->
+        <div id="test-results" class="space-y-4"></div>
+        
+        <!-- 테스트 실행 버튼 -->
+        <div class="text-center mt-8">
+            <button id="run-tests" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                전체 테스트 실행
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class PWASystemTester {
+            constructor() {
+                this.testResults = [];
+                this.testContainer = document.getElementById('test-results');
+            }
+
+            async runAllTests() {
+                this.testResults = [];
+                this.updateUI('테스트 시작...', 'info');
+                
+                // 테스트 목록
+                const tests = [
+                    { name: 'mock_first_step_resp.json 파일 존재 확인', test: this.testMockDataExists },
+                    { name: 'main-script.js 로딩 테스트', test: this.testMainScriptLoading },
+                    { name: 'TravelPWARenderer 클래스 존재 확인', test: this.testRendererClass },
+                    { name: 'mock_first_step_resp.json 스키마 검증', test: this.testMockDataSchema },
+                    { name: '데이터 정규화 기능 테스트', test: this.testDataNormalization },
+                    { name: '항공편 정보 추출 테스트', test: this.testFlightInfoExtraction },
+                    { name: '교통편 정보 매핑 테스트', test: this.testTransportationMapping },
+                    { name: '예산 정보 처리 테스트', test: this.testBudgetProcessing },
+                    { name: '일일 팁 추출 테스트', test: this.testDailyTipsExtraction },
+                    { name: '템플릿 헬퍼 함수들 테스트', test: this.testHelperFunctions }
+                ];
+
+                // 각 테스트 실행
+                for (const test of tests) {
+                    try {
+                        await test.test.call(this);
+                        this.logResult(test.name, true, '통과');
+                    } catch (error) {
+                        this.logResult(test.name, false, error.message);
+                    }
+                }
+
+                this.displaySummary();
+            }
+
+            async testMockDataExists() {
+                const response = await fetch('./mock_first_step_resp.json');
+                if (!response.ok) {
+                    throw new Error('mock_first_step_resp.json 파일을 찾을 수 없습니다.');
+                }
+            }
+
+            async testMainScriptLoading() {
+                if (typeof TravelPWARenderer === 'undefined') {
+                    // 동적으로 main-script.js 로드 시도
+                    await this.loadScript('./main-script.js');
+                }
+                
+                if (typeof TravelPWARenderer === 'undefined') {
+                    throw new Error('main-script.js 로딩 실패 또는 TravelPWARenderer 클래스 없음');
+                }
+            }
+
+            async testRendererClass() {
+                const renderer = new TravelPWARenderer();
+                if (!renderer.normalizeData || typeof renderer.normalizeData !== 'function') {
+                    throw new Error('TravelPWARenderer에서 normalizeData 메서드를 찾을 수 없습니다.');
+                }
+            }
+
+            async testMockDataSchema() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                // 필수 필드 검증
+                const requiredFields = ['responseType', 'tripPlan'];
+                const tripPlanFields = ['tripInfo', 'itinerary', 'dailyTips'];
+                const tripInfoFields = ['destination', 'tripTitle', 'startDate', 'endDate'];
+                
+                requiredFields.forEach(field => {
+                    if (!mockData[field]) {
+                        throw new Error(`필수 필드 누락: ${field}`);
+                    }
+                });
+                
+                tripPlanFields.forEach(field => {
+                    if (!mockData.tripPlan[field]) {
+                        throw new Error(`tripPlan 필수 필드 누락: ${field}`);
+                    }
+                });
+                
+                tripInfoFields.forEach(field => {
+                    if (!mockData.tripPlan.tripInfo[field]) {
+                        throw new Error(`tripInfo 필수 필드 누락: ${field}`);
+                    }
+                });
+            }
+
+            async testDataNormalization() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                const renderer = new TravelPWARenderer();
+                const normalizedData = renderer.normalizeData(mockData);
+                
+                // 정규화된 데이터 필수 필드 검증
+                const requiredNormalizedFields = ['title', 'destination', 'duration', 'days', 'flightInfo', 'dailyTips'];
+                requiredNormalizedFields.forEach(field => {
+                    if (!normalizedData[field]) {
+                        throw new Error(`정규화된 데이터에서 필수 필드 누락: ${field}`);
+                    }
+                });
+                
+                if (normalizedData.days.length === 0) {
+                    throw new Error('일정 데이터가 정규화되지 않았습니다.');
+                }
+            }
+
+            async testFlightInfoExtraction() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                const renderer = new TravelPWARenderer();
+                const normalizedData = renderer.normalizeData(mockData);
+                
+                if (!normalizedData.flightInfo || !normalizedData.flightInfo.outbound) {
+                    throw new Error('항공편 정보가 제대로 추출되지 않았습니다.');
+                }
+                
+                if (!normalizedData.flightInfo.outbound.airline || !normalizedData.flightInfo.outbound.time) {
+                    throw new Error('출국편 정보가 완전하지 않습니다.');
+                }
+            }
+
+            async testTransportationMapping() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                const renderer = new TravelPWARenderer();
+                const normalizedData = renderer.normalizeData(mockData);
+                
+                // 교통편 관련 활동이 있는지 확인
+                const hasTransportActivity = normalizedData.days.some(day => 
+                    day.activities.some(activity => activity.type === 'transport')
+                );
+                
+                if (!hasTransportActivity) {
+                    throw new Error('교통편 활동이 정규화되지 않았습니다.');
+                }
+                
+                // transportation 정보가 추출되었는지 확인
+                if (!normalizedData.transportation || normalizedData.transportation.length === 0) {
+                    throw new Error('교통편 팁 정보가 추출되지 않았습니다.');
+                }
+            }
+
+            async testBudgetProcessing() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                const renderer = new TravelPWARenderer();
+                const normalizedData = renderer.normalizeData(mockData);
+                
+                if (!normalizedData.estimatedBudget || !normalizedData.estimatedBudget.total) {
+                    throw new Error('예산 정보가 제대로 처리되지 않았습니다.');
+                }
+                
+                if (normalizedData.estimatedBudget.total <= 0) {
+                    throw new Error('예산 금액이 유효하지 않습니다.');
+                }
+            }
+
+            async testDailyTipsExtraction() {
+                const response = await fetch('./mock_first_step_resp.json');
+                const mockData = await response.json();
+                
+                const renderer = new TravelPWARenderer();
+                const normalizedData = renderer.normalizeData(mockData);
+                
+                if (!normalizedData.dailyTips || normalizedData.dailyTips.length === 0) {
+                    throw new Error('일일 팁이 추출되지 않았습니다.');
+                }
+                
+                // 특정 타입의 팁이 있는지 확인 (transportation, eggTart, kids 등)
+                const tipTypes = normalizedData.dailyTips.map(tip => tip.type);
+                const expectedTypes = ['transportation', 'eggTart', 'kids'];
+                
+                const hasExpectedTips = expectedTypes.some(type => tipTypes.includes(type));
+                if (!hasExpectedTips) {
+                    throw new Error('예상된 타입의 팁을 찾을 수 없습니다.');
+                }
+            }
+
+            async testHelperFunctions() {
+                const renderer = new TravelPWARenderer();
+                
+                // calculateDuration 테스트
+                const duration = renderer.calculateDuration('09:00', '12:00');
+                if (duration !== 180) {
+                    throw new Error('시간 계산 함수가 제대로 동작하지 않습니다.');
+                }
+                
+                // calculateDays 테스트
+                const days = renderer.calculateDays('2025-07-27', '2025-07-30');
+                if (!days.includes('3박4일')) {
+                    throw new Error('일수 계산 함수가 제대로 동작하지 않습니다.');
+                }
+                
+                // generateTripDates 테스트
+                renderer.travelData = {
+                    startDate: '2025-07-27',
+                    endDate: '2025-07-30'
+                };
+                const tripDates = renderer.generateTripDates();
+                if (!tripDates.includes('7월')) {
+                    throw new Error('여행 날짜 생성 함수가 제대로 동작하지 않습니다.');
+                }
+            }
+
+            logResult(testName, success, message) {
+                this.testResults.push({ testName, success, message });
+            }
+
+            updateUI(message, type = 'info') {
+                const div = document.createElement('div');
+                const colorClass = type === 'info' ? 'bg-blue-100 text-blue-800' : 
+                                 type === 'success' ? 'bg-green-100 text-green-800' : 
+                                 'bg-red-100 text-red-800';
+                
+                div.className = `p-4 rounded-lg ${colorClass}`;
+                div.textContent = message;
+                this.testContainer.appendChild(div);
+            }
+
+            displaySummary() {
+                const passed = this.testResults.filter(r => r.success).length;
+                const total = this.testResults.length;
+                const failed = total - passed;
+
+                // 테스트 결과 상세 표시
+                this.testResults.forEach(result => {
+                    const div = document.createElement('div');
+                    const statusIcon = result.success ? '✅' : '❌';
+                    const colorClass = result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+                    
+                    div.className = `p-4 border rounded-lg ${colorClass}`;
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium">${statusIcon} ${result.testName}</h3>
+                                <p class="text-sm text-gray-600 mt-1">${result.message}</p>
+                            </div>
+                        </div>
+                    `;
+                    this.testContainer.appendChild(div);
+                });
+
+                // 총합 결과
+                const summaryDiv = document.createElement('div');
+                const overallSuccess = failed === 0;
+                const summaryColor = overallSuccess ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-100 border-red-300 text-red-800';
+                
+                summaryDiv.className = `p-6 border-2 rounded-lg ${summaryColor} mt-6`;
+                summaryDiv.innerHTML = `
+                    <h2 class="text-xl font-bold mb-2">테스트 결과 요약</h2>
+                    <p class="text-lg">
+                        총 ${total}개 테스트 중 ${passed}개 통과, ${failed}개 실패
+                    </p>
+                    <p class="mt-2 font-medium">
+                        ${overallSuccess ? '🎉 모든 테스트 통과!' : '⚠️ 일부 테스트 실패 - 수정 필요'}
+                    </p>
+                `;
+                this.testContainer.appendChild(summaryDiv);
+            }
+
+            loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+        }
+
+        // 테스트 실행
+        document.getElementById('run-tests').addEventListener('click', async () => {
+            const tester = new PWASystemTester();
+            await tester.runAllTests();
+        });
+
+        // 페이지 로드 시 자동 실행
+        window.addEventListener('load', async () => {
+            const tester = new PWASystemTester();
+            await tester.runAllTests();
+        });
+    </script>
+</body>
+</html>

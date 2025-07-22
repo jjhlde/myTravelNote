@@ -48,7 +48,7 @@ async function callGeminiAPI(systemPrompt, userMessage, conversationHistory = []
                 temperature: 0.7,
                 topK: 40,
                 topP: 0.9,
-                maxOutputTokens: 18000,
+                maxOutputTokens: 30000,
             }
         };
 
@@ -223,25 +223,54 @@ async function processUserMessage(userMessage) {
 function tryParseJSON(text) {
     try {
         console.log('🔍 JSON 파싱 시도 중...');
+        console.log('📊 원본 텍스트 길이:', text.length, '문자');
+        console.log('🔍 텍스트 시작 100자:', text.substring(0, 100));
+        console.log('🔍 텍스트 끝 100자:', text.substring(text.length - 100));
         
         // JSON 코드 블록에서 추출 (```json ... ```)
         const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
-            console.log('📦 JSON 코드 블록 발견:', jsonMatch[1]);
-            return JSON.parse(jsonMatch[1]);
+            console.log('📦 JSON 코드 블록 발견');
+            console.log('📊 추출된 JSON 길이:', jsonMatch[1].length, '문자');
+            
+            try {
+                const parsed = JSON.parse(jsonMatch[1]);
+                console.log('✅ JSON 코드 블록 파싱 성공!');
+                return parsed;
+            } catch (parseError) {
+                console.log('❌ JSON 코드 블록 파싱 실패:', parseError.message);
+                console.log('🔍 파싱 실패한 JSON 시작 200자:', jsonMatch[1].substring(0, 200));
+            }
         }
         
         // 중괄호로 시작하는 JSON 찾기
         const braceMatch = text.match(/\{[\s\S]*\}/);
         if (braceMatch) {
-            console.log('🔧 JSON 객체 발견:', braceMatch[0]);
-            return JSON.parse(braceMatch[0]);
+            console.log('🔧 JSON 객체 패턴 발견');
+            console.log('📊 추출된 JSON 길이:', braceMatch[0].length, '문자');
+            
+            try {
+                const parsed = JSON.parse(braceMatch[0]);
+                console.log('✅ JSON 객체 파싱 성공!');
+                return parsed;
+            } catch (parseError) {
+                console.log('❌ JSON 객체 파싱 실패:', parseError.message);
+                console.log('🔍 파싱 실패한 JSON 시작 200자:', braceMatch[0].substring(0, 200));
+                
+                // 파싱 실패한 JSON을 localStorage에 저장 (디버깅용)
+                const debugId = Date.now();
+                localStorage.setItem(`json_parse_fail_${debugId}`, braceMatch[0]);
+                console.log(`💾 파싱 실패 JSON 저장됨: json_parse_fail_${debugId}`);
+            }
         }
         
-        console.log('❌ JSON 패턴을 찾을 수 없음');
+        console.log('❌ JSON 패턴을 찾을 수 없음 - 전체 텍스트 확인:');
+        console.log('📄 전체 텍스트:', text);
         return null;
+        
     } catch (e) {
-        console.log('❌ JSON 파싱 오류:', e.message);
+        console.log('❌ JSON 파싱 전체 오류:', e.message);
+        console.log('📄 오류 발생 텍스트:', text);
         return null;
     }
 }
@@ -431,7 +460,14 @@ async function startDetailedPlanGeneration(travelData) {
         
         console.log('✅ 2단계 Gemini 응답:', detailedPlanResponse);
         
+        // 2단계 원본 응답을 먼저 localStorage에 저장 (파싱 오류 디버깅용)
+        const step2SessionId = Date.now();
+        localStorage.setItem(`step2_raw_${step2SessionId}`, detailedPlanResponse);
+        console.log(`💾 2단계 원본 응답 저장됨: step2_raw_${step2SessionId}`);
+        console.log(`📊 원본 응답 크기: ${detailedPlanResponse.length} 문자`);
+        
         // JSON 응답 파싱
+        console.log('🔄 2단계 JSON 파싱 시작...');
         const parsedDetailedPlan = tryParseJSON(detailedPlanResponse);
         
         if (parsedDetailedPlan) {
@@ -439,20 +475,33 @@ async function startDetailedPlanGeneration(travelData) {
             console.log('🔍 실제 응답 타입:', parsedDetailedPlan.responseType);
             console.log('✅ 예상과 일치여부:', parsedDetailedPlan.responseType === 'preview' ? '일치 (preview)' : `불일치 (${parsedDetailedPlan.responseType})`);
             
+            // 파싱된 데이터도 localStorage에 저장 (디버깅용)
+            localStorage.setItem(`step2_parsed_${step2SessionId}`, JSON.stringify(parsedDetailedPlan));
+            console.log(`💾 2단계 파싱된 데이터 저장됨: step2_parsed_${step2SessionId}`);
+            
             if (parsedDetailedPlan.responseType === 'preview') {
                 // 프리뷰 모드: 기존 showPreviewCard 함수 사용
+                console.log('▶️ 프리뷰 카드 표시 시작...');
                 showPreviewCard(parsedDetailedPlan.summary);
             } else if (parsedDetailedPlan.responseType === 'final') {
                 // 최종 모드: 전체 여행 계획 표시
+                console.log('▶️ 최종 여행 계획 표시 시작...');
                 showFinalTravelPlan(parsedDetailedPlan);
             } else {
                 console.log('❓ 알 수 없는 응답 타입:', parsedDetailedPlan.responseType);
+                console.log('🔄 텍스트 응답으로 폴백...');
                 showTextResponse(detailedPlanResponse);
             }
         } else {
-            // JSON 파싱 실패시 텍스트 응답으로 표시
-            console.log('💭 일반 텍스트 응답으로 표시');
-            showTextResponse(detailedPlanResponse);
+            // JSON 파싱 실패시 에러 메시지와 함께 텍스트 응답으로 표시
+            console.log('💭 JSON 파싱 실패 - 텍스트 응답으로 표시');
+            console.log('🔄 사용자에게 파싱 실패 안내...');
+            showErrorMessage('AI 응답을 처리하는 중 문제가 발생했습니다. 다시 시도해 주세요.');
+            
+            // 디버깅을 위해 원본 텍스트도 표시 (개발 모드에서만)
+            if (window.location.search.includes('debug=true')) {
+                showTextResponse(`디버그: ${detailedPlanResponse}`);
+            }
         }
         
     } catch (error) {
@@ -552,18 +601,26 @@ function showFinalConfirmationCard(finalData) {
             // PWA 생성 로딩 시작
             const pwaLoadingInterval = startPwaLoadingAnimation();
             
-            // TODO: Places API 호출로 placeDetails 보강
-            // const enrichedData = await enrichWithPlacesAPI(finalData);
+            // Places API 호출로 placeDetails 보강
+            console.log('📍 Places API로 장소 정보 보강 중...');
+            const enrichedData = await enrichWithPlacesAPI(finalData);
             
-            // 현재는 4.5초 후 완성 메시지 (추후 Places API로 대체)
-            setTimeout(() => {
-                stopPwaLoadingAnimation(pwaLoadingInterval);
-                showPWACompletedMessage();
-            }, 4500);
+            // 보강된 데이터를 localStorage에 저장 (PWA에서 사용)
+            const enrichedSessionId = Date.now();
+            localStorage.setItem(`travel_enriched_${enrichedSessionId}`, JSON.stringify(enrichedData));
+            console.log(`💾 보강된 데이터 저장됨: travel_enriched_${enrichedSessionId}`);
+            console.log(`📊 보강된 데이터 크기: ${JSON.stringify(enrichedData).length} 문자`);
+            
+            // 로딩 완료 및 완성 메시지 표시
+            stopPwaLoadingAnimation(pwaLoadingInterval);
+            showPWACompletedMessage();
             
         } catch (error) {
             console.error('❌ 최종 확정 오류:', error);
-            showErrorMessage('앱 생성 중 오류가 발생했습니다.');
+            if (pwaLoadingInterval) {
+                stopPwaLoadingAnimation(pwaLoadingInterval);
+            }
+            showErrorMessage('앱 생성 중 오류가 발생했습니다. 다시 시도해 주세요.');
         }
     });
     
@@ -839,20 +896,36 @@ function openGeneratedPWA() {
     }
 }
 
-// localStorage에서 가장 최근 Final 데이터 키 찾기
+// localStorage에서 가장 최근 데이터 키 찾기 (enriched 우선, 없으면 final)
 function findLatestFinalData() {
     const keys = Object.keys(localStorage);
+    
+    // 1. 보강된 데이터 우선 검색
+    const enrichedKeys = keys.filter(key => key.startsWith('travel_enriched_'));
+    if (enrichedKeys.length > 0) {
+        enrichedKeys.sort((a, b) => {
+            const timeA = parseInt(a.replace('travel_enriched_', ''));
+            const timeB = parseInt(b.replace('travel_enriched_', ''));
+            return timeB - timeA;
+        });
+        console.log('✅ 보강된 데이터 발견:', enrichedKeys[0]);
+        return enrichedKeys[0];
+    }
+    
+    // 2. 보강된 데이터가 없으면 기본 final 데이터 검색
     const finalKeys = keys.filter(key => key.startsWith('travel_final_'));
+    if (finalKeys.length === 0) {
+        console.log('❌ 여행 데이터를 찾을 수 없음');
+        return null;
+    }
     
-    if (finalKeys.length === 0) return null;
-    
-    // 타임스탬프 기준으로 정렬하여 가장 최근 것 반환
     finalKeys.sort((a, b) => {
         const timeA = parseInt(a.replace('travel_final_', ''));
         const timeB = parseInt(b.replace('travel_final_', ''));
         return timeB - timeA;
     });
     
+    console.log('⚠️ 기본 데이터 사용:', finalKeys[0]);
     return finalKeys[0];
 }
 
@@ -906,6 +979,292 @@ function generateTodoList(destination) {
     }
     
     return baseTodos;
+}
+
+// --- Place API 연동 함수들 ---
+
+/**
+ * 목업 Places API 응답 생성 (실제 API 키 이슈 대안)
+ */
+function createMockPlaceData(placeQuery) {
+    // 마카오 및 도쿄 주요 장소들의 목업 데이터
+    const mockData = {
+        // 마카오 장소들
+        'Galaxy Macau': {
+            placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+            name: 'Galaxy Macau',
+            address: 'Estrada da Baía de Nossa Senhora da Esperança, s/n, Taipa, Macao',
+            coordinates: { lat: 22.1463, lng: 113.5585 },
+            rating: 4.2,
+            photos: [
+                'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400',
+                'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400',
+                'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400'
+            ],
+            reviews: '"Amazing resort with great facilities!" (5⭐) | "Perfect for family vacation" (4⭐) | "Excellent service and location" (5⭐)',
+            website: 'https://www.galaxymacau.com',
+            mapLink: 'https://maps.google.com/?q=22.1463,113.5585'
+        },
+        'Venetian Macao': {
+            placeId: 'ChIJ5TCOcRauEmsRfstfuIabdDU',
+            name: 'The Venetian Macao',
+            address: 'Estrada da Baía de Nossa Senhora da Esperança, s/n, Taipa, Macao',
+            coordinates: { lat: 22.1482, lng: 113.5644 },
+            rating: 4.3,
+            photos: [
+                'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=400',
+                'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400'
+            ],
+            reviews: '"Beautiful Venice-themed resort!" (5⭐) | "Great shopping and dining" (4⭐)',
+            website: 'https://www.venetianmacao.com',
+            mapLink: 'https://maps.google.com/?q=22.1482,113.5644'
+        },
+        'Senado Square': {
+            placeId: 'ChIJrTLr-GyuEmsRnrXiPA0L_iw',
+            name: 'Senado Square',
+            address: 'Largo do Senado, Macao',
+            coordinates: { lat: 22.1930, lng: 113.5387 },
+            rating: 4.1,
+            photos: [
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400'
+            ],
+            reviews: '"Historic and beautiful square!" (5⭐) | "Must-visit in Macau" (4⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=22.1930,113.5387'
+        },
+        'Ruins of St. Paul': {
+            placeId: 'ChIJsf7D-myuEmsRtVVpYahAkF0',
+            name: 'Ruins of St. Paul\'s',
+            address: 'Largo de São Paulo, Macau',
+            coordinates: { lat: 22.1976, lng: 113.5411 },
+            rating: 4.0,
+            photos: [
+                'https://images.unsplash.com/photo-1555400503-cb939ea4b1a6?w=400'
+            ],
+            reviews: '"Historical landmark, must see!" (5⭐) | "Beautiful ruins with great views" (4⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=22.1976,113.5411'
+        },
+        
+        // 도쿄 장소들
+        'Tokyo Game Show': {
+            placeId: 'ChIJMzPKgyeJGGARzU5sJmwpLbE',
+            name: 'Tokyo Game Show (Makuhari Messe)',
+            address: '2-1 Nakase, Mihama-ku, Chiba City, Chiba 261-8550',
+            coordinates: { lat: 35.6475, lng: 140.0338 },
+            rating: 4.1,
+            photos: [
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400',
+                'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'
+            ],
+            reviews: '"Amazing gaming event!" (5⭐) | "Best place for game lovers" (5⭐) | "Great exhibition space" (4⭐)',
+            website: 'https://tgs.cesa.or.jp/',
+            mapLink: 'https://maps.google.com/?q=35.6475,140.0338'
+        },
+        'Shibuya': {
+            placeId: 'ChIJxailyD-MGGARho3x6PUiV6A',
+            name: 'Shibuya Crossing',
+            address: 'Shibuya, Tokyo, Japan',
+            coordinates: { lat: 35.6598, lng: 139.7006 },
+            rating: 4.5,
+            photos: [
+                'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
+                'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=400'
+            ],
+            reviews: '"Iconic Tokyo crossing!" (5⭐) | "Must visit in Tokyo" (5⭐) | "Bustling and exciting" (4⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=35.6598,139.7006'
+        },
+        'Tsukiji': {
+            placeId: 'ChIJazqQNbKJGGARAP5nQRVjK7I',
+            name: 'Tsukiji Outer Market',
+            address: '4 Chome-16-2 Tsukiji, Chuo City, Tokyo 104-0045',
+            coordinates: { lat: 35.6654, lng: 139.7707 },
+            rating: 4.3,
+            photos: [
+                'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=400'
+            ],
+            reviews: '"Fresh sushi and seafood!" (5⭐) | "Food lover paradise" (5⭐) | "Early morning market experience" (4⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=35.6654,139.7707'
+        },
+        'Asakusa': {
+            placeId: 'ChIJ3-2-5dOMGGARUqBjm5LYfL4',
+            name: 'Asakusa Sensoji Temple',
+            address: '2-3-1 Asakusa, Taito City, Tokyo 111-0032',
+            coordinates: { lat: 35.7148, lng: 139.7967 },
+            rating: 4.2,
+            photos: [
+                'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400'
+            ],
+            reviews: '"Historic temple experience!" (5⭐) | "Traditional Japan" (4⭐) | "Beautiful architecture" (5⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=35.7148,139.7967'
+        },
+        'Harajuku': {
+            placeId: 'ChIJzdqRS_mLGGARdVZhU8gJ1KM',
+            name: 'Harajuku Takeshita Street',
+            address: 'Takeshita Street, Shibuya City, Tokyo 150-0001',
+            coordinates: { lat: 35.6702, lng: 139.7064 },
+            rating: 4.1,
+            photos: [
+                'https://images.unsplash.com/photo-1493804714600-6edb1cd93080?w=400'
+            ],
+            reviews: '"Youth culture hub!" (4⭐) | "Unique shopping street" (4⭐) | "Colorful and vibrant" (5⭐)',
+            website: '',
+            mapLink: 'https://maps.google.com/?q=35.6702,139.7064'
+        }
+    };
+    
+    // 검색어 매칭
+    for (const [key, data] of Object.entries(mockData)) {
+        if (placeQuery.toLowerCase().includes(key.toLowerCase()) || 
+            key.toLowerCase().includes(placeQuery.toLowerCase()) ||
+            placeQuery.includes(data.name.toLowerCase())) {
+            return data;
+        }
+    }
+    
+    // 기본 폴백 데이터 (검색 키워드 기반)
+    return {
+        placeId: `mock_${Date.now()}`,
+        name: placeQuery,
+        address: 'Macau',
+        coordinates: { lat: 22.1987, lng: 113.5439 },
+        rating: null,
+        photos: ['https://images.unsplash.com/photo-1555400503-cb939ea4b1a6?w=400'],
+        reviews: '장소 정보 확인 중...',
+        website: '',
+        mapLink: `https://maps.google.com/?q=${encodeURIComponent(placeQuery)} Macau`
+    };
+}
+
+/**
+ * 목업 데이터로 Places enrichment
+ */
+async function enrichPlaceWithMockData(placeQuery, originalData = {}) {
+    console.log(`🔍 Processing place: ${placeQuery}`);
+    
+    // 실제 API 호출 시뮬레이션을 위한 지연
+    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+    
+    const mockPlaceData = createMockPlaceData(placeQuery);
+    
+    const enrichedData = {
+        ...originalData,
+        placeDetails: {
+            placeId: mockPlaceData.placeId,
+            name: mockPlaceData.name,
+            address: mockPlaceData.address,
+            coordinates: mockPlaceData.coordinates,
+            rating: mockPlaceData.rating,
+            photos: mockPlaceData.photos,
+            reviews: mockPlaceData.reviews,
+            website: mockPlaceData.website,
+            mapLink: mockPlaceData.mapLink
+        }
+    };
+    
+    console.log(`   ✅ Enriched: ${mockPlaceData.name}`);
+    return enrichedData;
+}
+
+/**
+ * finalData에서 모든 placeQuery를 찾아서 Places API로 보강
+ */
+async function enrichWithPlacesAPI(finalData) {
+    console.log('🚀 Places API로 데이터 보강 시작...');
+    console.log('📊 원본 데이터:', finalData);
+    
+    const enrichedData = JSON.parse(JSON.stringify(finalData)); // Deep copy
+    let processedCount = 0;
+    
+    try {
+        // 데이터 구조 분석
+        console.log('🔍 데이터 구조 분석 중...');
+        console.log('📋 tripPlan 존재:', !!enrichedData.tripPlan);
+        console.log('📋 itinerary 존재:', !!enrichedData.tripPlan?.itinerary);
+        console.log('📋 itinerary 길이:', enrichedData.tripPlan?.itinerary?.length);
+        
+        // tripPlan.itinerary 처리
+        if (enrichedData.tripPlan && enrichedData.tripPlan.itinerary) {
+            console.log('🔄 itinerary 처리 시작...');
+            for (let dayIndex = 0; dayIndex < enrichedData.tripPlan.itinerary.length; dayIndex++) {
+                const day = enrichedData.tripPlan.itinerary[dayIndex];
+                console.log(`📅 Day ${dayIndex + 1} 처리 중:`, day);
+                console.log(`📍 activities 존재:`, !!day.activities, '개수:', day.activities?.length);
+                
+                if (day.activities) {
+                    for (let actIndex = 0; actIndex < day.activities.length; actIndex++) {
+                        const activity = day.activities[actIndex];
+                        console.log(`   🎯 Activity ${actIndex + 1}:`, activity);
+                        console.log(`   🔍 플래이스 관련 필드들:`);
+                        console.log(`     - placeQuery:`, activity.placeQuery);
+                        console.log(`     - placeName:`, activity.placeName);
+                        console.log(`     - location:`, activity.location);
+                        console.log(`     - venue:`, activity.venue);
+                        console.log(`     - restaurant:`, activity.restaurant);
+                        
+                        // 다양한 필드명 체크
+                        const searchQuery = activity.placeQuery || activity.placeName || activity.location || activity.venue || activity.restaurant;
+                        
+                        if (searchQuery) {
+                            console.log(`   ✅ 검색어 발견: "${searchQuery}"`);
+                            const enriched = await enrichPlaceWithMockData(searchQuery, activity);
+                            Object.assign(activity, enriched);
+                            processedCount++;
+                        } else {
+                            console.log(`   ❌ 검색 가능한 장소 정보 없음`);
+                        }
+                        
+                        // alternatives 처리
+                        if (activity.alternatives && activity.alternatives.length > 0) {
+                            console.log(`   🔄 alternatives 처리 중... (${activity.alternatives.length}개)`);
+                            for (const alt of activity.alternatives) {
+                                const altSearchQuery = alt.placeQuery || alt.placeName || alt.location || alt.venue || alt.restaurant;
+                                if (altSearchQuery) {
+                                    const enriched = await enrichPlaceWithMockData(altSearchQuery);
+                                    alt.placeDetails = enriched.placeDetails;
+                                    processedCount++;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    console.log(`📅 Day ${dayIndex + 1}: activities가 없습니다.`);
+                }
+            }
+        } else {
+            console.log('❌ tripPlan.itinerary를 찾을 수 없습니다.');
+        }
+        
+        // accommodations 처리
+        console.log('🔄 accommodations 처리 중...');
+        if (enrichedData.accommodations) {
+            console.log('🏨 accommodations 발견:', enrichedData.accommodations.length, '개');
+            for (const accommodation of enrichedData.accommodations) {
+                const searchQuery = accommodation.placeQuery || accommodation.placeName || accommodation.name || accommodation.hotelName;
+                if (searchQuery) {
+                    console.log('🏨 숙박시설 처리:', searchQuery);
+                    const enriched = await enrichPlaceWithMockData(searchQuery, accommodation);
+                    Object.assign(accommodation, enriched);
+                    processedCount++;
+                }
+            }
+        } else {
+            console.log('❌ accommodations를 찾을 수 없습니다.');
+        }
+        
+        console.log(`✅ Places API 보강 완료! ${processedCount}개 장소 처리됨`);
+        console.log('🎯 보강된 데이터:', enrichedData);
+        
+        return enrichedData;
+        
+    } catch (error) {
+        console.error('❌ Places API 보강 중 오류:', error);
+        // 오류 발생 시 원본 데이터 반환
+        return finalData;
+    }
 }
 
 // --- 구 버전 최종 메시지 (더 이상 사용 안함, 삭제 예정) ---
@@ -1011,4 +1370,63 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('✅ ChattyPlan 챗봇이 준비되었습니다!');
     console.log('🔗 API 키 상태:', CONFIG.GEMINI_API_KEY ? '설정됨' : '누락');
+    
+    // 디버그 모드 전역 함수들 추가
+    window.debugChattyPlan = {
+        // localStorage의 모든 ChattyPlan 데이터 확인
+        showAllData: () => {
+            const keys = Object.keys(localStorage);
+            const chattyPlanKeys = keys.filter(k => 
+                k.startsWith('step2_') || k.startsWith('travel_') || k.startsWith('json_parse_fail_')
+            );
+            console.log('📊 ChattyPlan localStorage 데이터:');
+            chattyPlanKeys.forEach(key => {
+                const data = localStorage.getItem(key);
+                console.log(`${key}: ${data ? data.length + '문자' : '없음'}`);
+            });
+            return chattyPlanKeys;
+        },
+        
+        // 특정 키의 데이터 상세보기
+        showData: (key) => {
+            const data = localStorage.getItem(key);
+            if (data) {
+                console.log(`📄 ${key}:`, data);
+                try {
+                    const parsed = JSON.parse(data);
+                    console.log(`🔄 ${key} (파싱됨):`, parsed);
+                } catch (e) {
+                    console.log(`❌ ${key} JSON 파싱 실패:`, e.message);
+                }
+            } else {
+                console.log(`❌ ${key} 데이터를 찾을 수 없습니다.`);
+            }
+        },
+        
+        // 파싱 실패 데이터 재시도
+        retryParse: (key) => {
+            const data = localStorage.getItem(key);
+            if (data) {
+                console.log('🔄 JSON 파싱 재시도 중...');
+                return tryParseJSON(data);
+            }
+            return null;
+        },
+        
+        // localStorage 정리
+        clearData: () => {
+            const keys = Object.keys(localStorage);
+            const chattyPlanKeys = keys.filter(k => 
+                k.startsWith('step2_') || k.startsWith('travel_') || k.startsWith('json_parse_fail_')
+            );
+            chattyPlanKeys.forEach(key => localStorage.removeItem(key));
+            console.log(`🗑️ ${chattyPlanKeys.length}개의 ChattyPlan 데이터를 삭제했습니다.`);
+        }
+    };
+    
+    console.log('🔧 디버그 도구 사용법:');
+    console.log('  window.debugChattyPlan.showAllData() - 모든 데이터 목록');
+    console.log('  window.debugChattyPlan.showData("키이름") - 특정 데이터 보기');
+    console.log('  window.debugChattyPlan.retryParse("키이름") - 파싱 재시도');
+    console.log('  window.debugChattyPlan.clearData() - 데이터 정리');
 });

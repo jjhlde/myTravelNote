@@ -2,11 +2,28 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Rendering Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Template Rendering Test - mock_first_step_resp.json</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#F57C00">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mock First Step Test">
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
         .gradient-text {
             background-image: linear-gradient(45deg, #F57C00, #FFB74D);
             -webkit-background-clip: text;
@@ -15,43 +32,60 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .page-container { display: flex; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .page-content { flex-shrink: 0; width: 100%; }
-        .nav-tab.active { color: #F57C00; font-weight: 700; border-color: #F57C00; }
-        .bottom-sheet { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .bottom-sheet.active { transform: translateY(0); }
-        .overlay { opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-        .overlay.active { opacity: 1; pointer-events: auto; }
-        .slider-arrow { opacity: 0; transition: opacity 0.3s ease; }
-        .image-slider-container:hover .slider-arrow { opacity: 1; }
+        
+        .page-container {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page-content {
+            flex-shrink: 0;
+            width: 100%;
+        }
+        .nav-tab.active {
+            color: #F57C00;
+            font-weight: 700;
+            border-color: #F57C00;
+        }
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+        .overlay {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .slider-arrow {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .image-slider-container:hover .slider-arrow {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
+
     <div class="container mx-auto max-w-lg min-h-screen bg-white shadow-2xl shadow-slate-200 flex flex-col relative overflow-hidden">
         
         <!-- 상단 헤더 (고정) -->
         <header id="main-header" class="sticky top-0 z-20 bg-white/95 backdrop-blur-lg border-b border-slate-100">
-            <div class="p-6 flex justify-between items-center">
-                <div class="flex-1 min-w-0">
-                    <h1 id="main-title" class="text-lg font-bold text-slate-900 truncate">아이와 함께하는 여유로운 마카오 가족 여행</h1>
-                    <p id="main-subtitle" class="text-xs text-slate-500 truncate">2024.07.30 - 2024.08.01 (2박 3일)</p>
-                </div>
-                <button class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center flex-shrink-0 ml-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                </button>
+            <div class="p-6">
+                <p id="trip-destination" class="text-sm font-semibold text-orange-600">{{DESTINATION}}</p>
+                <h1 id="trip-title" class="text-xl font-bold text-slate-900 mt-1">{{TRIP_TITLE}}</h1>
+                <p id="trip-dates" class="text-sm text-slate-500 mt-1">{{TRIP_DATES}}</p>
             </div>
             <!-- 스크롤형 탭 네비게이션 -->
             <div id="top-nav" class="px-4 border-t border-slate-100">
                 <div class="flex items-center gap-4 overflow-x-auto no-scrollbar">
-                    <button class="nav-tab flex-shrink-0 py-3 px-1 border-b-2 border-transparent text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 transition active" data-day="1">
-                        DAY 1
-                    </button>
-                    <button class="nav-tab flex-shrink-0 py-3 px-1 border-b-2 border-transparent text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 transition" data-day="2">
-                        DAY 2
-                    </button>
-                    <button class="nav-tab flex-shrink-0 py-3 px-1 border-b-2 border-transparent text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 transition" data-day="3">
-                        DAY 3
-                    </button>
+                    {{DAY_TABS}}
                 </div>
             </div>
         </header>
@@ -59,67 +93,24 @@
         <!-- 메인 콘텐츠 영역 (스와이프 가능) -->
         <main class="flex-1 overflow-hidden">
             <div id="page-container" class="page-container h-full">
-                <!-- Day 1 Page -->
-                <div class="page-content h-full overflow-y-auto p-6">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-extrabold gradient-text">DAY 1</h2>
-                        <p class="text-slate-500 font-medium">도착과 그랜드 리조트 덱의 즐거움</p>
-                    </div>
-                    
-                    <div class="relative">
-                        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-200"></div>
-                        <div class="space-y-8" id="day1-activities">
-                            <!-- Activities will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Day 2 Page -->
-                <div class="page-content h-full overflow-y-auto p-6">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-extrabold gradient-text">DAY 2</h2>
-                        <p class="text-slate-500 font-medium">마카오의 역사와 아이들을 위한 즐거움</p>
-                    </div>
-                    
-                    <div class="relative">
-                        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-200"></div>
-                        <div class="space-y-8" id="day2-activities">
-                            <!-- Activities will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Day 3 Page -->
-                <div class="page-content h-full overflow-y-auto p-6">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-extrabold gradient-text">DAY 3</h2>
-                        <p class="text-slate-500 font-medium">마지막 즐거움과 아쉬운 작별</p>
-                    </div>
-                    
-                    <div class="relative">
-                        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-200"></div>
-                        <div class="space-y-8" id="day3-activities">
-                            <!-- Activities will be loaded here -->
-                        </div>
-                    </div>
-                </div>
+                {{DAY_PAGES}}
             </div>
         </main>
 
         <!-- 떠있는 하단 탭 -->
         <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
             <div id="bottom-nav" class="flex items-center gap-2 bg-white/70 backdrop-blur-xl p-2 rounded-full shadow-lg ring-1 ring-black/5">
-                <button data-sheet="info" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    <span class="text-xs font-medium">정보</span>
+                <button data-sheet="info" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span class="text-sm font-semibold">정보</span>
                 </button>
-                <button data-sheet="budget" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <span class="text-xs font-medium">예산</span>
+                <button data-sheet="budget" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span class="text-sm font-semibold">예산</span>
                 </button>
-                <button data-sheet="todo" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span class="text-xs font-medium">준비물</span>
+                <button data-sheet="todo" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="text-sm font-semibold">준비물</span>
                 </button>
             </div>
         </nav>
@@ -159,729 +150,73 @@
 
     </div>
 
+    <!-- Main Script -->
+    <script src="/main-script.js"></script>
+    
+    <!-- Test Script -->
     <script>
-        // Load test data
-        const testData = {
-            "tripMeta": {
-                "destination": "Macau",
-                "duration": "2박 3일",
-                "startDate": "2024-07-30",
-                "endDate": "2024-08-01",
-                "tripType": "family"
-            },
-            "mainPlan": {
-                "planName": "아이와 함께하는 여유로운 마카오 가족 여행",
-                "description": "37개월 아이의 리듬에 맞춰 그랜드 리조트 덱을 중심으로 설계된 편안하고 즐거운 가족 여행 일정입니다.",
-                "dailyPlans": [
-                    {
-                        "day": 1,
-                        "dayTheme": "도착과 그랜드 리조트 덱의 즐거움",
-                        "activities": [
-                            {
-                                "time": "14:00",
-                                "duration": 90,
-                                "type": "transport",
-                                "title": "마카오 도착 및 갤럭시 마카오 체크인",
-                                "description": "마카오 국제공항(MFM) 도착 후, 갤럭시 마카오 무료 셔틀버스를 이용하여 호텔로 이동합니다.",
-                                "placeDetails": {
-                                    "name": "갤럭시호텔",
-                                    "rating": 4.5,
-                                    "photos": ["https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpdhsZU_2nPihyShvPWJSLs_17L_6sxFpxNNEvViZ2uBwSc5Azh1rUi_-pupvKM0O0eIpEthfeGwt5n0mpMiJDdA5DCZbNHxuGn1fLgRcalAGJTTbyBMx9wgtoCP87OJ-agf71i77vCI9KUbMtaxt_fc7xClIkSkT3u-rcy8C8d5nGYce_fNut9sQ1IdL_OUPHhapYansK8OOGtgfH-mJFVA456tVhpWrctNdQfjf3hSjfhY6PsSUEqS5V7_96P4fLLojDjfRJbIiomAc9_Jd6OK3mhdIArAxQRL51lyAKXwbHvYKzA&key=AIzaSyDERW_lRSOP3dcot_xSIgiTWhHRX4U1RXU"],
-                                    "reviews": "최고의 서비스를 추구하는 호텔",
-                                    "mapLink": "https://maps.google.com/?q=22.1489092,113.5543443"
-                                },
-                                "tips": ["공항에서 호텔 셔틀버스를 이용하면 편리하고 무료입니다."]
-                            },
-                            {
-                                "time": "16:00",
-                                "duration": 180,
-                                "type": "activity",
-                                "title": "그랜드 리조트 덱에서 신나는 물놀이",
-                                "description": "아이와 함께 그랜드 리조트 덱의 파도풀, 유수풀, 워터 슬라이드 등 다양한 시설을 즐기며 시원한 시간을 보냅니다.",
-                                "placeDetails": {
-                                    "name": "갤럭시호텔",
-                                    "rating": 4.5,
-                                    "photos": ["https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=ATKogpdhsZU_2nPihyShvPWJSLs_17L_6sxFpxNNEvViZ2uBwSc5Azh1rUi_-pupvKM0O0eIpEthfeGwt5n0mpMiJDdA5DCZbNHxuGn1fLgRcalAGJTTbyBMx9wgtoCP87OJ-agf71i77vCI9KUbMtaxt_fc7xClIkSkT3u-rcy8C8d5nGYce_fNut9sQ1IdL_OUPHhapYansK8OOGtgfH-mJFVA456tVhpWrctNdQfjf3hSjfhY6PsSUEqS5V7_96P4fLLojDjfRJbIiomAc9_Jd6OK3mhdIArAxQRL51lyAKXwbHvYKzA&key=AIzaSyDERW_lRSOP3dcot_xSIgiTWhHRX4U1RXU"],
-                                    "mapLink": "https://maps.google.com/?q=22.1489092,113.5543443"
-                                },
-                                "tips": ["어린 아이를 위한 구명조끼와 튜브를 준비하거나 현장에서 대여 가능합니다."]
-                            }
-                        ]
-                    }
-                ]
-            },
-            "budgetBreakdown": {
-                "total": { "value": 1500000, "currency": "KRW" },
-                "breakdown": [
-                    { "category": "accommodation", "value": 800000, "description": "갤럭시 마카오 2박" },
-                    { "category": "meals", "value": 400000, "description": "식사 비용" },
-                    { "category": "activities", "value": 200000, "description": "활동비" },
-                    { "category": "transport", "value": 100000, "description": "교통비" }
-                ]
-            },
-            "essentialInfo": {
-                "weather": "7월 말 ~ 8월 초 마카오는 매우 덥고 습하며, 평균 기온은 28~32°C입니다.",
-                "transportation": "마카오의 주요 호텔들은 공항 및 페리 터미널에서 무료 셔틀버스를 운행합니다.",
-                "mustTryFood": ["에그타르트", "포르투갈식 치킨", "딤섬"],
-                "localTips": ["대부분의 리조트와 쇼핑몰은 실내 온도가 낮으니 얇은 겉옷을 꼭 챙기세요."]
-            }
-        };
-
-        // Activity type configurations
-        const activityConfig = {
-            transport: { 
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-2.2-1.8-4-4-4H6c-2.2 0-4 1.8-4 4v3c0 .6.4 1 1 1h2"></path><circle cx="9" cy="17" r="2"></circle><circle cx="15" cy="17" r="2"></circle></svg>`, 
-                color: 'bg-blue-500',
-                textColor: 'text-blue-600'
-            },
-            activity: { 
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72z"></path><path d="m14 7 3 3"></path></svg>`, 
-                color: 'bg-rose-500',
-                textColor: 'text-rose-600'
-            },
-            meal: { 
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M17 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M3 13v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"></path></svg>`, 
-                color: 'bg-amber-500',
-                textColor: 'text-amber-600'
-            }
-        };
-
-        // Render activity
-        function renderActivity(activity) {
-            const config = activityConfig[activity.type] || activityConfig.activity;
-            const hasPhotos = activity.placeDetails?.photos?.length > 0;
-            const hasPlaceDetails = !!activity.placeDetails;
-            const hasTips = activity.tips?.length > 0;
-
-            return `
-                <div class="relative pl-12">
-                    <div class="absolute left-0 top-1.5 flex items-center">
-                        <div class="w-8 h-8 ${config.color} rounded-full flex items-center justify-center ring-4 ring-white">
-                            ${config.icon}
-                        </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                        <p class="text-sm font-semibold ${config.textColor} mb-1">${activity.time} (${activity.duration}분)</p>
-                        <h3 class="text-lg font-bold mb-3">${activity.title}</h3>
-                        
-                        ${hasPhotos ? `
-                        <div class="relative -mx-5 mb-4 rounded-lg overflow-hidden">
-                            <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
-                                ${activity.placeDetails.photos.map(photo => `
-                                    <div class="snap-center flex-shrink-0 w-full">
-                                        <img src="${photo}" class="w-full h-auto" alt="${activity.placeDetails.name}" loading="lazy">
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <p class="text-sm text-slate-600 leading-relaxed mb-4">${activity.description}</p>
-                        
-                        ${hasPlaceDetails ? `
-                        <div class="space-y-3 pt-2">
-                            ${activity.placeDetails.rating ? `
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-amber-500">${activity.placeDetails.rating}</span>
-                                <div class="flex text-amber-400">${renderStars(activity.placeDetails.rating)}</div>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="mt-4 flex gap-3">
-                                <a href="${activity.placeDetails.mapLink}" target="_blank" class="flex-1 text-center bg-orange-50 text-orange-700 text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-100 transition">지도 보기</a>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${hasTips ? `
-                        <div class="mt-4 border-t border-slate-100 pt-3">
-                            <h4 class="text-xs font-bold text-slate-500 mb-2">💡 전문가 팁</h4>
-                            <ul class="list-disc list-inside text-xs text-slate-500 space-y-1">
-                                ${activity.tips.map(tip => `<li>${tip}</li>`).join('')}
-                            </ul>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Render stars
-        function renderStars(rating) {
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 >= 0.5;
-            let starsHtml = '';
+        // Test with mock_first_step_resp.json data
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🧪 Template Rendering Test 시작 - mock_first_step_resp.json');
             
-            for (let i = 0; i < fullStars; i++) {
-                starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
-            }
-            
-            if (hasHalfStar) {
-                starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><defs><linearGradient id="half"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="#e2e8f0"/></linearGradient></defs><path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
-            }
-            
-            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-            for (let i = 0; i < emptyStars; i++) {
-                starsHtml += '<svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
-            }
-            
-            return starsHtml;
-        }
-
-        // Load activities for Day 1
-        function loadDay1Activities() {
-            const day1Container = document.getElementById('day1-activities');
-            const day1Data = testData.mainPlan.dailyPlans[0];
-            
-            day1Container.innerHTML = day1Data.activities.map(activity => renderActivity(activity)).join('');
-        }
-
-        // Load info content
-        function loadInfoContent() {
-            const infoContainer = document.getElementById('info-content');
-            const info = testData.essentialInfo;
-            
-            infoContainer.innerHTML = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 정보</h2>
-                <div class="space-y-4">
-                    <div class="p-5 bg-blue-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3-3-4-1.5-1.5-3-2-3-4 0-2 2-2 2-2"></path>
-                                <path d="M8.5 2.5a2.5 2.5 0 0 1 5 0"></path>
-                                <path d="M12 22V8"></path>
-                            </svg> 
-                            교통편
-                        </h3>
-                        <p class="text-sm text-slate-600">${info.transportation}</p>
-                    </div>
-
-                    <div class="p-5 bg-yellow-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                            </svg> 
-                            여행 팁
-                        </h3>
-                        <div class="text-sm text-slate-600 leading-relaxed">
-                            ${info.localTips.map(tip => `<p class="mb-2">• ${tip}</p>`).join('')}
-                        </div>
-                    </div>
-
-                    <div class="p-5 bg-red-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg> 
-                            날씨 정보
-                        </h3>
-                        <p class="text-sm text-slate-600 leading-relaxed">${info.weather}</p>
-                    </div>
-
-                    <div class="p-5 bg-purple-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                            </svg> 
-                            현지 문화 팁
-                        </h3>
-                        <div class="text-sm text-slate-600 leading-relaxed">
-                            <p class="font-semibold mb-2">꼭 먹어봐야 할 음식:</p>
-                            <p>${info.mustTryFood.join(', ')}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load budget content
-        function loadBudgetContent() {
-            const budgetContainer = document.getElementById('budget-content');
-            const budget = testData.budgetBreakdown;
-            
-            budgetContainer.innerHTML = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 예산</h2>
-                <div class="space-y-6">
-                    <div class="bg-slate-100 p-5 rounded-xl">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                                    총 예산
-                                </h3>
-                                <p class="text-xs text-slate-500">₩${budget.total.value.toLocaleString()}</p>
-                            </div>
-                            <span class="font-bold text-orange-600 text-lg">₩0</span>
-                        </div>
-                        <div class="w-full bg-slate-200 rounded-full h-2.5">
-                            <div class="bg-gradient-to-r from-orange-400 to-amber-500 h-2.5 rounded-full transition-all" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">예상 비용 분석</h3>
-                        
-                        ${budget.breakdown.map((item, index) => {
-                            const colors = ['blue', 'green', 'amber', 'purple'];
-                            const color = colors[index % colors.length];
-                            return `
-                            <div class="p-4 bg-${color}-50 rounded-lg border border-${color}-100">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="font-medium text-slate-700">${item.category === 'accommodation' ? '숙박비' : 
-                                                                            item.category === 'meals' ? '식비' :
-                                                                            item.category === 'activities' ? '관광/활동비' : '교통비'}</span>
-                                    <span class="font-bold text-${color}-600">₩${item.value.toLocaleString()}</span>
-                                </div>
-                                <p class="text-xs text-slate-500">${item.description}</p>
-                            </div>
-                            `;
-                        }).join('')}
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">실제 지출 내역</h3>
-                        <div class="space-y-3" id="expense-list">
-                            <p class="text-center text-slate-400 py-8">아직 지출 내역이 없습니다</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mt-8 mb-4 border-b pb-2">지출 추가</h3>
-                        <div class="space-y-3">
-                            <input type="text" placeholder="항목 (예: 저녁 식사)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <input type="number" placeholder="금액 (원)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <button class="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가하기</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load todo content
-        function loadTodoContent() {
-            const todoContainer = document.getElementById('todo-content');
-            
-            todoContainer.innerHTML = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 준비물</h2>
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">✈️ 출발 전 필수</h3>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">여권 및 항공편 티켓</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">숙소 바우처 출력 또는 저장</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">홍콩달러 환전</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">해외 데이터 로밍 또는 유심</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">👕 개인 용품</h3>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">날씨에 맞는 옷차림</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">편한 신발 (많이 걸을 예정)</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">개인 세면용품</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">상비약 (두통약, 소화제 등)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">👶 아이 용품</h3>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">기저귀, 물티슈, 휴대용 변기 커버</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">아이 전용 상비약 (해열제, 체온계, 밴드)</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                <span class="text-sm text-slate-700">아이가 좋아하는 간식과 장난감</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 flex gap-2">
-                        <input type="text" placeholder="새 준비물 추가" class="flex-1 p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                        <button class="bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Navigation functionality
-        let currentPageIndex = 0;
-        const pages = document.querySelectorAll('.page-content');
-        const navTabs = document.querySelectorAll('.nav-tab');
-        const pageContainer = document.getElementById('page-container');
-
-        function showPage(index) {
-            currentPageIndex = index;
-            pageContainer.style.transform = `translateX(-${index * 100}%)`;
-            
-            navTabs.forEach((tab, i) => {
-                tab.classList.toggle('active', i === index);
-            });
-        }
-
-        // Tab navigation
-        navTabs.forEach((tab, index) => {
-            tab.addEventListener('click', () => showPage(index));
-        });
-
-        // Bottom sheet functionality
-        const bottomNavBtns = document.querySelectorAll('.bottom-nav-btn');
-        const overlay = document.getElementById('overlay');
-        const sheets = document.querySelectorAll('.bottom-sheet');
-
-        function showBottomSheet(sheetId) {
-            // Hide all sheets first
-            sheets.forEach(sheet => sheet.classList.remove('active'));
-            overlay.classList.remove('active');
-            
-            // Show selected sheet
-            setTimeout(() => {
-                const targetSheet = document.getElementById(`sheet-${sheetId}`);
-                if (targetSheet) {
-                    targetSheet.classList.add('active');
-                    overlay.classList.add('active');
+            try {
+                // mock_first_step_resp.json 데이터 로드
+                const response = await fetch('./mock_first_step_resp.json');
+                if (!response.ok) {
+                    throw new Error('Mock data 로드 실패');
                 }
-            }, 10);
-        }
-
-        function hideBottomSheets() {
-            sheets.forEach(sheet => sheet.classList.remove('active'));
-            overlay.classList.remove('active');
-        }
-
-        bottomNavBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sheetId = btn.dataset.sheet;
-                showBottomSheet(sheetId);
-            });
-        });
-
-        overlay.addEventListener('click', hideBottomSheets);
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDay1Activities();
-            loadInfoContent();
-            loadBudgetContent();
-            loadTodoContent();
-            showPage(0);
+                const mockData = await response.json();
+                console.log('📄 Mock data 로드 완료:', mockData);
+                
+                // main-script.js의 TravelPWARenderer 인스턴스 생성
+                const renderer = new TravelPWARenderer();
+                
+                // 데이터 정규화 및 렌더링
+                const normalizedData = renderer.normalizeData(mockData);
+                console.log('🔄 데이터 정규화 완료:', normalizedData);
+                
+                // PWA 렌더링 시작
+                renderer.travelData = normalizedData;
+                
+                // 템플릿 치환 시작
+                await renderer.replacePlaceholders();
+                console.log('✅ 템플릿 플레이스홀더 치환 완료');
+                
+                // 페이지 초기화
+                renderer.initializeSwipeNavigation();
+                renderer.initializeBottomSheets();
+                
+                console.log('🎉 Template Rendering Test 완료!');
+                
+                // 디버그 정보 출력
+                console.log('=== 디버그 정보 ===');
+                console.log('Title:', normalizedData.title);
+                console.log('Destination:', normalizedData.destination);
+                console.log('Duration:', normalizedData.duration);
+                console.log('Days:', normalizedData.days?.length || 0);
+                console.log('Flight Info:', normalizedData.flightInfo ? 'Available' : 'None');
+                console.log('Daily Tips:', normalizedData.dailyTips?.length || 0);
+                console.log('Transportation:', normalizedData.transportation ? 'Available' : 'None');
+                console.log('Budget:', normalizedData.estimatedBudget?.total || 'None');
+                
+            } catch (error) {
+                console.error('❌ Template Rendering Test 실패:', error);
+                
+                // 오류 메시지 화면에 표시
+                document.body.innerHTML = `
+                    <div class="flex items-center justify-center min-h-screen bg-red-50">
+                        <div class="text-center p-8">
+                            <h1 class="text-2xl font-bold text-red-600 mb-4">Test 실패</h1>
+                            <p class="text-red-500 mb-4">${error.message}</p>
+                            <p class="text-sm text-gray-600">
+                                mock_first_step_resp.json 파일이 존재하는지 확인하세요.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
         });
     </script>
     
-    <!-- PWA Storage & Manual Input System -->
-    <script src="pwa-storage-system.js"></script>
-    <script src="manual-input-ui.js"></script>
-    <script>
-        // PWA Storage & Manual Input 초기화
-        let storageManager;
-        let manualInputUI;
-
-        // 조건부 렌더링을 위한 템플릿 변수 처리
-        function processConditionalRendering(template, data) {
-            const ifPattern = /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
-            
-            return template.replace(ifPattern, (match, condition, ifContent, elseContent = '') => {
-                const shouldShow = evaluateCondition(condition, data);
-                return shouldShow ? ifContent : elseContent;
-            });
-        }
-
-        function evaluateCondition(condition, data) {
-            switch(condition) {
-                case 'HAS_TRANSPORT_INFO':
-                    return data.transport && data.transport.route;
-                case 'HAS_BUDGET_BREAKDOWN':
-                    return data.budget && data.budget.breakdown && Object.keys(data.budget.breakdown).length > 0;
-                default:
-                    return false;
-            }
-        }
-
-        function replaceTemplateVariables(template, variables) {
-            let result = template;
-            Object.keys(variables).forEach(key => {
-                const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-                result = result.replace(pattern, variables[key] || '');
-            });
-            return result;
-        }
-
-        // 사용자 데이터로 보완
-        function enhanceWithUserData(templateData) {
-            if (!storageManager) return templateData;
-
-            const transportInfo = storageManager.getTransportInfo();
-            const budgetInfo = storageManager.getBudgetInfo();
-
-            if (transportInfo.isManuallyAdded && transportInfo.label) {
-                templateData.transport = {
-                    label: transportInfo.label,
-                    route: transportInfo.route,
-                    schedule: transportInfo.schedule,
-                    isUserGenerated: true
-                };
-            }
-
-            if (budgetInfo.isManuallySet && budgetInfo.total > 0) {
-                templateData.budget = {
-                    total: budgetInfo.total,
-                    breakdown: budgetInfo.breakdown,
-                    expenses: budgetInfo.expenses,
-                    isUserGenerated: true
-                };
-            }
-
-            return templateData;
-        }
-
-        // Enhanced info content loading with conditional rendering
-        function loadInfoContentEnhanced() {
-            const infoContainer = document.getElementById('info-content');
-            const info = testData.essentialInfo;
-            
-            const enhancedData = enhanceWithUserData({
-                transport: { label: "교통편", route: "", schedule: "" }
-            });
-
-            const templateVars = {
-                HAS_TRANSPORT_INFO: !!enhancedData.transport?.route,
-                TRANSPORT_LABEL: enhancedData.transport?.label || "교통편",
-                TRANSPORT_ROUTE: enhancedData.transport?.route || "",
-                TRANSPORT_SCHEDULE: enhancedData.transport?.schedule || ""
-            };
-
-            let template = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 정보</h2>
-                <div class="space-y-4">
-                    {{#if HAS_TRANSPORT_INFO}}
-                    <div class="p-5 bg-blue-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3-3-4-1.5-1.5-3-2-3-4 0-2 2-2 2-2"></path>
-                                <path d="M8.5 2.5a2.5 2.5 0 0 1 5 0"></path>
-                                <path d="M12 22V8"></path>
-                            </svg> 
-                            {{TRANSPORT_LABEL}}
-                        </h3>
-                        <p class="text-sm text-slate-600">{{TRANSPORT_ROUTE}}</p>
-                        <p class="text-sm text-slate-500 mt-1">{{TRANSPORT_SCHEDULE}}</p>
-                        
-                        <div class="mt-3 pt-2 border-t border-blue-100">
-                            <button class="add-transport-btn text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
-                                수정하기
-                            </button>
-                        </div>
-                    </div>
-                    {{else}}
-                    <div class="p-5 bg-blue-50 rounded-xl border-2 border-dashed border-blue-200">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3-3-4-1.5-1.5-3-2-3-4 0-2 2-2 2-2"></path>
-                                <path d="M8.5 2.5a2.5 2.5 0 0 1 5 0"></path>
-                                <path d="M12 22V8"></path>
-                            </svg> 
-                            {{TRANSPORT_LABEL}} 정보
-                        </h3>
-                        <p class="text-sm text-slate-500 mb-3">교통편 정보를 추가해보세요</p>
-                        <button class="add-transport-btn bg-blue-500 text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-blue-600 transition">
-                            + 정보 추가하기
-                        </button>
-                    </div>
-                    {{/if}}
-
-                    <div class="p-5 bg-yellow-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                            </svg> 
-                            여행 팁
-                        </h3>
-                        <div class="text-sm text-slate-600 leading-relaxed">
-                            ${info.localTips.map(tip => `<p class="mb-2">• ${tip}</p>`).join('')}
-                        </div>
-                    </div>
-
-                    <div class="p-5 bg-red-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg> 
-                            날씨 정보
-                        </h3>
-                        <p class="text-sm text-slate-600 leading-relaxed">${info.weather}</p>
-                    </div>
-
-                    <div class="p-5 bg-purple-50 rounded-xl">
-                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                            </svg> 
-                            현지 문화 팁
-                        </h3>
-                        <div class="text-sm text-slate-600 leading-relaxed">
-                            <p class="font-semibold mb-2">꼭 먹어봐야 할 음식:</p>
-                            <p>${info.mustTryFood.join(', ')}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            template = processConditionalRendering(template, templateVars);
-            template = replaceTemplateVariables(template, templateVars);
-            infoContainer.innerHTML = template;
-        }
-
-        // Enhanced budget content loading
-        function loadBudgetContentEnhanced() {
-            const budgetContainer = document.getElementById('budget-content');
-            const budget = testData.budgetBreakdown;
-            
-            const enhancedData = enhanceWithUserData({ budget: budget });
-            const templateVars = {
-                HAS_BUDGET_BREAKDOWN: !!(enhancedData.budget?.breakdown && Object.keys(enhancedData.budget.breakdown).length > 0),
-                TOTAL_BUDGET_DISPLAY: enhancedData.budget?.total ? `₩${enhancedData.budget.total.toLocaleString()}` : (budget?.total?.value ? `₩${budget.total.value.toLocaleString()}` : '₩0'),
-                CURRENT_EXPENSE: '₩0',
-                EXPENSE_PERCENTAGE: '0'
-            };
-
-            let template = `
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 예산</h2>
-                <div class="space-y-6">
-                    <div class="bg-slate-100 p-5 rounded-xl">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                                    총 예산
-                                    <button class="add-transport-btn text-slate-400 hover:text-orange-500">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path>
-                                        </svg>
-                                    </button>
-                                </h3>
-                                <p class="text-xs text-slate-500">{{TOTAL_BUDGET_DISPLAY}}</p>
-                            </div>
-                            <span class="font-bold text-orange-600 text-lg">{{CURRENT_EXPENSE}}</span>
-                        </div>
-                        <div class="w-full bg-slate-200 rounded-full h-2.5">
-                            <div class="bg-gradient-to-r from-orange-400 to-amber-500 h-2.5 rounded-full transition-all" style="width: {{EXPENSE_PERCENTAGE}}%"></div>
-                        </div>
-                    </div>
-
-                    {{#if HAS_BUDGET_BREAKDOWN}}
-                    <div class="space-y-3">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">예상 비용 분석</h3>
-                        ${budget.breakdown.map((item, index) => {
-                            const colors = ['blue', 'green', 'amber', 'purple'];
-                            const color = colors[index % colors.length];
-                            return `
-                            <div class="p-4 bg-${color}-50 rounded-lg border border-${color}-100">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="font-medium text-slate-700">${item.category === 'accommodation' ? '숙박비' : 
-                                                                            item.category === 'meals' ? '식비' :
-                                                                            item.category === 'activities' ? '관광/활동비' : '교통비'}</span>
-                                    <span class="font-bold text-${color}-600">₩${item.value.toLocaleString()}</span>
-                                </div>
-                                <p class="text-xs text-slate-500">${item.description}</p>
-                            </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    {{else}}
-                    <div class="p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center">
-                        <div class="mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-400">
-                                <line x1="12" y1="1" x2="12" y2="23"></line>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-slate-800 mb-2">예산 계획을 세워보세요</h3>
-                        <p class="text-sm text-slate-500 mb-4">AI가 제안하는 예산 분석이 없습니다.<br>직접 예산을 설정하고 지출을 관리해보세요.</p>
-                        <button class="setup-budget-btn bg-orange-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-orange-600 transition">
-                            예산 설정하기
-                        </button>
-                    </div>
-                    {{/if}}
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">실제 지출 내역</h3>
-                        <div class="space-y-3" id="expense-list">
-                            <p class="text-center text-slate-400 py-8">아직 지출 내역이 없습니다</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="font-bold text-slate-800 mt-8 mb-4 border-b pb-2">지출 추가</h3>
-                        <div class="space-y-3">
-                            <input type="text" placeholder="항목 (예: 저녁 식사)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <input type="number" placeholder="금액 (원)" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <button class="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가하기</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            template = processConditionalRendering(template, templateVars);
-            template = replaceTemplateVariables(template, templateVars);
-            budgetContainer.innerHTML = template;
-        }
-
-        // 확장된 초기화
-        document.addEventListener('DOMContentLoaded', () => {
-            // 스토리지 매니저 초기화
-            storageManager = new PWAStorageManager('test_macau_trip');
-            manualInputUI = new ManualInputUI(storageManager);
-            
-            console.log('PWA Storage initialized:', storageManager.getStorageUsage());
-            
-            // 기본 콘텐츠 대신 확장된 콘텐츠 로딩
-            setTimeout(() => {
-                loadInfoContentEnhanced();
-                loadBudgetContentEnhanced();
-            }, 100);
-        });
-    </script>
 </body>
 </html>

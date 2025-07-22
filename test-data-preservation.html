@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Preservation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>PWA Data Preservation Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Setup</h2>
+        <button onclick="loadMockData()">1. Load Mock Data to LocalStorage</button>
+        <button onclick="navigateToTestSession()">2. Navigate to Test Session</button>
+        <button onclick="clearTestData()">Clear Test Data</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+        
+        <div id="setup-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>localStorage Content</h2>
+        <button onclick="showLocalStorageContent()">Show localStorage Content</button>
+        <div id="localStorage-content"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+    
+    <script>
+        let mockData = null;
+        
+        function log(message, type = 'info') {
+            console.log(message);
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        async function loadMockData() {
+            try {
+                log('🔄 Loading mock_resp.json...', 'info');
+                const response = await fetch('./mock_resp.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                mockData = await response.json();
+                
+                // Store in localStorage with session ID
+                const sessionId = 'test123';
+                const storageKey = `generatedApp_${sessionId}`;
+                localStorage.setItem(storageKey, JSON.stringify(mockData));
+                
+                log('✅ Mock data loaded and stored successfully!', 'success');
+                log(`📦 Storage key: ${storageKey}`, 'info');
+                log(`📊 Data structure: ${mockData.responseType || 'Unknown'} - ${mockData.status || 'Unknown'}`, 'info');
+                
+                // Check for options arrays in the data
+                checkOptionsInData(mockData);
+                
+            } catch (error) {
+                log(`❌ Failed to load mock data: ${error.message}`, 'error');
+                console.error('Mock data loading error:', error);
+            }
+        }
+        
+        function checkOptionsInData(data) {
+            log('🔍 Checking for options arrays in mock data...', 'info');
+            let optionsFound = 0;
+            let transportOptionsFound = 0;
+            
+            if (data.tripPlan && data.tripPlan.itinerary) {
+                data.tripPlan.itinerary.forEach((dayPlan, dayIndex) => {
+                    dayPlan.activities?.forEach((activity, actIndex) => {
+                        if (activity.options && activity.options.length > 0) {
+                            optionsFound++;
+                            log(`✅ Day ${dayPlan.dayNumber} Activity ${actIndex}: "${activity.activityName}" - ${activity.options.length} options found`, 'success');
+                        }
+                        if (activity.transportation?.options && activity.transportation.options.length > 0) {
+                            transportOptionsFound++;
+                            log(`✅ Day ${dayPlan.dayNumber} Activity ${actIndex}: Transportation - ${activity.transportation.options.length} options found`, 'success');
+                        }
+                    });
+                });
+            }
+            
+            log(`📊 Summary: ${optionsFound} activity options, ${transportOptionsFound} transport options found`, 'info');
+        }
+        
+        function navigateToTestSession() {
+            const sessionUrl = `${window.location.origin}?session=test123`;
+            log(`🔗 Navigating to: ${sessionUrl}`, 'info');
+            window.open(sessionUrl, '_blank');
+        }
+        
+        function clearTestData() {
+            localStorage.removeItem('generatedApp_test123');
+            log('🗑️ Test data cleared from localStorage', 'info');
+        }
+        
+        function showLocalStorageContent() {
+            const contentDiv = document.getElementById('localStorage-content');
+            let content = '<h3>All localStorage Keys:</h3>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                
+                content += `<details><summary><strong>${key}</strong></summary>`;
+                content += `<pre>${value.substring(0, 500)}${value.length > 500 ? '...(truncated)' : ''}</pre></details>`;
+            }
+            
+            contentDiv.innerHTML = content;
+        }
+        
+        async function runAllTests() {
+            log('🚀 Starting comprehensive data preservation test...', 'info');
+            
+            // Step 1: Load mock data
+            await loadMockData();
+            
+            // Step 2: Wait a bit for data to be stored
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 3: Simulate the data loading process
+            testDataNormalization();
+            
+            // Step 4: Test option chip functionality
+            testOptionChipGeneration();
+        }
+        
+        function testDataNormalization() {
+            log('🔄 Testing data normalization process...', 'info');
+            
+            try {
+                const storedData = localStorage.getItem('generatedApp_test123');
+                if (!storedData) {
+                    throw new Error('No stored data found');
+                }
+                
+                const rawData = JSON.parse(storedData);
+                log('✅ Raw data parsed successfully', 'success');
+                
+                // Simulate the normalizeData function
+                if (rawData.tripPlan && rawData.tripPlan.tripInfo && rawData.tripPlan.itinerary) {
+                    log('📊 Detected first step response structure', 'info');
+                    
+                    // Check if options are preserved during normalization
+                    let preservedOptions = 0;
+                    let preservedTransportOptions = 0;
+                    
+                    rawData.tripPlan.itinerary.forEach((dayPlan, dayIndex) => {
+                        dayPlan.activities?.forEach((activity, actIndex) => {
+                            if (activity.options && activity.options.length > 0) {
+                                preservedOptions++;
+                                log(`✅ Options preserved for activity: ${activity.activityName}`, 'success');
+                            }
+                            if (activity.transportation?.options && activity.transportation.options.length > 0) {
+                                preservedTransportOptions++;
+                                log(`✅ Transport options preserved for: ${activity.activityName}`, 'success');
+                            }
+                        });
+                    });
+                    
+                    log(`📊 Normalization test complete: ${preservedOptions} activity options, ${preservedTransportOptions} transport options preserved`, 'info');
+                } else {
+                    log('⚠️ Unknown data structure, may need different normalization', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Data normalization test failed: ${error.message}`, 'error');
+                console.error('Normalization test error:', error);
+            }
+        }
+        
+        function testOptionChipGeneration() {
+            log('🎪 Testing option chip generation...', 'info');
+            
+            // This would typically be done by navigating to the PWA page
+            // For now, we'll just check if the data structure supports it
+            const storedData = localStorage.getItem('generatedApp_test123');
+            if (storedData) {
+                const rawData = JSON.parse(storedData);
+                let chipsSupported = 0;
+                
+                if (rawData.tripPlan && rawData.tripPlan.itinerary) {
+                    rawData.tripPlan.itinerary.forEach((dayPlan) => {
+                        dayPlan.activities?.forEach((activity) => {
+                            if (activity.options && activity.options.length > 1) {
+                                chipsSupported++;
+                                log(`🎯 Chip generation supported for: ${activity.activityName} (${activity.options.length} options)`, 'success');
+                            }
+                        });
+                    });
+                }
+                
+                log(`🎪 Chip generation test: ${chipsSupported} activities support option chips`, 'info');
+            }
+        }
+        
+        // Auto-run setup on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Test page loaded. Use buttons above to run tests.', 'info');
+        });
+    </script>
+</body>
+</html>

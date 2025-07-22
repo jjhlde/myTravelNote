@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser PWA Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .status { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border-left: 4px solid;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border-color: #28a745;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-color: #dc3545;
+        }
+        .info { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+            border-color: #17a2b8;
+        }
+        .warning { 
+            background: #fff3cd; 
+            color: #856404; 
+            border-color: #ffc107;
+        }
+        button { 
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px; 
+            margin: 8px; 
+            border-radius: 6px;
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .test-section { 
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .chip-test {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .chip {
+            padding: 6px 12px;
+            background: #e9ecef;
+            border-radius: 16px;
+            font-size: 12px;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+        }
+        .chip.active {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 PWA Data Preservation Browser Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Progress</h2>
+        <div id="test-progress">
+            <div class="info">Ready to start testing...</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Test Controls</h2>
+        <button onclick="runFullTest()">🚀 Run Full Test Suite</button>
+        <button onclick="loadMockDataOnly()">📁 Load Mock Data Only</button>
+        <button onclick="openPWATab()">🔗 Open PWA Tab</button>
+        <button onclick="clearAllData()">🗑️ Clear Test Data</button>
+        <button onclick="showLocalStorage()">💾 Show localStorage</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="test-results" class="log-area">
+            Waiting for tests to run...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎪 Expected Features</h2>
+        <div class="info">
+            <strong>What to look for in the PWA:</strong>
+            <ul>
+                <li>Option chips for activities with multiple options (4 activities should have chips)</li>
+                <li>Debug messages in console about options preservation</li>
+                <li>Notes displayed in blue boxes</li>
+                <li>Reason for selection information</li>
+                <li>Recommended options marked with ⭐</li>
+            </ul>
+        </div>
+        
+        <h3>Expected Option Chips:</h3>
+        <div class="chip-test">
+            <div class="chip">요도바시 카메라</div>
+            <div class="chip">라디오회관</div>
+            <div class="chip active">슈퍼 포테토 ⭐</div>
+        </div>
+        <p><small>Example: Akihabara exploration (3 options)</small></p>
+        
+        <div class="chip-test">
+            <div class="chip active">큐슈 장가라 라멘 ⭐</div>
+            <div class="chip">규카츠 이치니산</div>
+        </div>
+        <p><small>Example: Dinner options (2 options)</small></p>
+    </div>
+
+    <script>
+        let testLog = [];
+        let mockData = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testLog.push(logEntry);
+            
+            console.log(message);
+            updateTestResults();
+            updateProgress(message, type);
+        }
+        
+        function updateTestResults() {
+            document.getElementById('test-results').textContent = testLog.join('\n');
+        }
+        
+        function updateProgress(message, type) {
+            const progressDiv = document.getElementById('test-progress');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            progressDiv.appendChild(statusDiv);
+            
+            // Keep only last 5 messages
+            while (progressDiv.children.length > 5) {
+                progressDiv.removeChild(progressDiv.firstChild);
+            }
+        }
+        
+        async function loadMockDataOnly() {
+            try {
+                log('🔄 Loading mock_resp.json...', 'info');
+                
+                const response = await fetch('./mock_resp.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                mockData = await response.json();
+                log('✅ Mock data loaded successfully!', 'success');
+                log(`📊 Data type: ${mockData.responseType} - ${mockData.status}`, 'info');
+                
+                // Store in localStorage
+                const sessionId = 'test123';
+                const storageKey = `generatedApp_${sessionId}`;
+                localStorage.setItem(storageKey, JSON.stringify(mockData));
+                log(`💾 Data stored with key: ${storageKey}`, 'success');
+                
+                // Analyze options
+                await analyzeOptions();
+                
+            } catch (error) {
+                log(`❌ Failed to load mock data: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function analyzeOptions() {
+            if (!mockData) {
+                log('❌ No mock data available for analysis', 'error');
+                return;
+            }
+            
+            log('🔍 Analyzing options in mock data...', 'info');
+            
+            let activityOptions = 0;
+            let transportOptions = 0;
+            let chipCandidates = 0;
+            let notes = 0;
+            let reasons = 0;
+            
+            if (mockData.tripPlan && mockData.tripPlan.itinerary) {
+                mockData.tripPlan.itinerary.forEach(dayPlan => {
+                    dayPlan.activities?.forEach(activity => {
+                        if (activity.options && activity.options.length > 0) {
+                            activityOptions++;
+                            if (activity.options.length > 1) chipCandidates++;
+                            
+                            activity.options.forEach(option => {
+                                if (option.note) notes++;
+                                if (option.reasonForSelection) reasons++;
+                            });
+                        }
+                        
+                        if (activity.transportation?.options && activity.transportation.options.length > 0) {
+                            transportOptions++;
+                            activity.transportation.options.forEach(option => {
+                                if (option.note) notes++;
+                            });
+                        }
+                    });
+                });
+            }
+            
+            log(`📊 Analysis complete:`, 'success');
+            log(`   🎯 Activities with options: ${activityOptions}`, 'info');
+            log(`   🚗 Transport with options: ${transportOptions}`, 'info');
+            log(`   🎪 Chip candidates (>1 option): ${chipCandidates}`, 'info');
+            log(`   📝 Notes found: ${notes}`, 'info');
+            log(`   🤔 Reasons found: ${reasons}`, 'info');
+        }
+        
+        function openPWATab() {
+            const sessionUrl = `${window.location.origin}?session=test123`;
+            log(`🔗 Opening PWA: ${sessionUrl}`, 'info');
+            log('👀 Check the new tab console for debug messages!', 'warning');
+            
+            const newTab = window.open(sessionUrl, '_blank');
+            
+            // Message for the new tab
+            setTimeout(() => {
+                log('💡 In the PWA tab, look for:', 'info');
+                log('   - Console logs about options preservation', 'info');
+                log('   - Option chips on activities with multiple options', 'info');
+                log('   - Blue note boxes with detailed information', 'info');
+                log('   - Stars (⭐) marking recommended options', 'info');
+            }, 2000);
+        }
+        
+        function clearAllData() {
+            // Clear test data
+            localStorage.removeItem('generatedApp_test123');
+            
+            // Clear logs
+            testLog = [];
+            updateTestResults();
+            
+            // Clear progress
+            document.getElementById('test-progress').innerHTML = '<div class="info">Data cleared. Ready for new tests.</div>';
+            
+            log('🗑️ All test data cleared', 'info');
+        }
+        
+        function showLocalStorage() {
+            log('💾 LocalStorage contents:', 'info');
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                
+                if (key.startsWith('generatedApp_')) {
+                    const preview = value.substring(0, 100) + '...';
+                    log(`   ${key}: ${preview}`, 'info');
+                } else {
+                    log(`   ${key}: (other data)`, 'info');
+                }
+            }
+        }
+        
+        async function runFullTest() {
+            log('🚀 Starting full PWA test suite...', 'info');
+            
+            try {
+                // Step 1: Load mock data
+                await loadMockDataOnly();
+                
+                // Step 2: Wait a bit for data to settle
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 3: Validate storage
+                const storedData = localStorage.getItem('generatedApp_test123');
+                if (!storedData) {
+                    throw new Error('Data not found in localStorage after storage');
+                }
+                log('✅ Data validation passed', 'success');
+                
+                // Step 4: Simulate loading process
+                log('🔄 Simulating PWA loading process...', 'info');
+                
+                try {
+                    const parsedData = JSON.parse(storedData);
+                    if (parsedData.tripPlan && parsedData.tripPlan.itinerary) {
+                        log('✅ Data structure validation passed', 'success');
+                        log('✅ First step response structure detected', 'success');
+                    } else {
+                        log('⚠️ Unexpected data structure', 'warning');
+                    }
+                } catch (parseError) {
+                    log(`❌ Data parsing failed: ${parseError.message}`, 'error');
+                }
+                
+                // Step 5: Open PWA tab
+                await new Promise(resolve => setTimeout(resolve, 500));
+                openPWATab();
+                
+                // Step 6: Final instructions
+                setTimeout(() => {
+                    log('🎯 Test suite complete! Check the PWA tab:', 'success');
+                    log('   1. Open browser console in PWA tab', 'info');
+                    log('   2. Look for debug messages about options preservation', 'info');
+                    log('   3. Scroll through activities to find option chips', 'info');
+                    log('   4. Click chips to test switching between options', 'info');
+                    log('   5. Verify notes and reasons display correctly', 'info');
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Test suite failed: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // Auto-initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Browser test page loaded and ready', 'success');
+            log('📱 Server detected at: ' + window.location.origin, 'info');
+            log('🎯 Click "Run Full Test Suite" to begin testing', 'info');
+        });
+        
+        // Show current localStorage on load
+        setTimeout(showLocalStorage, 1000);
+    </script>
+</body>
+</html>

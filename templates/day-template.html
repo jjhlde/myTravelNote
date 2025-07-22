@@ -1,4 +1,4 @@
-<div class="page-content h-full overflow-y-auto p-6">
+<div class="page-content overflow-y-auto p-6 pb-32">
     <div class="mb-8">
         <h2 class="text-3xl font-extrabold gradient-text">DAY {{DAY_NUMBER}}</h2>
         <p class="text-slate-500 font-medium">{{DAY_THEME}}</p>
@@ -183,6 +183,26 @@ function renderStars(rating) {
     }
     
     return starsHtml;
+}
+
+// 이미지 슬라이더 HTML 생성 함수
+function createImageSlider(photos, altText) {
+    if (!photos || photos.length === 0) return '';
+    const sliderId = `slider-${Math.random().toString(36).substr(2, 9)}`;
+    return `
+        <div class="relative image-slider-container bg-slate-100">
+            <div id="${sliderId}" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar image-list">
+                ${photos.map(src => `<div class="snap-center flex-shrink-0 w-full aspect-video"><img src="${src}" class="w-full h-full object-cover cursor-pointer lightbox-trigger" alt="${altText}" loading="lazy"></div>`).join('')}
+            </div>
+            ${photos.length > 1 ? `
+            <button class="slider-arrow absolute top-1/2 left-2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center prev-btn" data-slider="${sliderId}">&lt;</button>
+            <button class="slider-arrow absolute top-1/2 right-2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center next-btn" data-slider="${sliderId}">&gt;</button>
+            <div class="slider-dots absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                ${photos.map((_, i) => `<div class="dot w-2 h-2 rounded-full bg-white/60 transition-all duration-300 ${i === 0 ? 'w-4 bg-white' : ''}" data-index="${i}"></div>`).join('')}
+            </div>
+            ` : ''}
+        </div>
+    `;
 }
 
 // 이미지 슬라이더 초기화 함수

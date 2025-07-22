@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>준비물 탭 테스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg">
+        <h1 class="text-xl font-bold p-4 border-b">준비물 탭 테스트</h1>
+        
+        <!-- 바텀 네비게이션 시뮬레이션 -->
+        <div class="p-4">
+            <div class="flex justify-around border rounded-lg p-2">
+                <button data-sheet="info" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-20 h-12 rounded-full">
+                    <span class="text-sm font-semibold">정보</span>
+                </button>
+                <button data-sheet="budget" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-20 h-12 rounded-full">
+                    <span class="text-sm font-semibold">예산</span>
+                </button>
+                <button data-sheet="todo" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-20 h-12 rounded-full">
+                    <span class="text-sm font-semibold">준비물</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 컨텐츠 영역 -->
+        <div id="content-area" class="p-4 min-h-96 border-t">
+            <p class="text-gray-500">버튼을 클릭하여 테스트하세요.</p>
+        </div>
+    </div>
+
+    <script>
+        // 도쿄 게임쇼 여행 데이터 시뮬레이션
+        const mockTravelData = {
+            destination: "도쿄",
+            tripTitle: "도쿄 게임쇼 2025 완전 정복 솔로 여행",
+            travelers: { adults: 1 },
+            todos: [
+                { category: 'pre-departure', text: '여권/신분증 확인', priority: 'high' },
+                { category: 'pre-departure', text: 'JR Pass 또는 도쿄 메트로 패스 구매', priority: 'medium' },
+                { category: 'pre-departure', text: '도쿄 게임쇼 티켓 준비', priority: 'high' },
+                { category: 'packing', text: '보조배터리 (게임 시연 대기용)', priority: 'high' },
+                { category: 'packing', text: '편한 신발 (장시간 서서 대기)', priority: 'high' },
+                { category: 'local', text: 'Google 번역 앱 다운로드', priority: 'medium' },
+                { category: 'return', text: '게임쇼 한정 굿즈 구매', priority: 'medium' }
+            ]
+        };
+
+        class TestTodoLoader {
+            constructor() {
+                this.travelData = mockTravelData;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.bottom-nav-btn')) {
+                        const btn = e.target.closest('.bottom-nav-btn');
+                        const sheetType = btn.dataset.sheet;
+                        this.showContent(sheetType);
+                    }
+                });
+            }
+
+            showContent(type) {
+                const contentArea = document.getElementById('content-area');
+                
+                switch(type) {
+                    case 'info':
+                        contentArea.innerHTML = '<h2 class="text-lg font-bold">정보 탭</h2><p>여행 정보가 여기에 표시됩니다.</p>';
+                        break;
+                    case 'budget':
+                        contentArea.innerHTML = '<h2 class="text-lg font-bold">예산 탭</h2><p>예산 정보가 여기에 표시됩니다.</p>';
+                        break;
+                    case 'todo':
+                        contentArea.innerHTML = this.generateTodoContent();
+                        break;
+                }
+            }
+
+            generateTodoContent() {
+                const todos = this.travelData.todos || [];
+                console.log('🧳 준비물 데이터 확인:', todos);
+                
+                if (todos.length > 0) {
+                    const categorizedTodos = {};
+                    
+                    todos.forEach(todo => {
+                        const category = this.getCategoryDisplayName(todo.category);
+                        if (!categorizedTodos[category]) {
+                            categorizedTodos[category] = [];
+                        }
+                        categorizedTodos[category].push(todo);
+                    });
+
+                    return `
+                        <h2 class="text-xl font-bold text-slate-800 mb-4">여행 준비물</h2>
+                        <div class="space-y-4">
+                            ${Object.entries(categorizedTodos).map(([category, items]) => `
+                                <div>
+                                    <h3 class="font-bold text-slate-800 mb-3 border-b pb-2">${category}</h3>
+                                    <div class="space-y-2">
+                                        ${items.map(item => `
+                                            <label class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                                                <input type="checkbox" class="h-4 w-4 text-orange-600">
+                                                <span class="text-sm text-slate-700">${item.text}</span>
+                                                <span class="ml-auto text-xs px-2 py-1 rounded ${this.getPriorityClass(item.priority)}">${this.getPriorityLabel(item.priority)}</span>
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                return '<p class="text-gray-500">준비물 데이터가 없습니다.</p>';
+            }
+
+            getCategoryDisplayName(category) {
+                const categoryMap = {
+                    'pre-departure': '✈️ 출발 전 필수',
+                    'packing': '👕 개인 용품',
+                    'departure': '🚀 출발 당일',
+                    'local': '🗺️ 현지 도착 후',
+                    'return': '🏠 귀국 준비'
+                };
+                return categoryMap[category] || `📋 ${category}`;
+            }
+
+            getPriorityClass(priority) {
+                const priorityClasses = {
+                    'high': 'bg-red-100 text-red-700',
+                    'medium': 'bg-yellow-100 text-yellow-700', 
+                    'low': 'bg-green-100 text-green-700'
+                };
+                return priorityClasses[priority] || 'bg-gray-100 text-gray-700';
+            }
+
+            getPriorityLabel(priority) {
+                const priorityLabels = {
+                    'high': '필수',
+                    'medium': '중요',
+                    'low': '옵션'
+                };
+                return priorityLabels[priority] || priority;
+            }
+        }
+
+        // 페이지 로드 시 테스트 시작
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestTodoLoader();
+        });
+    </script>
+</body>
+</html>
