@@ -10,6 +10,10 @@ class TravelAppLoader {
         this.currentPage = 0;
         this.totalPages = 0;
         
+        console.log('🚀🚀🚀 TravelAppLoader 새 버전 2024.01.21-v4-데이터보존 시작! 🚀🚀🚀');
+        console.log('🔗 Session ID:', this.sessionId);
+        console.log('⭐ 데이터 보존 기능: options 배열, note, reasonForSelection, transportation.options 모두 보존!');
+        
         this.init();
     }
 
@@ -72,6 +76,11 @@ class TravelAppLoader {
         if (rawData.tripMeta && rawData.mainPlan) {
             console.log('📊 mock_resp.json 구조 감지, 정규화 중...');
             return this.normalizeMockRespData(rawData);
+        }
+        // mock_first_step_resp.json 구조 감지 (tripPlan.tripInfo, tripPlan.itinerary 존재)
+        else if (rawData.tripPlan && rawData.tripPlan.tripInfo && rawData.tripPlan.itinerary) {
+            console.log('📊 mock_first_step_resp.json 구조 감지, 정규화 중...');
+            return this.normalizeFirstStepRespData(rawData);
         }
         // 기존 간단한 구조 (title, destination, days 등)
         else if (rawData.title && rawData.destination) {
@@ -142,6 +151,130 @@ class TravelAppLoader {
         };
     }
 
+    normalizeFirstStepRespData(firstStepData) {
+        const tripPlan = firstStepData.tripPlan;
+        const tripInfo = tripPlan.tripInfo;
+        const itinerary = tripPlan.itinerary;
+        const dailyTips = tripPlan.dailyTips || [];
+        
+        console.log('🔄 First step response data 정규화 시작:', tripInfo);
+        console.log('📊 원본 일정 데이터에서 options 배열 존재 여부 확인...');
+        
+        // 원본 데이터에서 options 배열 존재 여부 로깅
+        itinerary.forEach((dayPlan, dayIndex) => {
+            dayPlan.activities?.forEach((activity, actIndex) => {
+                if (activity.options && activity.options.length > 0) {
+                    console.log(`✅ Day ${dayPlan.dayNumber} Activity ${actIndex}: "${activity.activityName}" - ${activity.options.length}개 옵션 발견`);
+                }
+                if (activity.transportation?.options && activity.transportation.options.length > 0) {
+                    console.log(`✅ Day ${dayPlan.dayNumber} Activity ${actIndex}: Transportation - ${activity.transportation.options.length}개 옵션 발견`);
+                }
+            });
+        });
+        
+        // 일차별 데이터 변환
+        const days = itinerary.map(dayPlan => ({
+            day: dayPlan.dayNumber,
+            date: dayPlan.date,
+            title: `DAY ${dayPlan.dayNumber}`,
+            subtitle: dayPlan.dayTheme,
+            dayTheme: dayPlan.dayTheme,
+            description: dayPlan.dayNote || dayPlan.dayTheme,
+            dayNote: dayPlan.dayNote,
+            activities: (dayPlan.activities || []).map(activity => ({
+                id: `activity_${dayPlan.dayNumber}_${activity.timeSlot?.start || 'notime'}`,
+                time: activity.timeSlot?.start,
+                duration: activity.timeSlot?.end ? 
+                    this.calculateDuration(activity.timeSlot.start, activity.timeSlot.end) : null,
+                type: activity.activityType,
+                category: activity.activityType,
+                title: activity.activityName,
+                description: activity.description || '',
+                note: activity.note, // ✅ note 항목 보존
+                reasonForSelection: activity.reasonForSelection, // ✅ reasonForSelection 보존
+                place: this.extractMainPlaceFromFirstStep(activity),
+                recommendedRestaurants: this.extractRestaurantsFromFirstStep(activity),
+                alternativePlaces: this.extractAlternativesFromFirstStep(activity),
+                tips: this.extractTipsFromFirstStep(activity),
+                cost: null, // 1단계에서는 비용 정보 없음
+                transportation: this.extractTransportationFromFirstStep(activity),
+                // ✅ 핵심: options 배열 보존!
+                options: activity.options ? activity.options.map(option => ({
+                    name: option.name,
+                    nameLocal: option.nameLocal,
+                    placeQuery: option.placeQuery,
+                    recommended: option.recommended || false,
+                    reasonForSelection: option.reasonForSelection,
+                    tips: option.tips || [],
+                    note: option.note,
+                    placeDetails: option.placeDetails ? {
+                        name: option.placeDetails.name,
+                        nameLocal: option.placeDetails.nameLocal,
+                        address: option.placeDetails.address,
+                        rating: option.placeDetails.rating,
+                        reviewCount: option.placeDetails.reviewCount,
+                        photos: option.placeDetails.photos || [],
+                        mapLink: option.placeDetails.mapLink,
+                        placeId: option.placeDetails.placeId,
+                        reviews: option.placeDetails.reviews || []
+                    } : null
+                })) : null
+            }))
+        }));
+
+        // 여행 팁 추출
+        const tips = dailyTips.reduce((acc, tip) => {
+            if (tip.details && tip.details.length > 0) {
+                acc.push(...tip.details);
+            }
+            if (tip.spots && tip.spots.length > 0) {
+                acc.push(...tip.spots.map(spot => `${spot.name}: ${spot.tip}`));
+            }
+            return acc;
+        }, []);
+
+        const normalizedData = {
+            title: tripInfo.tripTitle || `${tripInfo.destination} ${this.calculateDays(tripInfo.startDate, tripInfo.endDate)}`,
+            destination: tripInfo.destination,
+            duration: this.calculateDays(tripInfo.startDate, tripInfo.endDate),
+            startDate: tripInfo.startDate,
+            endDate: tripInfo.endDate,
+            totalDays: tripInfo.totalDays,
+            tripTheme: tripInfo.tripTheme || [],
+            planConfidence: 'high',
+            planName: tripInfo.tripTitle,
+            planDescription: `${tripInfo.travelers?.adults || 0}명 ${tripInfo.travelers?.children ? `(어린이 ${tripInfo.travelers.children}명)` : ''} 여행`,
+            planHighlights: this.generateHighlightsFromFirstStep(itinerary),
+            days: days,
+            budget: this.formatBudget(tripInfo.estimatedBudget),
+            flightInfo: tripInfo.flightInfo,
+            travelers: tripInfo.travelers,
+            tips: tips,
+            dailyTips: dailyTips,
+            todos: this.generateTodoList(tripInfo.destination + ' ' + (tripInfo.tripTitle || ''), this.calculateDays(tripInfo.startDate, tripInfo.endDate)),
+            transportation: dailyTips.filter(tip => tip.type === 'transportation').flatMap(tip => tip.details || []).join(' '),
+            sessionId: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            isEnriched: false,
+            dataSource: 'first_step_response'
+        };
+        
+        // ✅ 정규화 후 options 데이터 보존 확인
+        console.log('📊 정규화 완료 후 options 배열 보존 상태 확인...');
+        normalizedData.days.forEach((day, dayIndex) => {
+            day.activities?.forEach((activity, actIndex) => {
+                if (activity.options && activity.options.length > 0) {
+                    console.log(`✅ 보존 성공! Day ${day.day} Activity ${actIndex}: "${activity.title}" - ${activity.options.length}개 옵션 보존됨`);
+                }
+                if (activity.transportation?.options && activity.transportation.options.length > 0) {
+                    console.log(`✅ 보존 성공! Day ${day.day} Activity ${actIndex}: Transportation - ${activity.transportation.options.length}개 옵션 보존됨`);
+                }
+            });
+        });
+        
+        return normalizedData;
+    }
+
     normalizeSimpleData(simpleData) {
         return {
             ...simpleData,
@@ -184,13 +317,291 @@ class TravelAppLoader {
         ];
         
         // 목적지별 맞춤 할일 추가
-        if (destination.includes('일본')) {
-            baseTodos.push({ category: 'pre-departure', text: 'JR Pass 준비', priority: 'medium' });
+        if (destination.includes('일본') || destination.includes('도쿄')) {
+            baseTodos.push(
+                { category: 'pre-departure', text: 'JR Pass 또는 도쿄 메트로 패스 구매', priority: 'medium' },
+                { category: 'pre-departure', text: '일본 엔화 환전 (현금 필수)', priority: 'high' },
+                { category: 'pre-departure', text: 'IC 카드(스이카/파스모) 준비 방법 확인', priority: 'medium' },
+                { category: 'packing', text: '일본 콘센트 어댑터 (A타입)', priority: 'medium' },
+                { category: 'packing', text: '편한 걸음신발 (걷기 많음)', priority: 'high' },
+                { category: 'local', text: 'Google 번역 앱 다운로드', priority: 'medium' },
+                { category: 'local', text: '하이퍼디아/구글맵 오프라인 지도', priority: 'medium' },
+                { category: 'return', text: '면세점 쇼핑 (화장품, 과자)', priority: 'low' }
+            );
+            
+            // 도쿄 게임쇼 특화 준비물 추가
+            if (destination.includes('게임쇼') || destination.includes('TGS')) {
+                baseTodos.push(
+                    { category: 'pre-departure', text: '도쿄 게임쇼 티켓 준비', priority: 'high' },
+                    { category: 'packing', text: '보조배터리 (게임 시연 대기용)', priority: 'high' },
+                    { category: 'packing', text: '편한 신발 (장시간 서서 대기)', priority: 'high' },
+                    { category: 'local', text: '마쿠하리 멧세 교통편 확인', priority: 'medium' },
+                    { category: 'return', text: '게임쇼 한정 굿즈 구매', priority: 'medium' }
+                );
+            }
         } else if (destination.includes('유럽')) {
-            baseTodos.push({ category: 'pre-departure', text: '유럽 여행자보험 가입', priority: 'high' });
+            baseTodos.push(
+                { category: 'pre-departure', text: '유럽 여행자보험 가입', priority: 'high' },
+                { category: 'pre-departure', text: '유로 환전', priority: 'high' },
+                { category: 'packing', text: '유럽 콘센트 어댑터 (C타입)', priority: 'medium' }
+            );
+        } else if (destination.includes('동남아')) {
+            baseTodos.push(
+                { category: 'pre-departure', text: '현지 화폐 환전', priority: 'medium' },
+                { category: 'packing', text: '선크림 및 모기퇴치제', priority: 'high' },
+                { category: 'packing', text: '가벼운 여름옷 위주', priority: 'medium' }
+            );
         }
         
         return baseTodos;
+    }
+
+    // First step response 데이터 처리를 위한 헬퍼 함수들
+    calculateDuration(startTime, endTime) {
+        if (!startTime || !endTime) return null;
+        try {
+            const start = this.parseTime(startTime);
+            const end = this.parseTime(endTime);
+            const diffMs = end - start;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            return diffMins > 0 ? diffMins : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    parseTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes || 0, 0, 0);
+        return date;
+    }
+
+    calculateDays(startDate, endDate) {
+        if (!startDate || !endDate) return '여행';
+        try {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const nights = Math.max(0, diffDays - 1);
+            return `${nights}박${diffDays}일`;
+        } catch (error) {
+            return '여행';
+        }
+    }
+
+    extractMainPlaceFromFirstStep(activity) {
+        // mainLocation이 있는 경우
+        if (activity.mainLocation && activity.mainLocation.name) {
+            return {
+                name: activity.mainLocation.name,
+                nameLocal: activity.mainLocation.nameLocal,
+                address: activity.mainLocation.placeDetails?.address || '주소 정보 없음',
+                rating: activity.mainLocation.placeDetails?.rating || null,
+                reviewCount: activity.mainLocation.placeDetails?.reviewCount || 0,
+                photos: activity.mainLocation.placeDetails?.photos || [],
+                mapLink: activity.mainLocation.placeDetails?.mapLink || '',
+                placeId: activity.mainLocation.placeDetails?.placeId || null,
+                placeQuery: activity.mainLocation.placeQuery
+            };
+        }
+        
+        // options에서 첫 번째 장소를 main place로 사용
+        if (activity.options && activity.options.length > 0) {
+            const firstOption = activity.options[0];
+            return {
+                name: firstOption.name || firstOption.nameLocal,
+                nameLocal: firstOption.nameLocal,
+                address: firstOption.placeDetails?.address || '주소 정보 없음',
+                rating: firstOption.placeDetails?.rating || null,
+                reviewCount: firstOption.placeDetails?.reviewCount || 0,
+                photos: firstOption.placeDetails?.photos || [],
+                mapLink: firstOption.placeDetails?.mapLink || '',
+                placeId: firstOption.placeDetails?.placeId || null,
+                placeQuery: firstOption.placeQuery
+            };
+        }
+        
+        return null;
+    }
+
+    extractRestaurantsFromFirstStep(activity) {
+        if (activity.activityType === 'meal' && activity.options) {
+            return activity.options.map(option => ({
+                placeQuery: option.placeQuery,
+                placeDetails: {
+                    name: option.name || option.nameLocal,
+                    address: option.placeDetails?.address,
+                    rating: option.placeDetails?.rating,
+                    reviewCount: option.placeDetails?.reviewCount,
+                    photos: option.placeDetails?.photos || [],
+                    mapLink: option.placeDetails?.mapLink
+                },
+                reason: option.reasonForSelection,
+                recommended: option.recommended || false,
+                tips: option.tips || []
+            }));
+        }
+        return [];
+    }
+
+    extractAlternativesFromFirstStep(activity) {
+        if (activity.options && activity.options.length > 1) {
+            return activity.options.slice(1).map(option => ({
+                placeQuery: option.placeQuery,
+                placeDetails: {
+                    name: option.name || option.nameLocal,
+                    address: option.placeDetails?.address,
+                    rating: option.placeDetails?.rating,
+                    reviewCount: option.placeDetails?.reviewCount,
+                    photos: option.placeDetails?.photos || [],
+                    mapLink: option.placeDetails?.mapLink
+                },
+                reason: option.reasonForSelection
+            }));
+        }
+        return [];
+    }
+
+    extractTipsFromFirstStep(activity) {
+        const tips = [];
+        
+        // activity level tips
+        if (activity.tips && activity.tips.length > 0) {
+            tips.push(...activity.tips);
+        }
+        
+        // options에서 tips 추출
+        if (activity.options) {
+            activity.options.forEach(option => {
+                if (option.tips && option.tips.length > 0) {
+                    tips.push(...option.tips);
+                }
+            });
+        }
+        
+        return tips;
+    }
+
+    extractTransportationFromFirstStep(activity) {
+        if (activity.transportation) {
+            const transport = activity.transportation;
+            
+            // ✅ 전체 transportation 객체를 보존하면서 텍스트 요약도 함께 제공
+            const result = {
+                from: transport.from,
+                to: transport.to,
+                note: transport.note,
+                // ✅ transportation 자체의 정보도 보존
+                method: transport.method,
+                estimatedDuration: transport.estimatedDuration,
+                estimatedCost: transport.estimatedCost,
+                currency: transport.currency,
+                // ✅ transportation 자체의 placeDetails 보존
+                placeDetails: transport.placeDetails ? {
+                    name: transport.placeDetails.name,
+                    nameLocal: transport.placeDetails.nameLocal,
+                    address: transport.placeDetails.address,
+                    rating: transport.placeDetails.rating,
+                    reviewCount: transport.placeDetails.reviewCount,
+                    photos: transport.placeDetails.photos || [],
+                    mapLink: transport.placeDetails.mapLink,
+                    placeId: transport.placeDetails.placeId,
+                    reviews: transport.placeDetails.reviews || []
+                } : null,
+                // ✅ transportation options 배열 보존!
+                options: transport.options ? transport.options.map(option => ({
+                    method: option.method,
+                    estimatedDuration: option.estimatedDuration,
+                    estimatedCost: option.estimatedCost,
+                    currency: option.currency,
+                    note: option.note,
+                    recommended: option.recommended || false,
+                    placeDetails: option.placeDetails ? {
+                        name: option.placeDetails.name,
+                        nameLocal: option.placeDetails.nameLocal,
+                        address: option.placeDetails.address,
+                        rating: option.placeDetails.rating,
+                        reviewCount: option.placeDetails.reviewCount,
+                        photos: option.placeDetails.photos || [],
+                        mapLink: option.placeDetails.mapLink,
+                        placeId: option.placeDetails.placeId,
+                        reviews: option.placeDetails.reviews || []
+                    } : null
+                })) : null
+            };
+            
+            // 기본 교통편 정보 구성 (텍스트 요약)
+            let transportInfo = '';
+            if (transport.from && transport.to) {
+                transportInfo += `${transport.from} → ${transport.to}`;
+            }
+            
+            // 옵션들 중 추천 옵션 또는 첫 번째 옵션 선택
+            if (transport.options && transport.options.length > 0) {
+                const selectedOption = transport.options.find(opt => opt.recommended) || transport.options[0];
+                
+                if (selectedOption) {
+                    const parts = [];
+                    parts.push(selectedOption.method);
+                    
+                    if (selectedOption.estimatedDuration) {
+                        parts.push(`${selectedOption.estimatedDuration}분 소요`);
+                    }
+                    
+                    if (selectedOption.estimatedCost && selectedOption.estimatedCost > 0) {
+                        const currency = selectedOption.currency === 'MOP' ? 'MOP' : '원';
+                        parts.push(`약 ${selectedOption.estimatedCost.toLocaleString()}${currency}`);
+                    }
+                    
+                    if (selectedOption.note) {
+                        parts.push(`(${selectedOption.note})`);
+                    }
+                    
+                    if (transportInfo) {
+                        transportInfo += `: ${parts.join(', ')}`;
+                    } else {
+                        transportInfo = parts.join(', ');
+                    }
+                }
+            }
+            
+            // 텍스트 요약을 summary 필드에 추가
+            result.summary = transportInfo || 'Transportation information';
+            
+            return result;
+        }
+        
+        return null;
+    }
+
+    generateHighlightsFromFirstStep(itinerary) {
+        const highlights = [];
+        
+        itinerary.forEach(day => {
+            if (day.activities) {
+                day.activities.forEach(activity => {
+                    if (activity.activityType === 'attraction' && activity.activityName) {
+                        highlights.push(`DAY ${day.dayNumber}: ${activity.activityName}`);
+                    }
+                });
+            }
+        });
+        
+        return highlights.slice(0, 5); // 최대 5개만
+    }
+
+    formatBudget(budgetInfo) {
+        if (!budgetInfo) return '예산 미정';
+        
+        if (budgetInfo.total) {
+            const total = budgetInfo.total;
+            const currency = budgetInfo.currency === 'KRW' ? '원' : budgetInfo.currency;
+            return `총 ${total.toLocaleString()}${currency}`;
+        }
+        
+        return '예산 미정';
     }
 
     loadDefaultContent() {
@@ -271,13 +682,63 @@ class TravelAppLoader {
             });
         });
         
+        // 여행 날짜 정보 생성
+        const tripDates = this.generateTripDates();
+        
         // DOM 전체에서 텍스트 플레이스홀더 치환
         this.replaceTextInDOM(document.body, '{{TRIP_TITLE}}', title);
         this.replaceTextInDOM(document.body, '{{DESTINATION}}', destination);
         this.replaceTextInDOM(document.body, '{{DESTINATION_EMOJI}}', destinationEmoji);
         this.replaceTextInDOM(document.body, '{{DURATION}}', this.travelData.duration || '여행');
+        this.replaceTextInDOM(document.body, '{{TRIP_DATES}}', tripDates);
+        
+        // tripTheme 해시태그 생성 및 삽입
+        const tripThemesContainer = document.getElementById('trip-themes');
+        if (tripThemesContainer) {
+            tripThemesContainer.innerHTML = this.generateTripThemeHashtags();
+        }
         
         console.log('✅ 템플릿 플레이스홀더 치환 완료:', { title, destination, destinationEmoji });
+    }
+
+    generateTripThemeHashtags() {
+        // tripTheme 배열을 해시태그로 변환
+        const themes = this.travelData.tripTheme || [];
+        if (themes.length === 0) return '';
+        
+        return themes.map(theme => 
+            `<span class="inline-block px-2 py-1 text-xs font-medium bg-orange-50 text-orange-600 rounded-full">#${theme}</span>`
+        ).join('');
+    }
+    
+    generateTripDates() {
+        // startDate와 endDate에서 날짜 정보 추출
+        const startDate = this.travelData.startDate;
+        const endDate = this.travelData.endDate;
+        const duration = this.travelData.duration;
+        
+        if (startDate && endDate) {
+            try {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                const startMonth = start.getMonth() + 1;
+                const startDay = start.getDate();
+                const endMonth = end.getMonth() + 1;
+                const endDay = end.getDate();
+                
+                if (startMonth === endMonth) {
+                    return `${startMonth}월 ${startDay}일~${endDay}일`;
+                } else {
+                    return `${startMonth}월 ${startDay}일~${endMonth}월 ${endDay}일`;
+                }
+            } catch (error) {
+                console.warn('날짜 파싱 오류:', error);
+            }
+        }
+        
+        // 날짜 정보가 없으면 duration 사용
+        return duration || '여행 일정';
     }
     
     replaceTextInDOM(element, placeholder, value) {
@@ -379,17 +840,18 @@ class TravelAppLoader {
             return;
         }
 
-        const days = this.travelData.days || [];
+        // ✅ 첫 번째 페이지만 로드 (단일 페이지 방식)
+        this.loadSinglePage(0);
+        console.log(`✅ 단일 페이지 방식으로 첫 번째 페이지 로드 완료`);
         
-        // 일차별 페이지들 생성 (template-test 스타일)
-        const pagesHtml = days.map((day, index) => `
-            <div class="page-content h-full overflow-y-auto p-6">
-                ${this.generateDayPage(day, index)}
-            </div>
-        `).join('');
-        
-        pageContainer.innerHTML = pagesHtml;
-        console.log(`✅ ${days.length}개 페이지 생성 완료`);
+        // ✅ 초기 페이지 로드 후 option chip 스크롤 보호 설정
+        setTimeout(() => {
+            console.log('🔄 초기 로드 후 option chip 보호 설정');
+            this.setupOptionChipTouchProtection();
+            
+            // ✅ 강제로 모든 높이 관련 스타일 제거
+            this.forceRemoveHeightStyles();
+        }, 100); // DOM 렌더링 완료 후 실행
     }
 
     generateInfoPage() {
@@ -473,117 +935,308 @@ class TravelAppLoader {
 
     generateTimelineActivity(activity) {
         console.log('🎯 generateTimelineActivity 시작:', activity.type, activity.title);
+        console.log('🔍 Activity 데이터 구조:', activity);
         
-        const place = activity.place;
-        const hasPlace = place && place.name;
+        // 옵션이 있는 경우 캐러셀 형태로 처리
+        const hasDirectOptions = activity.options && activity.options.length > 0;
+        const hasTransportOptions = activity.transportation && activity.transportation.options && activity.transportation.options.length > 0;
+        
+        if (hasDirectOptions) {
+            console.log('✅ 직접 옵션 발견! 캐러셀 생성:', activity.options.length, '개');
+            return this.generateActivityWithOptions(activity, activity.options);
+        }
+        
+        if (hasTransportOptions) {
+            console.log('✅ 교통 옵션 발견! 캐러셀 생성:', activity.transportation.options.length, '개');
+            return this.generateActivityWithOptions(activity, activity.transportation.options);
+        }
+        
+        // 단일 활동 처리
+        // transportation 정보 먼저 추출
+        const transportation = activity.transportation;
+        const isTransportation = activity.type === 'transportation' || transportation;
+        
+        const place = activity.place || activity.mainLocation;
+        const hasPlace = place && (place.name || place.placeDetails);
+        
+        // transportation.placeDetails도 확인
+        const transportationPlaceDetails = transportation?.placeDetails;
+        const hasTransportationPlace = transportationPlaceDetails && (transportationPlaceDetails.name || transportationPlaceDetails.address);
+        
+        // 우선순위: place.placeDetails > place > transportation.placeDetails
+        const placeDetails = place?.placeDetails || place || transportationPlaceDetails;
         
         return `
-            <div class="relative flex items-start gap-4">
+            <div class="relative pl-12">
                 <!-- 타임라인 점 -->
-                <div class="relative z-10">
-                    <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                <div class="absolute left-0 top-1.5 flex items-center">
+                    <div class="w-8 h-8 ${this.getActivityTypeColor(activity.type)} rounded-full flex items-center justify-center ring-4 ring-white">
                         ${this.getActivityTypeIcon(activity.type)}
                     </div>
                 </div>
                 
                 <!-- 활동 카드 -->
-                <div class="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-5 -mt-1">
+                <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
                     <!-- 시간 및 제목 -->
-                    <div class="flex items-start justify-between mb-3">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-900 leading-tight">${activity.title}</h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                    ${activity.time || '시간 미정'}
-                                </span>
-                                ${activity.duration ? `
-                                    <span class="text-xs text-slate-500">
-                                        ${activity.duration}분
-                                    </span>
-                                ` : ''}
+                    <p class="text-sm font-semibold ${this.getActivityTypeTextColor(activity.type)} mb-1">
+                        ${activity.time || activity.timeSlot?.start || '시간 미정'} ${activity.duration ? `(${activity.duration}분)` : ''}
+                    </p>
+                    <h3 class="text-lg font-bold mb-3">${activity.title || activity.activityName}</h3>
+                    
+                    <!-- 활동 노트 (있는 경우) - Transportation의 첫 번째 옵션 또는 직접 note에서 추출 -->
+                    ${activity.note || (transportation && transportation.options && transportation.options[0] && transportation.options[0].note) || (transportation && transportation.note) ? `
+                        <div class="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
+                            <p class="text-sm text-blue-800 leading-relaxed">${activity.note || (transportation && transportation.options && transportation.options[0] && transportation.options[0].note) || (transportation && transportation.note)}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Transportation 정보 (단일 옵션이 아닌 경우) -->
+                    ${isTransportation && transportation && !transportation.options ? `
+                        <div class="space-y-3 mb-4">
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                ${transportation.method ? `<p class="text-sm font-semibold text-slate-800">${transportation.method}</p>` : ''}
+                                ${transportation.estimatedDuration ? `<p class="text-xs text-slate-600 mt-1">소요시간: ${transportation.estimatedDuration}분</p>` : ''}
+                                ${transportation.estimatedCost ? `<p class="text-xs text-slate-600">비용: 약 ${transportation.estimatedCost.toLocaleString()}${transportation.currency || '원'}</p>` : ''}
                             </div>
                         </div>
-                        ${activity.type ? `
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 ml-2">
-                                ${this.getActivityTypeName(activity.type)}
-                            </span>
-                        ` : ''}
+                    ` : ''}
+                    
+                    <!-- 이미지 슬라이더 (장소 정보가 있는 경우) -->
+                    ${placeDetails && placeDetails.photos && placeDetails.photos.length > 0 ? `
+                        <div class="relative -mx-5 mb-4 rounded-lg overflow-hidden image-slider-container">
+                            ${this.createImageSlider(placeDetails.photos, placeDetails.name)}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- 활동 설명 -->
+                    ${activity.description ? `
+                        <p class="text-sm text-slate-600 leading-relaxed mb-4">${activity.description}</p>
+                    ` : ''}
+                    
+                    <!-- 장소 상세정보 -->
+                    ${(hasPlace || hasTransportationPlace) ? this.generatePlaceDetails(placeDetails, activity) : ''}
+                    
+                    <!-- 여행 팁 및 선택 이유 -->
+                    ${this.generateTipsAndReasons(activity)}
+                </div>
+            </div>
+        `;
+    }
+
+    generateActivityWithOptions(activity, options) {
+        console.log('🎪 generateActivityWithOptions 실행:', activity);
+        console.log('🎪 옵션 배열:', options);
+        
+        // 옵션 배열이 비어있는 경우 보호
+        if (!options || options.length === 0) {
+            console.warn('⚠️ 옵션 배열이 비어있어 단일 활동으로 처리');
+            // 단일 활동 처리 (무한 루프 방지)
+            const place = activity.place || activity.mainLocation;
+            const hasPlace = place && (place.name || place.placeDetails);
+            const placeDetails = place?.placeDetails || place;
+            
+            return `
+                <div class="relative pl-12">
+                    <div class="absolute left-0 top-1.5 flex items-center">
+                        <div class="w-8 h-8 ${this.getActivityTypeColor(activity.type)} rounded-full flex items-center justify-center ring-4 ring-white">
+                            ${this.getActivityTypeIcon(activity.type)}
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+                        <p class="text-sm font-semibold ${this.getActivityTypeTextColor(activity.type)} mb-1">
+                            ${activity.time || '시간 미정'}
+                        </p>
+                        <h3 class="text-lg font-bold mb-3">${activity.title || activity.activityName}</h3>
+                        <p class="text-sm text-slate-600">옵션 데이터 로드 중 오류가 발생했습니다.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const recommendedIndex = Math.max(0, options.findIndex(opt => opt.recommended));
+        const activityId = `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        console.log('🎯 추천 옵션 인덱스:', recommendedIndex);
+        
+        return `
+            <div class="relative pl-12 activity-with-options" data-activity-id="${activityId}">
+                <!-- 타임라인 점 -->
+                <div class="absolute left-0 top-1.5 flex items-center">
+                    <div class="w-8 h-8 ${this.getActivityTypeColor(activity.activityType || activity.type)} rounded-full flex items-center justify-center ring-4 ring-white">
+                        ${this.getActivityTypeIcon(activity.activityType || activity.type)}
+                    </div>
+                </div>
+                
+                <!-- 활동 카드 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+                    <!-- 시간 및 제목 -->
+                    <p class="text-sm font-semibold ${this.getActivityTypeTextColor(activity.activityType || activity.type)} mb-1">
+                        ${activity.timeSlot?.start || activity.time || '시간 미정'} ${activity.duration ? `(${activity.duration}분)` : ''}
+                    </p>
+                    <h3 class="text-lg font-bold mb-3">${activity.title || activity.activityName}</h3>
+                    
+                    <!-- 옵션 캐러셀 -->
+                    <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-4 mb-4">
+                        ${options.map((option, index) => `
+                            <button data-index="${index}" class="option-chip ${index === recommendedIndex ? 'active' : ''}">
+                                ${option.recommended ? '⭐ ' : ''}${option.name || option.method}
+                            </button>
+                        `).join('')}
                     </div>
                     
-                    <!-- 설명 -->
-                    ${activity.description ? `
-                        <p class="text-slate-600 mb-4 leading-relaxed">${activity.description}</p>
-                    ` : ''}
-                    
-                    ${hasPlace ? `
-                        <!-- 장소 정보 -->
-                        <div class="bg-slate-50 rounded-lg p-4 mb-4">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <h4 class="font-semibold text-slate-900 mb-1">${place.name}</h4>
-                                    ${place.address ? `
-                                        <p class="text-sm text-slate-600 mb-2">${place.address}</p>
-                                    ` : ''}
-                                    <div class="flex items-center space-x-4">
-                                        ${place.rating ? `
-                                            <div class="flex items-center space-x-1">
-                                                <span class="text-yellow-400">⭐</span>
-                                                <span class="text-sm font-medium text-slate-700">${place.rating}</span>
-                                                ${place.reviewCount ? `
-                                                    <span class="text-xs text-slate-500">(${place.reviewCount})</span>
-                                                ` : ''}
-                                            </div>
-                                        ` : ''}
-                                        ${place.mapLink ? `
-                                            <a href="${place.mapLink}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 transition">
-                                                🗺️ 지도 보기
-                                            </a>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            ${place.photos && place.photos.length > 0 ? `
-                                <!-- 장소 사진 -->
-                                <div class="mt-4">
-                                    <div class="flex space-x-2 overflow-x-auto">
-                                        ${place.photos.slice(0, 3).map(photo => `
-                                            <img src="${photo}" alt="${place.name}" 
-                                                 class="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition">
-                                        `).join('')}
-                                        ${place.photos.length > 3 ? `
-                                            <div class="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center text-xs text-slate-600 flex-shrink-0">
-                                                +${place.photos.length - 3}
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            ` : ''}
+                    <!-- 선택된 옵션 상세 정보 -->
+                    <div class="option-details-container border-t border-slate-100 pt-4">
+                        ${this.generateOptionDetails(options[recommendedIndex])}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generatePlaceDetails(placeDetails, activity) {
+        if (!placeDetails) return '';
+        
+        return `
+            <div class="space-y-3 pt-2">
+                <!-- 장소 이름 -->
+                ${placeDetails.name ? `
+                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            ${placeDetails.name}
+                        </h4>
+                        ${placeDetails.nameLocal && placeDetails.nameLocal !== placeDetails.name ? `
+                            <p class="text-xs text-slate-600 mt-1">${placeDetails.nameLocal}</p>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
+                <!-- 별점 -->
+                ${placeDetails.rating ? `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-amber-500">${placeDetails.rating}</span>
+                        <div class="flex text-amber-400">
+                            ${this.renderStars(placeDetails.rating)}
                         </div>
+                        ${placeDetails.reviewCount ? `
+                            <span class="text-xs text-slate-500">(${placeDetails.reviewCount} 리뷰)</span>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
+                <!-- 주소 -->
+                ${placeDetails.address ? `
+                    <div class="flex items-start gap-2 text-sm text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>${placeDetails.address}</span>
+                    </div>
+                ` : ''}
+                
+                <!-- 리뷰 정보 -->
+                ${placeDetails.reviews ? `
+                    <div class="border-t border-slate-100 pt-3">
+                        <p class="text-xs text-slate-500 mb-1">"${this.extractReviewText(placeDetails.reviews)}"</p>
+                        <p class="text-xs text-slate-400 text-right">- ${this.extractReviewAuthor(placeDetails.reviews)}</p>
+                    </div>
+                ` : ''}
+                
+                <!-- 액션 버튼 -->
+                <div class="mt-4 flex gap-3">
+                    ${placeDetails.mapLink ? `
+                        <a href="${placeDetails.mapLink}" target="_blank" class="flex-1 text-center bg-orange-50 text-orange-700 text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-100 transition">
+                            지도 보기
+                        </a>
                     ` : ''}
-                    
-                    ${activity.tips && activity.tips.length > 0 ? `
-                        <!-- 팁 정보 -->
-                        <div class="border-l-4 border-blue-200 pl-4 py-2">
-                            <h5 class="text-sm font-semibold text-blue-900 mb-1">💡 팁</h5>
-                            <ul class="text-sm text-blue-800 space-y-1">
-                                ${activity.tips.map(tip => `<li>• ${tip}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    
-                    ${activity.cost ? `
-                        <!-- 예상 비용 -->
-                        <div class="mt-4 pt-4 border-t border-slate-100">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-slate-600">예상 비용</span>
-                                <span class="font-semibold text-slate-900">${activity.cost}</span>
-                            </div>
-                        </div>
+                    ${placeDetails.website ? `
+                        <a href="${placeDetails.website}" target="_blank" class="flex-1 text-center bg-slate-100 text-slate-700 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-200 transition">
+                            웹사이트
+                        </a>
                     ` : ''}
                 </div>
             </div>
         `;
+    }
+
+    generateTipsAndReasons(activity) {
+        const tips = activity.tips || [];
+        const reason = activity.reasonForSelection;
+        
+        if (tips.length === 0 && !reason) return '';
+        
+        return `
+            <div class="mt-4 border-t border-slate-100 pt-3">
+                ${tips.length > 0 ? `
+                    <h4 class="text-xs font-bold text-slate-500 mb-2">💡 전문가 팁</h4>
+                    <ul class="list-disc list-inside text-xs text-slate-500 space-y-1">
+                        ${tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                ` : ''}
+                ${reason ? `
+                    <div class="mt-3 p-2 bg-orange-50 rounded text-xs text-orange-700">
+                        <span class="font-semibold">선택 이유:</span> ${reason}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    generateOptionDetails(option) {
+        console.log('🔧 generateOptionDetails 호출:', option);
+        
+        // 안전한 placeDetails 접근
+        const placeDetails = option?.placeDetails || null;
+        const hasPlaceDetails = placeDetails && (placeDetails.name || placeDetails.address);
+        
+        // transportation 옵션인지 확인
+        const isTransportation = option.method || option.duration || option.estimatedDuration;
+        
+        let content = '';
+        
+        // Note 표시 (transportation, 일반 활동 모두)
+        if (option.note) {
+            content += `
+                <div class="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
+                    <p class="text-sm text-blue-800 leading-relaxed">${option.note}</p>
+                </div>
+            `;
+        }
+        
+        // 이미지 슬라이더 (장소 정보가 있는 경우)
+        if (placeDetails && placeDetails.photos && placeDetails.photos.length > 0) {
+            content += `
+                <div class="relative -mx-5 mb-4 rounded-lg overflow-hidden image-slider-container">
+                    ${this.createImageSlider(placeDetails.photos, placeDetails.name)}
+                </div>
+            `;
+        }
+        
+        // Transportation 정보 (method가 있는 경우)
+        if (isTransportation) {
+            content += `
+                <div class="space-y-3 mb-4">
+                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        ${option.method ? `<p class="text-sm font-semibold text-slate-800">${option.method}</p>` : ''}
+                        ${option.estimatedDuration ? `<p class="text-xs text-slate-600 mt-1">소요시간: ${option.estimatedDuration}분</p>` : ''}
+                        ${option.estimatedCost ? `<p class="text-xs text-slate-600">비용: 약 ${option.estimatedCost.toLocaleString()}${option.currency || '원'}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 장소 상세 정보 (transportation, 일반 활동 모두)
+        if (hasPlaceDetails) {
+            content += this.generatePlaceDetails(placeDetails, option);
+        }
+        
+        // 팁과 이유 (transportation, 일반 활동 모두)
+        content += this.generateTipsAndReasons(option);
+        
+        return content;
     }
 
     generateActivityCard(activity) {
@@ -781,20 +1434,82 @@ class TravelAppLoader {
 
     getActivityTypeIcon(type) {
         const iconMap = {
-            'accommodation': '🏨',
-            'sightseeing': '🏛️',
-            'dining': '🍽️',
-            'shopping': '🛍️',
-            'transportation': '🚗',
-            'entertainment': '🎪',
-            'activity': '🎯',
-            'rest': '😴'
+            // 모든 아이콘을 흰색 SVG로 통일
+            'accommodation': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+            'sightseeing': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
+            'dining': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 13v9"></path><path d="M17 2v20"></path></svg>`,
+            'shopping': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`,
+            'transportation': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-2.2-1.8-4-4-4H6c-2.2 0-4 1.8-4 4v3c0 .6.4 1 1 1h2"></path><circle cx="9" cy="17" r="2"></circle><circle cx="15" cy="17" r="2"></circle></svg>`,
+            'entertainment': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72z"></path><path d="m14 7 3 3"></path></svg>`,
+            'activity': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72z"></path><path d="m14 7 3 3"></path></svg>`,
+            'rest': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22h6a2 2 0 0 0 2-2v-2"></path><path d="M4 18v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><path d="M2 14h20"></path><path d="M6 14V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"></path></svg>`,
+            // 새로운 타입별 분류 
+            'restaurant': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 13v9"></path><path d="M17 2v20"></path></svg>`,
+            'attraction': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
+            'transport': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-2.2-1.8-4-4-4H6c-2.2 0-4 1.8-4 4v3c0 .6.4 1 1 1h2"></path><circle cx="9" cy="17" r="2"></circle><circle cx="15" cy="17" r="2"></circle></svg>`,
+            'spot': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`,
+            'meal': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 13v9"></path><path d="M17 2v20"></path></svg>`,
+            'general': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`
         };
-        return iconMap[type] || '📍';
+        return iconMap[type] || `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
+    }
+
+    createImageSlider(photos, altText) {
+        if (!photos || photos.length === 0) return '';
+        const sliderId = `slider-${Math.random().toString(36).substr(2, 9)}`;
+        return `
+            <div class="relative image-slider-container bg-slate-100 rounded-lg overflow-hidden">
+                <div id="${sliderId}" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar image-list">
+                    ${photos.map(src => `<div class="snap-center flex-shrink-0 w-full aspect-video"><img src="${src}" class="w-full h-full object-cover cursor-pointer lightbox-trigger" alt="${altText}" loading="lazy"></div>`).join('')}
+                </div>
+                ${photos.length > 1 ? `
+                <button class="slider-arrow absolute top-1/2 left-2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center prev-btn" data-slider="${sliderId}">&lt;</button>
+                <button class="slider-arrow absolute top-1/2 right-2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center next-btn" data-slider="${sliderId}">&gt;</button>
+                <div class="slider-dots absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                    ${photos.map((_, i) => `<div class="dot w-2 h-2 rounded-full bg-white/60 transition-all duration-300 ${i === 0 ? 'w-4 bg-white' : ''}" data-index="${i}"></div>`).join('')}
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    navigateSlider(sliderId, direction) {
+        const slider = document.getElementById(sliderId);
+        if (!slider) return;
+        
+        const scrollAmount = slider.offsetWidth;
+        slider.scrollBy({
+            left: direction * scrollAmount,
+            behavior: 'smooth'
+        });
+        
+        // 도트 업데이트
+        setTimeout(() => {
+            this.updateSliderDots(slider);
+        }, 300);
+    }
+
+    updateSliderDots(slider) {
+        const dotsContainer = slider.parentElement?.querySelector('.slider-dots');
+        if (!dotsContainer) return;
+        
+        const dots = dotsContainer.querySelectorAll('.dot');
+        const currentIndex = Math.round(slider.scrollLeft / slider.offsetWidth);
+        
+        dots.forEach((dot, index) => {
+            if (index === currentIndex) {
+                dot.classList.add('w-4', 'bg-white');
+                dot.classList.remove('w-2', 'bg-white/60');
+            } else {
+                dot.classList.add('w-2', 'bg-white/60');
+                dot.classList.remove('w-4', 'bg-white');
+            }
+        });
     }
 
     getActivityTypeName(type) {
         const nameMap = {
+            // 기존 타입들
             'accommodation': '숙박',
             'sightseeing': '관광',
             'dining': '식사',
@@ -802,9 +1517,118 @@ class TravelAppLoader {
             'transportation': '이동',
             'entertainment': '오락',
             'activity': '액티비티',
-            'rest': '휴식'
+            'rest': '휴식',
+            // 새로운 타입별 분류
+            'restaurant': '맛집',
+            'attraction': '명소',
+            'transport': '교통',
+            'spot': '추천장소',
+            'meal': '식사',
+            'general': '일반'
         };
         return nameMap[type] || '기타';
+    }
+
+    getActivityTypeColor(type) {
+        const colorMap = {
+            // 기존 타입들
+            'accommodation': 'bg-teal-500',
+            'sightseeing': 'bg-purple-500',
+            'dining': 'bg-amber-500',
+            'shopping': 'bg-pink-500',
+            'transportation': 'bg-blue-500',
+            'entertainment': 'bg-rose-500',
+            'activity': 'bg-emerald-500',
+            'rest': 'bg-slate-500',
+            // 새로운 타입별 분류
+            'restaurant': 'bg-amber-500',  // 주황색 (맛집)
+            'attraction': 'bg-purple-500', // 보라색 (명소)
+            'transport': 'bg-blue-500',    // 파란색 (교통)
+            'spot': 'bg-emerald-500',      // 초록색 (추천장소)
+            'meal': 'bg-amber-500',        // 주황색 (식사)
+            'general': 'bg-slate-500'      // 회색 (일반)
+        };
+        return colorMap[type] || 'bg-slate-500';
+    }
+
+    getActivityTypeTextColor(type) {
+        const colorMap = {
+            'accommodation': 'text-teal-600',
+            'sightseeing': 'text-purple-600',
+            'dining': 'text-amber-600',
+            'shopping': 'text-pink-600',
+            'transportation': 'text-blue-600',
+            'entertainment': 'text-rose-600',
+            'activity': 'text-emerald-600',
+            'rest': 'text-slate-600',
+            'restaurant': 'text-amber-600',
+            'attraction': 'text-purple-600',
+            'transport': 'text-blue-600',
+            'spot': 'text-emerald-600',
+            'meal': 'text-amber-600',
+            'general': 'text-slate-600'
+        };
+        return colorMap[type] || 'text-slate-600';
+    }
+
+    renderStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        let starsHtml = '';
+        
+        // 채워진 별
+        for (let i = 0; i < fullStars; i++) {
+            starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+        }
+        
+        // 반 별
+        if (hasHalfStar) {
+            starsHtml += '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><defs><linearGradient id="half"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="#d1d5db"/></linearGradient></defs><path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+        }
+        
+        // 빈 별
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        for (let i = 0; i < emptyStars; i++) {
+            starsHtml += '<svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+        }
+        
+        return starsHtml;
+    }
+
+    extractReviewText(reviews) {
+        if (typeof reviews === 'string') {
+            // "리뷰 텍스트" (별점) 형태 파싱
+            const match = reviews.match(/^"([^"]+)"/);
+            return match ? match[1] : reviews.split('(')[0].replace(/"/g, '').trim();
+        }
+        if (Array.isArray(reviews) && reviews.length > 0) {
+            // 배열에서 첫 번째 리뷰의 text 추출
+            const firstReview = reviews[0];
+            if (typeof firstReview === 'object' && firstReview.text) {
+                // 긴 리뷰는 첫 문장만 추출
+                const text = firstReview.text.split('\n')[0].split('.')[0];
+                return text.length > 50 ? text.substring(0, 50) + '...' : text;
+            }
+            return firstReview.text || firstReview;
+        }
+        return '좋은 곳입니다';
+    }
+
+    extractReviewAuthor(reviews) {
+        if (typeof reviews === 'string') {
+            // (5⭐) 형태에서 별점 추출하거나 기본값
+            const match = reviews.match(/\(([\d⭐]+)\)$/);
+            return match ? match[1] : '방문객';
+        }
+        if (Array.isArray(reviews) && reviews.length > 0) {
+            // 배열에서 첫 번째 리뷰의 author 추출
+            const firstReview = reviews[0];
+            if (typeof firstReview === 'object' && firstReview.author) {
+                return firstReview.author;
+            }
+            return firstReview.author || '방문객';
+        }
+        return '방문객';
     }
 
     generateBudgetPage() {
@@ -993,6 +1817,50 @@ class TravelAppLoader {
             if (e.target.id === 'overlay') {
                 this.hideBottomSheet();
             }
+            
+            // 이미지 슬라이더 네비게이션
+            if (e.target.closest('.prev-btn')) {
+                const btn = e.target.closest('.prev-btn');
+                const sliderId = btn.dataset.slider;
+                this.navigateSlider(sliderId, -1);
+            }
+            
+            if (e.target.closest('.next-btn')) {
+                const btn = e.target.closest('.next-btn');  
+                const sliderId = btn.dataset.slider;
+                this.navigateSlider(sliderId, 1);
+            }
+            
+            // 라이트박스 이미지 클릭
+            if (e.target.classList.contains('lightbox-trigger')) {
+                e.preventDefault();
+                this.openLightbox(e.target);
+            }
+            
+            // 라이트박스 닫기
+            if (e.target.id === 'lightbox-close' || e.target.closest('#lightbox-close') || e.target.id === 'lightbox-modal') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeLightbox();
+            }
+            
+            // 라이트박스 네비게이션
+            if (e.target.id === 'lightbox-prev' || e.target.closest('#lightbox-prev')) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.navigateLightbox(-1);
+            }
+            
+            if (e.target.id === 'lightbox-next' || e.target.closest('#lightbox-next')) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.navigateLightbox(1);
+            }
+            
+            // 옵션 칩 클릭
+            if (e.target.classList.contains('option-chip')) {
+                this.handleOptionChipClick(e.target);
+            }
         });
 
         // 스와이프 이벤트 (간단한 구현)
@@ -1000,21 +1868,150 @@ class TravelAppLoader {
         this.endX = 0;
 
         document.addEventListener('touchstart', (e) => {
+            // option chip 캐러셀 영역인지 직접 확인 (더 정확한 방법)
+            const touchTarget = e.target;
+            const optionChipContainer = touchTarget.closest('.overflow-x-auto.no-scrollbar');
+            const isOptionChipArea = optionChipContainer && optionChipContainer.querySelector('.option-chip');
+            
+            // option chip 컨테이너 내부 터치인지 확인
+            if (isOptionChipArea && optionChipContainer.contains(touchTarget)) {
+                console.log('🚫 Option chip 캐러셀 영역 터치 - day 스와이프 비활성화');
+                this.isSwipeDisabled = true;
+                return;
+            }
+            
+            this.isSwipeDisabled = false;
             this.startX = e.touches[0].clientX;
         });
 
         document.addEventListener('touchend', (e) => {
+            // option chip 영역 터치였으면 스와이프 무시
+            if (this.isSwipeDisabled) {
+                console.log('🚫 Option chip 영역 터치였으므로 day 스와이프 무시');
+                this.isSwipeDisabled = false; // 상태 리셋
+                return;
+            }
+            
             this.endX = e.changedTouches[0].clientX;
             this.handleSwipe();
         });
 
         // 키보드 이벤트
         document.addEventListener('keydown', (e) => {
+            // 라이트박스가 열려있는 경우
+            const lightboxModal = document.getElementById('lightbox-modal');
+            if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.closeLightbox();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    this.navigateLightbox(-1);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    this.navigateLightbox(1);
+                }
+                return; // 라이트박스가 열려있으면 다른 키보드 이벤트 무시
+            }
+            
+            // 일반 페이지 네비게이션
             if (e.key === 'ArrowLeft') {
                 this.previousPage();
             } else if (e.key === 'ArrowRight') {
                 this.nextPage();
             }
+        });
+    }
+    
+    setupOptionChipTouchProtection() {
+        console.log('⚙️ Option chip 터치 이벤트 보호 설정 시작');
+        
+        // 모든 option chip 캐러셀 영역 찾기
+        const optionContainers = document.querySelectorAll('.overflow-x-auto.no-scrollbar');
+        
+        optionContainers.forEach(container => {
+            if (container.querySelector('.option-chip')) {
+                console.log('✅ Option chip 캐러셀 발견, 기본 스크롤 속성 확인');
+                
+                // 강제로 스크롤 속성 설정
+                container.style.overflowX = 'auto';
+                container.style.overflowY = 'visible';
+                container.style.webkitOverflowScrolling = 'touch';
+                
+                // 스크롤바 숨김 CSS 강제 적용
+                container.style.scrollbarWidth = 'none';
+                container.style.msOverflowStyle = 'none';
+                
+                // 디버깅용 로그
+                console.log('🔧 Container styles applied:', {
+                    overflowX: container.style.overflowX,
+                    scrollWidth: container.scrollWidth,
+                    clientWidth: container.clientWidth,
+                    canScroll: container.scrollWidth > container.clientWidth
+                });
+            }
+        });
+    }
+
+    loadSinglePage(pageIndex) {
+        const pageContainer = document.getElementById('page-container');
+        if (!pageContainer) return;
+        
+        const days = this.travelData.days || [];
+        if (pageIndex < 0 || pageIndex >= days.length) return;
+        
+        const day = days[pageIndex];
+        const pageHtml = `
+            <div class="page-content overflow-y-auto p-6 pb-32" style="width: 100%; height: auto;">
+                ${this.generateDayPage(day, pageIndex)}
+            </div>
+        `;
+        
+        pageContainer.innerHTML = pageHtml;
+        console.log(`✅ 페이지 ${pageIndex} 단일 로드 완료`);
+        
+        // 스타일 강제 설정
+        setTimeout(() => {
+            this.forceRemoveHeightStyles();
+            this.setupOptionChipTouchProtection();
+        }, 50);
+    }
+
+    forceRemoveHeightStyles() {
+        console.log('🔧 강제로 모든 높이 관련 스타일 제거 시작');
+        
+        // 메인 컨테이너들
+        const mainContainer = document.querySelector('.container');
+        const main = document.querySelector('main');
+        const pageContainer = document.getElementById('page-container');
+        
+        if (mainContainer) {
+            mainContainer.style.height = 'auto';
+            mainContainer.style.minHeight = 'auto';
+            mainContainer.style.maxHeight = 'none';
+            console.log('✅ 메인 컨테이너 높이 스타일 제거');
+        }
+        
+        if (main) {
+            main.style.height = 'auto';
+            main.style.minHeight = 'auto';
+            main.style.maxHeight = 'none';
+            console.log('✅ main 태그 높이 스타일 제거');
+        }
+        
+        if (pageContainer) {
+            pageContainer.style.height = 'auto';
+            pageContainer.style.minHeight = 'auto';
+            pageContainer.style.maxHeight = 'none';
+            console.log('✅ page-container 높이 스타일 제거');
+        }
+        
+        // 모든 페이지 콘텐츠
+        document.querySelectorAll('.page-content').forEach((page, index) => {
+            page.style.height = 'auto';
+            page.style.minHeight = 'auto';
+            page.style.maxHeight = 'none';
+            console.log(`✅ 페이지 ${index} 높이 스타일 제거`);
         });
     }
 
@@ -1036,34 +2033,18 @@ class TravelAppLoader {
         
         this.currentPage = pageIndex;
         
-        console.log(`📄 페이지 ${pageIndex} 전환 중...`);
+        console.log(`📄 단일 페이지 방식으로 페이지 ${pageIndex} 전환 중...`);
         
-        // 페이지 전환 애니메이션
-        const pageContainer = document.getElementById('page-container');
-        if (pageContainer) {
-            pageContainer.style.transform = `translateX(-${pageIndex * 100}%)`;
-            
-            // 현재 페이지의 콘텐츠를 다시 렌더링 (지연 렌더링 방식)
-            setTimeout(() => {
-                const currentPageElement = pageContainer.children[pageIndex];
-                if (currentPageElement && this.travelData.days[pageIndex]) {
-                    const day = this.travelData.days[pageIndex];
-                    const activities = day.activities || [];
-                    
-                    console.log(`🔄 페이지 ${pageIndex} 콘텐츠 재렌더링 시작`);
-                    console.log(`🔍 활동 개수: ${activities.length}`);
-                    
-                    // 활동 카드들을 다시 렌더링
-                    const timelineContainer = currentPageElement.querySelector('.space-y-8');
-                    if (timelineContainer && activities.length > 0) {
-                        timelineContainer.innerHTML = activities.map((activity, index) => {
-                            console.log(`🚀 페이지 ${pageIndex} - generateTimelineActivity 호출: Activity ${index}, Type: ${activity.type}`);
-                            return this.generateTimelineActivity(activity);
-                        }).join('');
-                    }
-                }
-            }, 300); // 애니메이션 완료 후 실행
-        }
+        // 단일 페이지 로딩 방식 사용 (높이 문제 해결)
+        this.loadSinglePage(pageIndex);
+        
+        console.log(`✅ 페이지 ${pageIndex} 단일 로딩 완료`);
+        
+        // 스타일 강제 설정 및 보호 기능 설정
+        setTimeout(() => {
+            this.forceRemoveHeightStyles();
+            this.setupOptionChipTouchProtection();
+        }, 100);
         
         // 탭 활성화 상태 업데이트 (template-test 스타일)
         document.querySelectorAll('.nav-tab').forEach((tab, index) => {
@@ -1145,6 +2126,44 @@ class TravelAppLoader {
     generateInfoContent() {
         // 새로운 구조(essentials) 또는 기존 구조 지원
         const info = this.travelData.essentials || this.travelData.essentialInfo || {};
+        
+        // First step response 데이터의 특별한 처리
+        let flightInfoHtml = '';
+        let dailyTipsHtml = '';
+        
+        if (this.travelData.flightInfo) {
+            const flight = this.travelData.flightInfo;
+            flightInfoHtml = `
+                <div class="p-5 bg-green-50 rounded-xl">
+                    <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 17.5v1.5a1.5 1.5 0 0 0 3 0v-1.5a7.5 7.5 0 0 1 7.5-7.5H21a2 2 0 0 0 0-4h-1.5a7.5 7.5 0 0 1-7.5-7.5V3a1.5 1.5 0 0 0-3 0v1.5a7.5 7.5 0 0 1-7.5 7.5H3a2 2 0 0 0 0 4h1.5a7.5 7.5 0 0 1 7.5 7.5z"/>
+                        </svg> 
+                        항공편 정보
+                    </h3>
+                    <div class="text-sm text-slate-600 leading-relaxed">
+                        <p><strong>출국:</strong> ${flight.outbound?.airline || ''} ${flight.outbound?.time || ''} (${flight.outbound?.date || ''})</p>
+                        <p><strong>귀국:</strong> ${flight.return?.airline || ''} ${flight.return?.time || ''} (${flight.return?.date || ''})</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (this.travelData.dailyTips && this.travelData.dailyTips.length > 0) {
+            dailyTipsHtml = this.travelData.dailyTips.map(tip => `
+                <div class="p-5 bg-amber-50 rounded-xl">
+                    <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <span class="text-lg">${tip.icon || '💡'}</span>
+                        ${tip.content || '여행 팁'}
+                    </h3>
+                    <div class="text-sm text-slate-600 leading-relaxed">
+                        ${(tip.details || []).map(detail => `<p class="mb-2">• ${detail}</p>`).join('')}
+                        ${(tip.spots || []).map(spot => `<p class="mb-2"><strong>${spot.name}:</strong> ${spot.tip}</p>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
         const defaultInfo = {
             transportation: this.travelData.transportation || '교통편 정보 준비 중',
             localTips: this.travelData.tips || this.travelData.localTips || ['여행 팁 준비 중'],
@@ -1155,6 +2174,10 @@ class TravelAppLoader {
         return `
             <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 정보</h2>
             <div class="space-y-4">
+                ${flightInfoHtml}
+                
+                ${dailyTipsHtml}
+                
                 <div class="p-5 bg-blue-50 rounded-xl">
                     <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1211,14 +2234,27 @@ class TravelAppLoader {
     }
 
     generateBudgetContent() {
-        // 새로운 구조(budget) 또는 기존 구조 지원
-        const budget = this.travelData.budget || this.travelData.budgetBreakdown || {};
-        const totalBudget = budget.total || { value: 500000 };
+        // 새로운 구조(estimatedBudget) 또는 기존 구조 지원
+        const budget = this.travelData.estimatedBudget || this.travelData.budget || this.travelData.budgetBreakdown || {};
+        
+        // First step response 구조에서 총 예산 추출
+        let totalBudgetValue = 500000; // 기본값
+        if (budget.total) {
+            totalBudgetValue = budget.total;
+        } else if (budget.value) {
+            totalBudgetValue = budget.value;
+        }
+        
+        // 인당 예산 정보 추가
+        const perPersonBudget = budget.perPerson || Math.floor(totalBudgetValue / (this.travelData.travelers?.adults || 1));
+        const currency = budget.currency || 'KRW';
+        
+        // 기본 비용 분석 (총 예산을 기준으로 비례 배분)
         const breakdown = budget.breakdown || [
-            { category: 'accommodation', value: 200000, description: '숙박비 (1박당 약 100,000원)' },
-            { category: 'meals', value: 150000, description: '식비 (1일 3식 기준)' },
-            { category: 'activities', value: 100000, description: '관광지 입장료 및 체험비' },
-            { category: 'transportation', value: 50000, description: '현지 교통비' }
+            { category: 'accommodation', value: Math.floor(totalBudgetValue * 0.4), description: '숙박비 (1박당 기준)' },
+            { category: 'meals', value: Math.floor(totalBudgetValue * 0.3), description: '식비 (1일 3식 기준)' },
+            { category: 'activities', value: Math.floor(totalBudgetValue * 0.2), description: '관광지 입장료 및 체험비' },
+            { category: 'transportation', value: Math.floor(totalBudgetValue * 0.1), description: '현지 교통비' }
         ];
 
         return `
@@ -1230,7 +2266,8 @@ class TravelAppLoader {
                             <h3 class="font-bold text-slate-800 flex items-center gap-2">
                                 총 예산
                             </h3>
-                            <p class="text-xs text-slate-500">₩${totalBudget.value.toLocaleString()}</p>
+                            <p class="text-xs text-slate-500">₩${totalBudgetValue.toLocaleString()}</p>
+                            ${perPersonBudget ? `<p class="text-xs text-slate-400">1인당 약 ₩${perPersonBudget.toLocaleString()}</p>` : ''}
                         </div>
                         <span class="font-bold text-orange-600 text-lg">₩0</span>
                     </div>
@@ -1284,8 +2321,48 @@ class TravelAppLoader {
 
     generateTodoContent() {
         const todos = this.travelData.todos || [];
+        console.log('🧳 준비물 데이터 확인:', todos);
         
-        // 기본 체크리스트를 카테고리별로 구성
+        // generateTodoList에서 생성된 todos가 있으면 사용하고, 없으면 기본 체크리스트 사용
+        if (todos.length > 0) {
+            // todos 배열을 카테고리별로 그룹화
+            const categorizedTodos = {};
+            
+            todos.forEach(todo => {
+                const category = this.getCategoryDisplayName(todo.category);
+                if (!categorizedTodos[category]) {
+                    categorizedTodos[category] = [];
+                }
+                categorizedTodos[category].push(todo);
+            });
+
+            return `
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">여행 준비물</h2>
+                <div class="space-y-6">
+                    ${Object.entries(categorizedTodos).map(([category, items]) => `
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">${category}</h3>
+                            <div class="space-y-3">
+                                ${items.map(item => `
+                                    <label class="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                        <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                                        <span class="text-sm text-slate-700">${item.text}</span>
+                                        <span class="ml-auto text-xs px-2 py-1 rounded ${this.getPriorityClass(item.priority)}">${this.getPriorityLabel(item.priority)}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    <div class="mt-8 flex gap-2">
+                        <input type="text" placeholder="새 준비물 추가" class="flex-1 p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <button class="bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition">추가</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 기본 체크리스트를 카테고리별로 구성 (폴백)
         const defaultTodos = [
             {
                 category: '✈️ 출발 전 필수',
@@ -1353,6 +2430,35 @@ class TravelAppLoader {
         `;
     }
 
+    getCategoryDisplayName(category) {
+        const categoryMap = {
+            'pre-departure': '✈️ 출발 전 필수',
+            'packing': '👕 개인 용품',
+            'departure': '🚀 출발 당일',
+            'local': '🗺️ 현지 도착 후',
+            'return': '🏠 귀국 준비'
+        };
+        return categoryMap[category] || `📋 ${category}`;
+    }
+
+    getPriorityClass(priority) {
+        const priorityClasses = {
+            'high': 'bg-red-100 text-red-700',
+            'medium': 'bg-yellow-100 text-yellow-700', 
+            'low': 'bg-green-100 text-green-700'
+        };
+        return priorityClasses[priority] || 'bg-gray-100 text-gray-700';
+    }
+
+    getPriorityLabel(priority) {
+        const priorityLabels = {
+            'high': '필수',
+            'medium': '중요',
+            'low': '옵션'
+        };
+        return priorityLabels[priority] || priority;
+    }
+
     nextPage() {
         if (this.currentPage < this.totalPages - 1) {
             this.goToPage(this.currentPage + 1);
@@ -1363,6 +2469,203 @@ class TravelAppLoader {
         if (this.currentPage > 0) {
             this.goToPage(this.currentPage - 1);
         }
+    }
+
+    // 라이트박스 제어 함수들
+    openLightbox(imgElement) {
+        const modal = document.getElementById('lightbox-modal');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const currentImageEl = document.getElementById('current-image');
+        const totalImagesEl = document.getElementById('total-images');
+        const counter = document.getElementById('lightbox-counter');
+        const prevBtn = document.getElementById('lightbox-prev');
+        const nextBtn = document.getElementById('lightbox-next');
+
+        if (!modal || !lightboxImage) return;
+
+        // 현재 이미지가 속한 슬라이더 컨테이너 찾기
+        const sliderContainer = imgElement.closest('.image-slider-container');
+        if (sliderContainer) {
+            // 슬라이더의 모든 이미지 수집
+            const allImages = Array.from(sliderContainer.querySelectorAll('.lightbox-trigger'));
+            this.lightboxImages = allImages.map(img => ({
+                src: img.src,
+                alt: img.alt
+            }));
+            this.currentLightboxIndex = allImages.indexOf(imgElement);
+        } else {
+            // 단일 이미지
+            this.lightboxImages = [{
+                src: imgElement.src,
+                alt: imgElement.alt
+            }];
+            this.currentLightboxIndex = 0;
+        }
+
+        // 라이트박스 업데이트
+        this.updateLightboxImage();
+
+        // 네비게이션 버튼 표시/숨기기
+        if (this.lightboxImages.length > 1) {
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+            counter.classList.remove('hidden');
+        } else {
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            counter.classList.add('hidden');
+        }
+
+        // 모달 표시
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // 스크롤 방지
+    }
+
+    closeLightbox() {
+        const modal = document.getElementById('lightbox-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // 스크롤 복원
+            this.lightboxImages = [];
+            this.currentLightboxIndex = 0;
+        }
+    }
+
+    navigateLightbox(direction) {
+        if (!this.lightboxImages || this.lightboxImages.length <= 1) return;
+
+        this.currentLightboxIndex += direction;
+
+        // 순환 네비게이션
+        if (this.currentLightboxIndex >= this.lightboxImages.length) {
+            this.currentLightboxIndex = 0;
+        } else if (this.currentLightboxIndex < 0) {
+            this.currentLightboxIndex = this.lightboxImages.length - 1;
+        }
+
+        this.updateLightboxImage();
+    }
+
+    updateLightboxImage() {
+        const lightboxImage = document.getElementById('lightbox-image');
+        const currentImageEl = document.getElementById('current-image');
+        const totalImagesEl = document.getElementById('total-images');
+
+        if (!lightboxImage || !this.lightboxImages) return;
+
+        const currentImage = this.lightboxImages[this.currentLightboxIndex];
+        lightboxImage.src = currentImage.src;
+        lightboxImage.alt = currentImage.alt;
+
+        // 카운터 업데이트
+        if (currentImageEl && totalImagesEl) {
+            currentImageEl.textContent = this.currentLightboxIndex + 1;
+            totalImagesEl.textContent = this.lightboxImages.length;
+        }
+    }
+
+    handleOptionChipClick(chipElement) {
+        const activityContainer = chipElement.closest('.activity-with-options');
+        const optionIndex = parseInt(chipElement.dataset.index);
+        
+        if (!activityContainer) return;
+        
+        // 모든 칩의 active 클래스 제거
+        activityContainer.querySelectorAll('.option-chip').forEach(chip => {
+            chip.classList.remove('active');
+        });
+        
+        // 클릭된 칩에 active 클래스 추가
+        chipElement.classList.add('active');
+        
+        // 선택된 옵션의 상세 정보를 가져와서 업데이트
+        // (mock_resp.json의 데이터 구조에 맞춰 옵션 데이터를 찾아야 함)
+        this.updateOptionDetails(activityContainer, optionIndex);
+    }
+    
+    updateOptionDetails(activityContainer, optionIndex) {
+        // 현재 페이지와 활동을 찾아서 옵션 데이터 업데이트
+        const currentPageIndex = this.currentPage;
+        const currentDay = this.travelData.days[currentPageIndex];
+        
+        if (!currentDay || !currentDay.activities) return;
+        
+        // 활동 찾기 (DOM 순서와 데이터 순서가 일치한다고 가정)
+        const activityIndex = Array.from(activityContainer.parentElement.children)
+            .indexOf(activityContainer);
+        
+        const activity = currentDay.activities[activityIndex];
+        if (!activity) return;
+        
+        // 옵션 데이터 찾기 (직접 options 또는 transportation.options)
+        let options = null;
+        if (activity.options && activity.options.length > 0) {
+            options = activity.options;
+        } else if (activity.transportation && activity.transportation.options && activity.transportation.options.length > 0) {
+            options = activity.transportation.options;
+        }
+        
+        if (!options || !options[optionIndex]) return;
+        
+        const selectedOption = options[optionIndex];
+        const detailsContainer = activityContainer.querySelector('.option-details-container');
+        
+        if (detailsContainer) {
+            detailsContainer.innerHTML = this.generateOptionDetails(selectedOption);
+            
+            // 이미지 슬라이더 재초기화
+            setTimeout(() => {
+                this.initializeImageSlidersInContainer(detailsContainer);
+            }, 100);
+        }
+    }
+    
+    initializeImageSlidersInContainer(container) {
+        const sliders = container.querySelectorAll('.image-slider-container');
+        sliders.forEach(sliderContainer => {
+            // 기존 이미지 슬라이더 초기화 로직 적용
+            this.initializeSingleImageSlider(sliderContainer);
+        });
+    }
+    
+    initializeSingleImageSlider(sliderContainer) {
+        const imageList = sliderContainer.querySelector('.image-list');
+        const prevBtn = sliderContainer.querySelector('.prev-btn');
+        const nextBtn = sliderContainer.querySelector('.next-btn');
+        const dotsContainer = sliderContainer.querySelector('.slider-dots');
+        const images = imageList?.querySelectorAll('div');
+        
+        if (!imageList || !prevBtn || !nextBtn || !images) return;
+        
+        if (images.length <= 1) {
+            if (dotsContainer) dotsContainer.style.display = 'none';
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            return;
+        }
+        
+        let currentIndex = 0;
+        
+        const updateSlider = (smooth = true) => {
+            imageList.scrollTo({
+                left: imageList.offsetWidth * currentIndex,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        };
+        
+        prevBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : images.length - 1;
+            updateSlider();
+        };
+        
+        nextBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentIndex = (currentIndex < images.length - 1) ? currentIndex + 1 : 0;
+            updateSlider();
+        };
     }
 
     setupPWAInstallPrompt() {

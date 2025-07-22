@@ -16,8 +16,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{DESTINATION_EMOJI}}</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{DESTINATION_EMOJI}}</text></svg>">
     
-    <!-- 매니페스트 -->
-    <link rel="manifest" href="./manifest.json">
+    <!-- 매니페스트 - JavaScript에서 동적 생성 -->
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,12 +40,17 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .page-container {
-            display: flex;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
         }
         .page-content {
-            flex-shrink: 0;
+            display: block;
             width: 100%;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
         }
         .nav-tab.active {
             color: #F57C00;
@@ -76,22 +80,45 @@
         .image-slider-container:hover .slider-arrow {
             opacity: 1;
         }
+        
+        /* 옵션 캐러셀(칩)을 위한 스타일 */
+        .option-chip {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+            cursor: pointer;
+            border-radius: 9999px;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        .option-chip:hover {
+            border-color: #fb923c;
+            background-color: #fff7ed;
+        }
+        .option-chip.active {
+            color: #ffffff;
+            font-weight: 700;
+            background-color: #f97316;
+            border-color: #f97316;
+            box-shadow: 0 4px 14px 0 rgb(251 146 60 / 39%);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <div class="container mx-auto max-w-lg min-h-screen bg-white shadow-2xl shadow-slate-200 flex flex-col relative overflow-hidden">
+    <div class="container mx-auto max-w-lg bg-white shadow-2xl shadow-slate-200 flex flex-col relative overflow-hidden" style="height: auto; min-height: auto;">
         
         <!-- 상단 헤더 (고정) -->
         <header id="main-header" class="sticky top-0 z-20 bg-white/95 backdrop-blur-lg border-b border-slate-100">
-            <div class="p-6 flex justify-between items-center">
-                <div class="flex-1 min-w-0">
-                    <h1 id="main-title" class="text-lg font-bold text-slate-900 truncate">{{TRIP_TITLE}}</h1>
-                    <p id="main-subtitle" class="text-xs text-slate-500 truncate">{{TRIP_SUBTITLE}}</p>
-                </div>
-                <button class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center flex-shrink-0 ml-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                </button>
+            <div class="p-6">
+                <p id="trip-destination" class="text-sm font-semibold text-orange-600">{{DESTINATION}} <span class="text-xs text-slate-400">v13-단일페이지로딩</span></p>
+                <h1 id="trip-title" class="text-xl font-bold text-slate-900 mt-1">{{TRIP_TITLE}}</h1>
+                <p id="trip-dates" class="text-sm text-slate-500 mt-1">{{TRIP_DATES}}</p>
+                <div id="trip-themes" class="flex flex-wrap gap-1.5 mt-2">{{TRIP_THEMES}}</div>
             </div>
             <!-- 스크롤형 탭 네비게이션 -->
             <div id="top-nav" class="px-4 border-t border-slate-100">
@@ -102,8 +129,8 @@
         </header>
 
         <!-- 메인 콘텐츠 영역 (스와이프 가능) -->
-        <main class="flex-1 overflow-hidden">
-            <div id="page-container" class="page-container h-full">
+        <main class="flex-1 overflow-x-hidden" style="height: auto; min-height: auto;">
+            <div id="page-container" class="page-container">
                 {{DAY_PAGES}}
             </div>
         </main>
@@ -111,17 +138,17 @@
         <!-- 떠있는 하단 탭 -->
         <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
             <div id="bottom-nav" class="flex items-center gap-2 bg-white/70 backdrop-blur-xl p-2 rounded-full shadow-lg ring-1 ring-black/5">
-                <button data-sheet="info" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    <span class="text-xs font-medium">정보</span>
+                <button data-sheet="info" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span class="text-sm font-semibold">정보</span>
                 </button>
-                <button data-sheet="budget" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <span class="text-xs font-medium">예산</span>
+                <button data-sheet="budget" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span class="text-sm font-semibold">예산</span>
                 </button>
-                <button data-sheet="todo" class="bottom-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-orange-600 transition w-20 h-14 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span class="text-xs font-medium">준비물</span>
+                <button data-sheet="todo" class="bottom-nav-btn flex items-center justify-center gap-1.5 text-slate-600 hover:text-orange-600 transition w-24 h-12 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span class="text-sm font-semibold">준비물</span>
                 </button>
             </div>
         </nav>
@@ -156,6 +183,41 @@
             </div>
             <div class="p-6 overflow-y-auto" id="todo-content">
                 <!-- Todo content will be loaded here -->
+            </div>
+        </div>
+
+        <!-- 이미지 라이트박스 모달 -->
+        <div id="lightbox-modal" class="fixed inset-0 z-[100] bg-black/90 hidden flex items-center justify-center">
+            <div class="relative w-full h-full flex items-center justify-center p-4">
+                <!-- 닫기 버튼 -->
+                <button id="lightbox-close" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <!-- 이미지 컨테이너 -->
+                <div class="relative max-w-full max-h-full">
+                    <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain">
+                    
+                    <!-- 네비게이션 버튼 (여러 이미지가 있을 때만) -->
+                    <button id="lightbox-prev" class="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15,18 9,12 15,6"></polyline>
+                        </svg>
+                    </button>
+                    <button id="lightbox-next" class="absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- 이미지 인덱스 표시 -->
+                <div id="lightbox-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/20 text-white px-3 py-1 rounded-full text-sm hidden">
+                    <span id="current-image">1</span> / <span id="total-images">1</span>
+                </div>
             </div>
         </div>
 
