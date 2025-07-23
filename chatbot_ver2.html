@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TripGenie - AI 여행 플래너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Main Colors - Revenue Optimized */
+            --primary: #FF5A5F;
+            --primary-hover: #E84E54;
+            --primary-light: #FFF5F5;
+            
+            --trust: #0064D2;
+            --trust-light: #E6F2FF;
+            
+            --premium: #FFB400;
+            --premium-light: #FFF9E6;
+            
+            --success: #00C896;
+            --success-light: #E6FFF8;
+            
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --text-primary: #1A202C;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse-scale {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes progress-fill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typing-bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .fade-enter {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        .loading-step {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .loading-step.active {
+            display: flex;
+        }
+
+        .orbit-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-premium {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 180, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 180, 0, 0); }
+        }
+
+        /* Message Animation */
+        .message-enter {
+            animation: fade-in-up 0.3s ease-out;
+        }
+
+        /* Typing Indicator */
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin: 0 2px;
+            animation: typing-bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing-bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Premium Badge */
+        .premium-badge {
+            background: linear-gradient(135deg, var(--premium) 0%, #FFA000 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            animation: pulse-premium 2s infinite;
+        }
+
+        /* Sample Card Hover */
+        .sample-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .sample-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .sample-card:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        .card-image {
+            transition: transform 0.5s ease;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: white;
+            font-weight: 600;
+            padding: 14px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 95, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Premium Button */
+        .btn-premium {
+            background: linear-gradient(135deg, var(--premium) 0%, #FFA000 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        /* Trust Badge */
+        .trust-badge {
+            background: var(--trust-light);
+            color: var(--trust);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Image Overlay */
+        .image-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+        }
+
+        /* Progress Steps */
+        .step {
+            position: relative;
+            flex: 1;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+        }
+
+        .step.active::after {
+            background: var(--primary);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        /* Loading Animations */
+        .travel-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .travel-loading span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: travel-bounce 1.4s ease-in-out infinite;
+        }
+
+        .travel-loading span:nth-child(2) { animation-delay: 0.2s; }
+        .travel-loading span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes travel-bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+
+        /* Modal Background */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="flex flex-col h-screen bg-white">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fas fa-magic text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">TripGenie</h1>
+                        <p class="text-xs text-gray-500">AI가 만드는 완벽한 여행</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 text-sm">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            
+            <!-- Test Loading Buttons -->
+            <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                <button onclick="testLoading1()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-red-500"></i>
+                    로딩1
+                </button>
+                <button onclick="testLoading2()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-blue-500"></i>
+                    로딩2
+                </button>
+                <button onclick="testLoading3()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-green-500"></i>
+                    로딩3
+                </button>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="bg-white px-4 py-3 border-b border-gray-100" id="progressBar" style="display: none;">
+            <div class="flex items-center justify-between max-w-sm mx-auto relative">
+                <!-- Progress Line -->
+                <div class="absolute top-4 left-12 right-12 h-0.5 bg-gray-200"></div>
+                <div class="absolute top-4 left-12 h-0.5 bg-red-500 transition-all duration-500" id="progressLine" style="width: 0%"></div>
+                
+                <!-- Steps -->
+                <div class="flex items-center justify-between w-full relative z-10">
+                    <div class="step active text-center" id="step1">
+                        <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-sm mx-auto">1</div>
+                        <p class="text-xs mt-1 text-gray-700 font-medium">정보수집</p>
+                    </div>
+                    <div class="step text-center" id="step2">
+                        <div class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto">2</div>
+                        <p class="text-xs mt-1 text-gray-400">계획생성</p>
+                    </div>
+                    <div class="step text-center" id="step3">
+                        <div class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto">3</div>
+                        <p class="text-xs mt-1 text-gray-400">최종확정</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 overflow-y-auto bg-gray-50" id="chatContainer">
+            <!-- Initial State -->
+            <div id="initialScreen" class="p-4 space-y-4">
+                <!-- Hero Section -->
+                <div class="relative rounded-2xl overflow-hidden h-48 mb-6">
+                    <img src="https://source.unsplash.com/800x400/?travel,vacation" alt="Travel" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 image-overlay flex items-end p-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2">어디로 떠나고 싶으신가요?</h2>
+                            <p class="text-white/90 text-sm">AI가 당신만의 특별한 여행을 만들어드려요 ✨</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="message-enter">
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fas fa-magic text-white text-sm"></i>
+                        </div>
+                        <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%]">
+                            <p class="text-sm text-gray-800">안녕하세요! 여행의 모든 것을 도와드리는 <span class="text-red-500 font-semibold">TripGenie</span>입니다 🧞‍♂️</p>
+                            <p class="text-sm mt-2 text-gray-600">아래 인기 여행지를 선택하거나, 원하는 여행을 자유롭게 말씀해주세요!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Destinations -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700">🔥 지금 인기있는 여행</h3>
+                        <span class="text-xs text-gray-500">실시간 트렌드</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('도쿄 3박 4일 여행 계획 짜줘')">
+                            <div class="relative h-28">
+                                <img src="https://source.unsplash.com/400x300/?tokyo,japan" alt="Tokyo" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">HOT</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">도쿄</h3>
+                                    <p class="text-xs text-white/80">3박 4일</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 2시간 30분</span>
+                                    <span class="text-xs font-semibold text-red-500">₩89만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('제주도 힐링 여행 추천해줘')">
+                            <div class="relative h-28">
+                                <img src="https://source.unsplash.com/400x300/?jeju,island" alt="Jeju" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">힐링</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">제주도</h3>
+                                    <p class="text-xs text-white/80">자연 속 휴식</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 1시간</span>
+                                    <span class="text-xs font-semibold text-red-500">₩45만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('유럽 배낭여행 2주 코스')">
+                            <div class="relative h-28">
+                                <img src="https://source.unsplash.com/400x300/?europe,travel" alt="Europe" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">모험</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">유럽</h3>
+                                    <p class="text-xs text-white/80">2주 배낭여행</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 12시간</span>
+                                    <span class="text-xs font-semibold text-red-500">₩250만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('부산 맛집 투어 주말여행')">
+                            <div class="relative h-28">
+                                <img src="https://source.unsplash.com/400x300/?busan,food" alt="Busan" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">맛집</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">부산</h3>
+                                    <p class="text-xs text-white/80">미식 여행</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">🚄 2시간 30분</span>
+                                    <span class="text-xs font-semibold text-red-500">₩35만~</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="messagesContainer" class="p-4 space-y-4"></div>
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="hidden p-4">
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-magic text-white text-sm"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
+                        <div class="flex gap-1">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Preview Plan Modal -->
+        <div id="previewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+            <div class="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-map-marked-alt text-red-500"></i>
+                        여행 계획 미리보기
+                    </h2>
+                    <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="previewContent" class="flex-1 p-4 overflow-y-auto bg-gray-50"></div>
+                <div class="p-4 border-t border-gray-200 bg-white space-y-3">
+                    <button onclick="confirmPreview()" class="w-full btn-primary">
+                        <i class="fas fa-check mr-2"></i>
+                        좋아요! 상세 계획 만들기
+                    </button>
+                    <button onclick="editPreview()" class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-edit mr-2"></i>
+                        수정할게요
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Plan Modal -->
+        <div id="detailedModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+            <div class="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i class="fas fa-route text-red-500"></i>
+                                상세 여행 계획
+                            </h2>
+                            <p class="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                확정 후에는 수정이 어렵습니다
+                            </p>
+                        </div>
+                        <button onclick="closeDetailedModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="detailedContent" class="flex-1 p-4 overflow-y-auto bg-gray-50"></div>
+                <div class="p-4 border-t border-gray-200 bg-white">
+                    <button onclick="finalizeplan()" class="w-full btn-primary mb-2">
+                        <i class="fas fa-check-double mr-2"></i>
+                        최종 확정하기
+                    </button>
+                    <button onclick="backToChat()" class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        다시 상담하기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlays -->
+        <!-- First Loading: Plan Generation -->
+        <div id="planningLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full mx-4">
+                <!-- AI Analysis Visual -->
+                <div class="relative w-48 h-32 mx-auto mb-6">
+                    <!-- Document Stack -->
+                    <div class="absolute inset-0">
+                        <!-- Base document -->
+                        <div class="absolute bottom-0 left-4 right-4 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg transform rotate-3 shadow-md"></div>
+                        <div class="absolute bottom-2 left-2 right-2 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg transform -rotate-2 shadow-md"></div>
+                        <!-- Top document with content -->
+                        <div class="absolute bottom-4 left-0 right-0 h-24 bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div class="p-3 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-plane text-red-500 text-xs"></i>
+                                    <div class="h-1.5 bg-gray-200 rounded-full flex-1 shimmer-line"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-calendar text-blue-500 text-xs"></i>
+                                    <div class="h-1.5 bg-gray-200 rounded-full flex-1 shimmer-line" style="animation-delay: 0.2s"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-users text-green-500 text-xs"></i>
+                                    <div class="h-1.5 bg-gray-200 rounded-full flex-1 shimmer-line" style="animation-delay: 0.4s"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-won-sign text-orange-500 text-xs"></i>
+                                    <div class="h-1.5 bg-gray-200 rounded-full flex-1 shimmer-line" style="animation-delay: 0.6s"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- AI Magic Wand -->
+                        <div class="absolute -top-2 -right-2 bg-gradient-to-br from-red-500 to-pink-500 rounded-full p-3 shadow-lg ai-wand">
+                            <i class="fas fa-magic text-white text-lg"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">딱 맞는 여행을 찾고 있어요 🔍</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">잠깐! AI가 열심히 계산 중...</p>
+                
+                <!-- Analysis Steps -->
+                <div class="space-y-3">
+                    <div class="analysis-step flex items-center gap-3" data-step="1">
+                        <div class="step-icon w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-gray-400 text-sm hidden"></i>
+                            <div class="mini-spinner w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">어디로? 언제? 👀</p>
+                            <p class="text-xs text-gray-500">도쿄 가시는군요! 3박 4일 딱 좋아요</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-step flex items-center gap-3" data-step="2">
+                        <div class="step-icon w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-gray-400 text-sm hidden"></i>
+                            <div class="mini-spinner w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full hidden"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-400">취향 저격 포인트 🎯</p>
+                            <p class="text-xs text-gray-400">문화도 보고~ 맛집도 가고~</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-step flex items-center gap-3" data-step="3">
+                        <div class="step-icon w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-gray-400 text-sm hidden"></i>
+                            <div class="mini-spinner w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full hidden"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-400">가성비 체크 💰</p>
+                            <p class="text-xs text-gray-400">100만원으로 알차게!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-step flex items-center gap-3" data-step="4">
+                        <div class="step-icon w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-gray-400 text-sm hidden"></i>
+                            <div class="mini-spinner w-4 h-4 border-2 border-gray-300 border-t-purple-500 rounded-full hidden"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-400">베스트 4 뽑는 중 ✨</p>
+                            <p class="text-xs text-gray-400">가봐야 할 곳만 쏙쏙!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes shimmerEffect {
+                0% { 
+                    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+                    background-size: 200% 100%;
+                    background-position: -200% 0;
+                }
+                100% { 
+                    background-position: 200% 0;
+                }
+            }
+            
+            .shimmer-line {
+                background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+                background-size: 200% 100%;
+                animation: shimmerEffect 1.5s linear infinite;
+            }
+            
+            .ai-wand {
+                animation: float 2s ease-in-out infinite;
+            }
+            
+            .mini-spinner {
+                animation: spin 1s linear infinite;
+            }
+            
+            .step-complete {
+                animation: checkIn 0.3s ease-out forwards;
+            }
+            
+            @keyframes checkIn {
+                0% { transform: scale(0) rotate(-180deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+        </style>
+
+        <!-- Second Loading: Detail Planning - Enhanced -->
+        <div id="detailLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4">
+                <!-- Travel Collage Animation -->
+                <div class="relative h-48 mb-6 rounded-2xl overflow-hidden">
+                    <!-- Background gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-100 via-pink-100 to-orange-100"></div>
+                    
+                    <!-- Animated Images Grid -->
+                    <div class="absolute inset-0 grid grid-cols-3 gap-2 p-2">
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-3" style="animation-delay: 0ms">
+                            <img src="https://source.unsplash.com/150x150/?temple,japan" alt="Travel" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-2" style="animation-delay: 200ms">
+                            <img src="https://source.unsplash.com/150x150/?food,restaurant" alt="Food" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-1" style="animation-delay: 400ms">
+                            <img src="https://source.unsplash.com/150x150/?hotel,luxury" alt="Hotel" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-3" style="animation-delay: 600ms">
+                            <img src="https://source.unsplash.com/150x150/?shopping,mall" alt="Shopping" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-2" style="animation-delay: 800ms">
+                            <img src="https://source.unsplash.com/150x150/?nature,park" alt="Nature" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-1" style="animation-delay: 1000ms">
+                            <img src="https://source.unsplash.com/150x150/?museum,art" alt="Museum" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <!-- Center Calendar Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl transform scale-0 calendar-popup">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800">3박 4일</p>
+                                    <p class="text-xs text-gray-600">완벽한 일정 제작 중</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">당신만의 특별한 여행을<br/> 만들고 있어요</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">AI가 날짜별로 딱딱 맞춰드릴게요 🎨</p>
+                
+                <!-- Activity Timeline -->
+                <div class="space-y-3">
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-red-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">아침엔 뭐하지? ☀️</span>
+                            <i class="fas fa-camera text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">점심은 여기서! 🍜</span>
+                            <i class="fas fa-utensils text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">오후엔 신나게! 🛍️</span>
+                            <i class="fas fa-shopping-bag text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-purple-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">저녁엔 편안하게 🌙</span>
+                            <i class="fas fa-moon text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fun Loading Text -->
+                <div class="mt-6 text-center">
+                    <p id="tipText" class="text-xs text-gray-500 italic opacity-0 transition-opacity duration-500">💡 잠깐! 현지인만 아는 핫플도 넣어드릴게요</p>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .travel-image {
+                opacity: 0;
+                animation: imageFloat 3s ease-in-out infinite;
+            }
+            
+            @keyframes imageFloat {
+                0%, 100% { 
+                    opacity: 0.7;
+                    transform: translateY(0) scale(0.95);
+                }
+                50% { 
+                    opacity: 1;
+                    transform: translateY(-5px) scale(1);
+                }
+            }
+            
+            .calendar-popup {
+                animation: popIn 0.6s ease-out 2s forwards;
+            }
+            
+            @keyframes popIn {
+                to {
+                    transform: scale(1);
+                }
+            }
+            
+            .activity-item {
+                animation: slideInLeft 0.5s ease-out forwards;
+            }
+            
+            .activity-item:nth-child(1) { animation-delay: 1s; }
+            .activity-item:nth-child(2) { animation-delay: 2.5s; }
+            .activity-item:nth-child(3) { animation-delay: 4s; }
+            .activity-item:nth-child(4) { animation-delay: 5.5s; }
+            
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            .pulse-dot {
+                animation: pulseDot 2s ease-in-out infinite;
+            }
+            
+            @keyframes pulseDot {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.5); opacity: 0.5; }
+            }
+        </style>
+
+        <!-- Third Loading: Final Confirmation with Place API -->
+        <div id="finalLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full mx-4">
+                <!-- App Creation Visual -->
+                <div class="relative w-40 h-40 mx-auto mb-6">
+                    <!-- Phone Mockup -->
+                    <div class="absolute inset-0 bg-gray-900 rounded-3xl shadow-2xl overflow-hidden">
+                        <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gray-700 rounded-full"></div>
+                        <div class="absolute inset-3 bg-white rounded-2xl overflow-hidden">
+                            <!-- App Preview -->
+                            <div class="bg-gradient-to-b from-red-500 to-pink-500 h-16 flex items-center justify-center">
+                                <i class="fas fa-route text-white text-2xl"></i>
+                            </div>
+                            <div class="p-2 space-y-1">
+                                <div class="h-2 bg-gray-200 rounded animate-pulse"></div>
+                                <div class="h-2 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                                <div class="h-8 bg-gray-100 rounded mt-2 animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Floating Icons -->
+                    <div class="absolute -top-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg animate-bounce">
+                        <i class="fas fa-check text-white text-sm"></i>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">거의 다 됐어요! 📱</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">폰에 쏙 들어갈 여행 가이드 만드는 중...</p>
+                
+                <!-- Feature Integration -->
+                <div class="space-y-3 mb-6">
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl" data-delay="0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-map-marker-alt text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">길 안 헤매게 📍</p>
+                                <p class="text-xs text-gray-500">정확한 위치 저장 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl" data-delay="800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-clock text-blue-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">문 닫았나? 🕐</p>
+                                <p class="text-xs text-gray-500">오늘 영업시간 확인 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl" data-delay="1600">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-star text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">진짜 맛집? ⭐</p>
+                                <p class="text-xs text-gray-500">리얼 후기 체크 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl" data-delay="2400">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-images text-purple-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">인스타 각? 📸</p>
+                                <p class="text-xs text-gray-500">예쁜 사진 모으는 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Indicator -->
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <i class="fas fa-mobile-alt text-gray-400"></i>
+                    <span>곧 완성돼요! 조금만 기다려주세요</span>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .spinner {
+                border-top-color: #3B82F6;
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            .api-complete {
+                animation: completeCheck 0.5s ease-out forwards;
+            }
+            
+            @keyframes completeCheck {
+                0% { transform: scale(0) rotate(0deg); }
+                50% { transform: scale(1.2) rotate(180deg); }
+                100% { transform: scale(1) rotate(360deg); }
+            }
+            
+            .pin-marker {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            }
+        </style>
+
+        <!-- Success Screen -->
+        <div id="successScreen" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4">
+            <div class="bg-white rounded-2xl p-6 text-center max-w-sm shadow-2xl">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">여행 계획 완성! 🎉</h2>
+                <p class="text-gray-600 mb-6">이제 언제 어디서나 여행 계획을 확인할 수 있어요</p>
+                
+                <div class="space-y-3">
+                    <button onclick="viewApp()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-mobile-alt"></i>
+                        내 여행 앱 보기
+                    </button>
+                    <button onclick="downloadPWA()" class="w-full bg-gray-100 text-gray-700 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-download"></i>
+                        앱 다운로드하기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-4 border-t border-gray-200 bg-white" id="chatInputContainer">
+            <div class="flex gap-2">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    placeholder="여행에 대해 자유롭게 이야기해주세요..."
+                    class="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()" class="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-xl px-4 py-3 hover:shadow-lg transition-all">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let currentStep = 'initial';
+        let conversationHistory = [];
+        let systemData = {};
+        let previewPlan = {};
+        let detailedPlan = {};
+
+        // Progress Management
+        function showProgress() {
+            document.getElementById('progressBar').style.display = 'block';
+        }
+
+        function updateProgress(step) {
+            // Update progress line width
+            const progressLine = document.getElementById('progressLine');
+            if (step === 2) {
+                progressLine.style.width = '50%';
+            } else if (step === 3) {
+                progressLine.style.width = '100%';
+            }
+            
+            // Update all steps based on current step
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                const stepDiv = stepEl.querySelector('div');
+                const stepText = stepEl.querySelector('p');
+                
+                if (i <= step) {
+                    stepEl.classList.add('active');
+                    stepDiv.classList.remove('bg-gray-300');
+                    stepDiv.classList.add('bg-red-500');
+                    stepText.classList.remove('text-gray-400');
+                    stepText.classList.add('text-gray-700', 'font-medium');
+                } else {
+                    stepEl.classList.remove('active');
+                    stepDiv.classList.remove('bg-red-500');
+                    stepDiv.classList.add('bg-gray-300');
+                    stepText.classList.remove('text-gray-700', 'font-medium');
+                    stepText.classList.add('text-gray-400');
+                }
+            }
+        }
+
+        // UI Helper Functions
+        function hideInitialScreen() {
+            document.getElementById('initialScreen').style.display = 'none';
+            showProgress();
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('hidden');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('hidden');
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Modal Functions
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.add('hidden');
+        }
+
+        function closeDetailedModal() {
+            document.getElementById('detailedModal').classList.add('hidden');
+        }
+
+        // Sample Selection
+        function selectSample(text) {
+            document.getElementById('chatInput').value = text;
+            sendMessage();
+        }
+
+        // Message Handling
+        function addMessage(content, isUser = false) {
+            hideInitialScreen();
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-enter';
+            
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="flex justify-end">
+                        <div class="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm">
+                            <p class="text-sm">${content}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fas fa-magic text-white text-sm"></i>
+                        </div>
+                        <div class="bg-white rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
+                            <p class="text-sm text-gray-800">${content}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, true);
+            input.value = '';
+            
+            // Simulate AI Response
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                if (currentStep === 'initial') {
+                    conversationHistory.push({role: 'user', content: message});
+                    addMessage("좋아요! 멋진 여행을 계획해드릴게요 🌟 먼저 몇 가지 정보가 필요해요.");
+                    
+                    setTimeout(() => {
+                        showTypingIndicator();
+                        setTimeout(() => {
+                            hideTypingIndicator();
+                            addMessage("여행 기간은 며칠 정도로 생각하고 계신가요? 그리고 함께 가시는 분들이 있나요? (예: 3박 4일, 친구 2명과 함께)");
+                            currentStep = 'collecting_duration';
+                        }, 1500);
+                    }, 500);
+                } else if (currentStep === 'collecting_duration') {
+                    conversationHistory.push({role: 'user', content: message});
+                    addMessage("좋네요! 이제 여행 스타일을 알려주세요.");
+                    
+                    setTimeout(() => {
+                        showTypingIndicator();
+                        setTimeout(() => {
+                            hideTypingIndicator();
+                            addMessage("어떤 여행을 원하시나요? 🎯\n\n• 🏃 액티비티 중심 (스포츠, 모험)\n• 🍜 맛집 탐방 (미식 여행)\n• 🏛️ 문화/역사 탐방\n• 🌿 자연/힐링\n• 🛍️ 쇼핑\n\n원하시는 스타일을 자유롭게 말씀해주세요!");
+                            currentStep = 'collecting_style';
+                        }, 1500);
+                    }, 500);
+                } else if (currentStep === 'collecting_style') {
+                    conversationHistory.push({role: 'user', content: message});
+                    addMessage("완벽해요! 마지막으로 예산은 어느 정도로 생각하고 계신가요? 💰");
+                    currentStep = 'collecting_budget';
+                } else if (currentStep === 'collecting_budget') {
+                    conversationHistory.push({role: 'user', content: message});
+                    addMessage("모든 정보를 받았어요! 이제 맞춤형 여행 계획을 만들어드릴게요 ✨");
+                    
+                    // Update progress
+                    updateProgress(2);
+                    
+                    // Disable chat input
+                    document.getElementById('chatInputContainer').style.display = 'none';
+                    
+                    // Show planning loader with step animation
+                    setTimeout(() => {
+                        document.getElementById('planningLoader').classList.remove('hidden');
+                        
+                        // Animate through analysis steps
+                        const steps = document.querySelectorAll('.analysis-step');
+                        let currentStep = 0;
+                        
+                        function animateStep() {
+                            if (currentStep >= steps.length) return;
+                            
+                            const step = steps[currentStep];
+                            const icon = step.querySelector('.step-icon');
+                            const spinner = icon.querySelector('.mini-spinner');
+                            const check = icon.querySelector('.fa-check');
+                            const text = step.querySelectorAll('p');
+                            
+                            // Activate current step
+                            if (currentStep > 0) {
+                                // Complete previous step
+                                const prevStep = steps[currentStep - 1];
+                                const prevIcon = prevStep.querySelector('.step-icon');
+                                const prevSpinner = prevIcon.querySelector('.mini-spinner');
+                                const prevCheck = prevIcon.querySelector('.fa-check');
+                                
+                                prevSpinner.classList.add('hidden');
+                                prevCheck.classList.remove('hidden');
+                                prevCheck.classList.add('step-complete');
+                                prevIcon.classList.add('bg-green-50');
+                                prevCheck.classList.add('text-green-500');
+                            }
+                            
+                            // Show current step spinner
+                            spinner.classList.remove('hidden');
+                            text[0].classList.remove('text-gray-400');
+                            text[0].classList.add('text-gray-800');
+                            text[1].classList.remove('text-gray-400');
+                            text[1].classList.add('text-gray-500');
+                            
+                            currentStep++;
+                            
+                            // Next step after delay
+                            if (currentStep < steps.length) {
+                                setTimeout(animateStep, 1200);
+                            } else {
+                                // Complete last step
+                                setTimeout(() => {
+                                    const lastStep = steps[steps.length - 1];
+                                    const lastIcon = lastStep.querySelector('.step-icon');
+                                    const lastSpinner = lastIcon.querySelector('.mini-spinner');
+                                    const lastCheck = lastIcon.querySelector('.fa-check');
+                                    
+                                    lastSpinner.classList.add('hidden');
+                                    lastCheck.classList.remove('hidden');
+                                    lastCheck.classList.add('step-complete');
+                                    lastIcon.classList.add('bg-green-50');
+                                    lastCheck.classList.add('text-green-500');
+                                    
+                                    // Show preview after completion
+                                    setTimeout(() => {
+                                        document.getElementById('planningLoader').classList.add('hidden');
+                                        showPreviewPlan();
+                                    }, 500);
+                                }, 1200);
+                            }
+                        }
+                        
+                        // Start animation
+                        setTimeout(animateStep, 500);
+                    }, 500);
+                }
+            }, 1500);
+        }
+
+        // Preview Plan
+        function showPreviewPlan() {
+            // Sample preview data
+            previewPlan = {
+                destination: "도쿄",
+                duration: "3박 4일",
+                style: "문화 체험 + 맛집",
+                budget: "1인 100만원",
+                highlights: [
+                    { title: "아사쿠사 센소지", desc: "도쿄의 전통을 느끼는 고즈넉한 사찰", image: "https://source.unsplash.com/200x150/?asakusa,temple" },
+                    { title: "시부야 스크램블", desc: "세계에서 가장 붐비는 교차로", image: "https://source.unsplash.com/200x150/?shibuya,tokyo" },
+                    { title: "츠키지 시장", desc: "신선한 해산물과 스시 천국", image: "https://source.unsplash.com/200x150/?tsukiji,sushi" },
+                    { title: "도쿄 스카이트리", desc: "634m 높이의 압도적인 야경", image: "https://source.unsplash.com/200x150/?tokyo,skytree" }
+                ]
+            };
+            
+            const previewContent = `
+                <div class="space-y-4">
+                    <!-- Destination Header -->
+                    <div class="relative rounded-xl overflow-hidden h-32">
+                        <img src="https://source.unsplash.com/400x200/?tokyo,cityscape" alt="${previewPlan.destination}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                            <div>
+                                <h3 class="font-bold text-white text-xl">${previewPlan.destination} ${previewPlan.duration}</h3>
+                                <p class="text-sm text-white/90">${previewPlan.style} • 예산 ${previewPlan.budget}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Highlights -->
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-star text-amber-500"></i>
+                            주요 방문지
+                        </p>
+                        <div class="space-y-2">
+                            ${previewPlan.highlights.map((item, index) => `
+                                <div class="flex gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                                    <img src="${item.image}" alt="${item.title}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-800 text-sm">${item.title}</h4>
+                                        <p class="text-xs text-gray-600 mt-1">${item.desc}</p>
+                                    </div>
+                                    <div class="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="text-red-500 font-bold text-xs">${index + 1}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div class="flex gap-3">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">다음 단계</p>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    이 계획을 바탕으로 시간별 상세 일정과 교통편, 맛집 정보를 추가해드릴게요
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = previewContent;
+            document.getElementById('previewModal').classList.remove('hidden');
+        }
+
+        // Preview Actions
+        function confirmPreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('detailLoader').classList.remove('hidden');
+            
+            // Show tip text after 7 seconds
+            setTimeout(() => {
+                const tipText = document.getElementById('tipText');
+                if (tipText) {
+                    tipText.classList.remove('opacity-0');
+                    tipText.classList.add('opacity-100');
+                }
+            }, 7000);
+            
+            // Dynamic tip changes
+            const tips = [
+                "💡 Tip: 현지인이 추천하는 숨은 명소도 찾고 있어요!",
+                "🌟 Tip: 이동 시간을 최소화하는 최적 경로를 계산 중이에요",
+                "🎯 Tip: 예산에 맞는 최고의 장소들을 선별하고 있어요"
+            ];
+            
+            let tipIndex = 0;
+            const tipInterval = setInterval(() => {
+                tipIndex = (tipIndex + 1) % tips.length;
+                const tipText = document.getElementById('tipText');
+                if (tipText) {
+                    tipText.style.opacity = '0';
+                    setTimeout(() => {
+                        tipText.textContent = tips[tipIndex];
+                        tipText.style.opacity = '1';
+                    }, 300);
+                }
+            }, 2500);
+            
+            setTimeout(() => {
+                clearInterval(tipInterval);
+                document.getElementById('detailLoader').classList.add('hidden');
+                showDetailedPlan();
+                updateProgress(3);
+            }, 10000); // 10 seconds
+        }
+
+        function editPreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('chatInputContainer').style.display = 'block';
+            addMessage("어떤 부분을 수정하고 싶으신가요? 구체적으로 말씀해주세요 😊");
+            currentStep = 'editing';
+        }
+
+        // Detailed Plan
+        function showDetailedPlan() {
+            // Sample detailed data
+            detailedPlan = {
+                days: [
+                    {
+                        day: "Day 1",
+                        date: "3월 15일 (금)",
+                        title: "도쿄 도착 & 아사쿠사",
+                        image: "https://source.unsplash.com/400x200/?asakusa,tokyo",
+                        activities: [
+                            { time: "14:00", activity: "나리타 공항 도착", detail: "공항 리무진 버스로 호텔 이동 (90분, ¥3,200)", icon: "✈️", type: "transport" },
+                            { time: "16:00", activity: "호텔 체크인", detail: "신주쿠 그란벨 호텔", icon: "🏨", type: "accommodation" },
+                            { time: "18:00", activity: "아사쿠사 관광", detail: "센소지 절, 나카미세 거리 쇼핑", icon: "⛩️", type: "sightseeing" },
+                            { time: "20:00", activity: "저녁 식사", detail: "우나기동 맛집 '나카가와' (¥3,500)", icon: "🍜", type: "food" }
+                        ]
+                    },
+                    {
+                        day: "Day 2",
+                        date: "3월 16일 (토)",
+                        title: "시부야 & 하라주쿠",
+                        image: "https://source.unsplash.com/400x200/?shibuya,harajuku",
+                        activities: [
+                            { time: "09:00", activity: "호텔 조식", detail: "호텔 뷔페", icon: "🍳", type: "food" },
+                            { time: "10:30", activity: "메이지 신궁", detail: "일본 전통 신사 관람 (무료)", icon: "⛩️", type: "sightseeing" },
+                            { time: "12:00", activity: "하라주쿠 타케시타도리", detail: "쇼핑 & 크레페 맛집", icon: "🛍️", type: "shopping" },
+                            { time: "15:00", activity: "시부야 스카이", detail: "전망대에서 도쿄 전경 (¥2,500)", icon: "🌃", type: "sightseeing" }
+                        ]
+                    }
+                ]
+            };
+            
+            const detailedContent = `
+                <div class="space-y-4">
+                    ${detailedPlan.days.map((day, index) => `
+                        <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+                            <!-- Day Header with Image -->
+                            <div class="relative h-24">
+                                <img src="${day.image}" alt="${day.title}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                                    <div class="flex items-center justify-between w-full">
+                                        <div>
+                                            <h4 class="font-bold text-white">${day.day}: ${day.title}</h4>
+                                            <p class="text-white/80 text-xs">${day.date}</p>
+                                        </div>
+                                        <div class="bg-white/20 backdrop-blur rounded-full w-8 h-8 flex items-center justify-center">
+                                            <span class="text-white font-bold text-sm">${index + 1}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Activities -->
+                            <div class="p-4 space-y-3">
+                                ${day.activities.map((act, actIndex) => `
+                                    <div class="flex gap-3">
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-red-500 font-bold text-sm">${act.time}</span>
+                                            ${actIndex < day.activities.length - 1 ? '<div class="w-0.5 h-12 bg-gray-200 mt-1"></div>' : ''}
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                                                <div class="flex items-start gap-3">
+                                                    <span class="text-2xl">${act.icon}</span>
+                                                    <div class="flex-1">
+                                                        <p class="font-semibold text-gray-800 text-sm">${act.activity}</p>
+                                                        <p class="text-gray-600 text-xs mt-1">${act.detail}</p>
+                                                        ${act.type === 'food' || act.type === 'sightseeing' ? 
+                                                            `<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                                                <i class="fas fa-check-circle mr-1"></i>예약 가능
+                                                            </span>` : ''
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    
+                    <!-- Warning Box -->
+                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                        <div class="flex gap-3">
+                            <i class="fas fa-exclamation-triangle text-orange-500 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">최종 확정 전 안내</p>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    확정 시 각 장소의 실시간 정보(영업시간, 가격 등)를 확인하여 최종 계획을 완성합니다.
+                                    확정 후에는 수정이 제한됩니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Summary -->
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h5 class="font-semibold text-gray-800 text-sm mb-2">예상 비용 요약</h5>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">교통비</span>
+                                <span class="font-semibold">¥12,400</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">입장료</span>
+                                <span class="font-semibold">¥5,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">식사</span>
+                                <span class="font-semibold">¥15,000</span>
+                            </div>
+                            <div class="border-t pt-1 mt-2">
+                                <div class="flex justify-between">
+                                    <span class="font-semibold text-gray-800">총 예상 비용</span>
+                                    <span class="font-bold text-red-500">¥32,400</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('detailedContent').innerHTML = detailedContent;
+            document.getElementById('detailedModal').classList.remove('hidden');
+        }
+
+        // Final Actions
+        function finalizeplan() {
+            document.getElementById('detailedModal').classList.add('hidden');
+            document.getElementById('finalLoader').classList.remove('hidden');
+            
+            // Animate API calls
+            const apiItems = document.querySelectorAll('.api-item');
+            apiItems.forEach((item, index) => {
+                const delay = parseInt(item.dataset.delay);
+                setTimeout(() => {
+                    const statusIcon = item.querySelector('.status-icon');
+                    statusIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl api-complete"></i>';
+                }, delay + 1000);
+            });
+            
+            // Show success after all API calls
+            setTimeout(() => {
+                document.getElementById('finalLoader').classList.add('hidden');
+                document.getElementById('successScreen').classList.remove('hidden');
+            }, 4000);
+        }
+
+        function backToChat() {
+            document.getElementById('detailedModal').classList.add('hidden');
+            document.getElementById('chatInputContainer').style.display = 'block';
+            addMessage("네, 다시 상담해드릴게요! 어떤 부분이 마음에 안 드셨나요? 🤔");
+            currentStep = 'revising';
+        }
+
+        // PWA Actions
+        function viewApp() {
+            window.open('https://your-pwa-link.com/trip/12345', '_blank');
+        }
+
+        function downloadPWA() {
+            // PWA download logic
+            alert('무료 앱 다운로드가 시작됩니다!');
+        }
+
+        // Input Handler
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Test Loading Functions
+        function testLoading1() {
+            const loader = document.getElementById('planningLoader');
+            if (loader.classList.contains('hidden')) {
+                loader.classList.remove('hidden');
+                
+                // Reset all steps
+                const steps = document.querySelectorAll('.analysis-step');
+                steps.forEach((step, index) => {
+                    const icon = step.querySelector('.step-icon');
+                    const spinner = icon.querySelector('.mini-spinner');
+                    const check = icon.querySelector('.fa-check');
+                    const text = step.querySelectorAll('p');
+                    
+                    // Reset styles
+                    icon.classList.remove('bg-green-50');
+                    spinner.classList.add('hidden');
+                    check.classList.add('hidden');
+                    check.classList.remove('step-complete', 'text-green-500');
+                    check.classList.add('text-gray-400');
+                    
+                    if (index > 0) {
+                        text[0].classList.add('text-gray-400');
+                        text[0].classList.remove('text-gray-800');
+                        text[1].classList.add('text-gray-400');
+                        text[1].classList.remove('text-gray-500');
+                    }
+                });
+                
+                // Animate through analysis steps
+                let currentStep = 0;
+                
+                function animateStep() {
+                    if (currentStep >= steps.length) return;
+                    
+                    const step = steps[currentStep];
+                    const icon = step.querySelector('.step-icon');
+                    const spinner = icon.querySelector('.mini-spinner');
+                    const check = icon.querySelector('.fa-check');
+                    const text = step.querySelectorAll('p');
+                    
+                    // Activate current step
+                    if (currentStep > 0) {
+                        // Complete previous step
+                        const prevStep = steps[currentStep - 1];
+                        const prevIcon = prevStep.querySelector('.step-icon');
+                        const prevSpinner = prevIcon.querySelector('.mini-spinner');
+                        const prevCheck = prevIcon.querySelector('.fa-check');
+                        
+                        prevSpinner.classList.add('hidden');
+                        prevCheck.classList.remove('hidden');
+                        prevCheck.classList.add('step-complete');
+                        prevIcon.classList.add('bg-green-50');
+                        prevCheck.classList.add('text-green-500');
+                    }
+                    
+                    // Show current step spinner
+                    spinner.classList.remove('hidden');
+                    text[0].classList.remove('text-gray-400');
+                    text[0].classList.add('text-gray-800');
+                    text[1].classList.remove('text-gray-400');
+                    text[1].classList.add('text-gray-500');
+                    
+                    currentStep++;
+                    
+                    // Next step after delay
+                    if (currentStep < steps.length) {
+                        setTimeout(animateStep, 1200);
+                    } else {
+                        // Complete last step
+                        setTimeout(() => {
+                            const lastStep = steps[steps.length - 1];
+                            const lastIcon = lastStep.querySelector('.step-icon');
+                            const lastSpinner = lastIcon.querySelector('.mini-spinner');
+                            const lastCheck = lastIcon.querySelector('.fa-check');
+                            
+                            lastSpinner.classList.add('hidden');
+                            lastCheck.classList.remove('hidden');
+                            lastCheck.classList.add('step-complete');
+                            lastIcon.classList.add('bg-green-50');
+                            lastCheck.classList.add('text-green-500');
+                        }, 1200);
+                    }
+                }
+                
+                // Start animation
+                setTimeout(animateStep, 500);
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+        
+        function testLoading2() {
+            const loader = document.getElementById('detailLoader');
+            if (loader.classList.contains('hidden')) {
+                loader.classList.remove('hidden');
+                
+                // Show tip text after 7 seconds
+                setTimeout(() => {
+                    const tipText = document.getElementById('tipText');
+                    if (tipText) {
+                        tipText.classList.remove('opacity-0');
+                        tipText.classList.add('opacity-100');
+                    }
+                }, 7000);
+                
+                // Dynamic tip changes
+                const tips = [
+                    "💡 Tip: 현지인이 추천하는 숨은 명소도 찾고 있어요!",
+                    "🌟 Tip: 이동 시간을 최소화하는 최적 경로를 계산 중이에요",
+                    "🎯 Tip: 예산에 맞는 최고의 장소들을 선별하고 있어요"
+                ];
+                
+                let tipIndex = 0;
+                const tipInterval = setInterval(() => {
+                    tipIndex = (tipIndex + 1) % tips.length;
+                    const tipText = document.getElementById('tipText');
+                    if (tipText) {
+                        tipText.style.opacity = '0';
+                        setTimeout(() => {
+                            tipText.textContent = tips[tipIndex];
+                            tipText.style.opacity = '1';
+                        }, 300);
+                    }
+                }, 2500);
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+        
+        function testLoading3() {
+            const loader = document.getElementById('finalLoader');
+            if (loader.classList.contains('hidden')) {
+                loader.classList.remove('hidden');
+                
+                // Animate API calls
+                const apiItems = document.querySelectorAll('.api-item');
+                apiItems.forEach((item, index) => {
+                    // Reset to spinner first
+                    const statusIcon = item.querySelector('.status-icon');
+                    statusIcon.innerHTML = '<div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>';
+                    
+                    // Then animate to check
+                    const delay = parseInt(item.dataset.delay);
+                    setTimeout(() => {
+                        statusIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl api-complete"></i>';
+                    }, delay + 1000);
+                });
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on input
+            document.getElementById('chatInput').focus();
+        });
+    </script>
+</body>
+</html>
