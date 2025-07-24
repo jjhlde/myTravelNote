@@ -55,7 +55,9 @@
       "Bash(start /B node:*)",
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_press_key",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   },

@@ -24,7 +24,7 @@ try {
     }
 } catch (error) {
     console.error('❌ config.js 로드 실패:', error.message);
-    API_KEY = "AIzaSyDERW_lRSOP3dcot_xSIgiTWhHRX4U1RXU"; // 새로운 Places API 키
+    API_KEY = process.env.GOOGLE_PLACES_API_KEY || "YOUR_API_KEY_HERE"; // 환경변수에서 로드
     console.log('⚠️  하드코딩된 Places API 키 사용');
 }
 const BASE_URL = "https://maps.googleapis.com/maps/api/place";

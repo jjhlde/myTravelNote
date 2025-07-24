@@ -12,6 +12,15 @@ servers-archived/
 *API_KEY*
 *config.json
 
+# 보안 위험 파일들
+*.json
+!package.json
+!manifest.json
+!package-lock.json
+mock_resp.json
+real_enriched_*.json
+places-test.html
+
 # Node.js 스크립트 파일 (보안)
 update-places.js
 *.config.js
