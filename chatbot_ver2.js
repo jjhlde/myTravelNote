@@ -2317,6 +2317,22 @@ function showModernDetailModal(travelData) {
 }
 
 function testLoading3() {
+    console.log('🧪 DetailLoader 애니메이션 테스트');
+    const loader = document.getElementById('detailLoader');
+    if (loader.classList.contains('hidden')) {
+        loader.classList.remove('hidden');
+        
+        // Update trip duration display
+        updateTripDurationDisplay();
+        
+        console.log('🔄 DetailLoader 표시 - AI 사고 애니메이션 시작');
+    } else {
+        loader.classList.add('hidden');
+        console.log('✅ DetailLoader 숨김');
+    }
+}
+
+function testFinalLoading() {
     const loader = document.getElementById('finalLoader');
     if (loader.classList.contains('hidden')) {
         loader.classList.remove('hidden');
@@ -2371,39 +2387,37 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFlippableHints();
 });
 
-// 2단계 로딩 애니메이션 함수들
+// 2단계 여행 콜라주 로딩 애니메이션 함수들
 const startPlanLoadingAnimation = () => {
     const planGenerationLoader = document.getElementById('planGenerationLoader');
-    const loadingIconContainer = document.getElementById('plan-loading-icon-container');
-    const loadingText = document.getElementById('plan-loading-text');
-    const icons = loadingIconContainer.querySelectorAll('i');
-    const texts = [
-        "항공편 정보를 확인 중입니다...", 
-        "최적의 숙소를 검색 중입니다...",
-        "현지 맛집을 수집 중입니다...", 
-        "최고의 동선을 분석 중입니다..."
-    ];
-    let currentIndex = 0;
-
+    const tipText = document.getElementById('tipText');
+    
     // 로딩 오버레이 표시
     planGenerationLoader.classList.remove('hidden');
-    setTimeout(() => planGenerationLoader.classList.add('active'), 10);
+    
+    // Tip 텍스트 순환
+    const tips = [
+        "🎯 Tip: 예산에 맞는 최고의 장소들을 선별하고 있어요",
+        "💡 잠깐! 현지인만 아는 핫플도 넣어드릴게요",
+        "🌟 다른 여행앱에선 못 보는 숨은 보석들을 찾고 있어요",
+        "🎨 당신만을 위한 완벽한 스토리를 만들고 있어요",
+        "⚡ 복잡한 계산이 필요한 최적 동선을 짜고 있어요"
+    ];
+    
+    let tipIndex = 0;
+    const tipInterval = setInterval(() => {
+        if (tipText) {
+            tipText.style.opacity = '0';
+            setTimeout(() => {
+                tipIndex = (tipIndex + 1) % tips.length;
+                tipText.textContent = tips[tipIndex];
+                tipText.style.opacity = '1';
+            }, 500);
+        }
+    }, 3000);
 
-    // 아이콘과 텍스트 순환 애니메이션
-    const intervalId = setInterval(() => {
-        // 모든 아이콘에서 active 클래스 제거
-        icons.forEach(icon => icon.classList.remove('active'));
-        
-        // 다음 아이콘으로 이동
-        currentIndex = (currentIndex + 1) % icons.length;
-        
-        // 현재 아이콘 활성화 및 텍스트 변경
-        icons[currentIndex].classList.add('active');
-        loadingText.textContent = texts[currentIndex];
-    }, 1500);
-
-    console.log('🔄 2단계 로딩 애니메이션 시작');
-    return intervalId;
+    console.log('🔄 2단계 여행 콜라주 로딩 애니메이션 시작');
+    return tipInterval;
 };
 
 const stopPlanLoadingAnimation = (intervalId) => {
@@ -2415,10 +2429,9 @@ const stopPlanLoadingAnimation = (intervalId) => {
     }
     
     // 오버레이 숨기기
-    planGenerationLoader.classList.remove('active');
-    setTimeout(() => planGenerationLoader.classList.add('hidden'), 300);
+    planGenerationLoader.classList.add('hidden');
     
-    console.log('✅ 2단계 로딩 애니메이션 중지');
+    console.log('✅ 2단계 여행 콜라주 로딩 애니메이션 중지');
 };
 
 // Image Carousel Functionality

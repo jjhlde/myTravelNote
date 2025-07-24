@@ -54,7 +54,8 @@
       "mcp__figma__add_figma_file",
       "Bash(start /B node:*)",
       "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_press_key"
+      "mcp__playwright__browser_press_key",
+      "Bash(git commit:*)"
     ],
     "deny": []
   },
