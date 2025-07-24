@@ -1711,6 +1711,9 @@ async function testLoading1() {
 }
 
 async function testLoading2() {
+    // Update trip duration display first
+    updateTripDurationDisplay();
+    
     const loader = document.getElementById('detailLoader');
     if (loader.classList.contains('hidden')) {
         loader.classList.remove('hidden');
@@ -2696,9 +2699,3 @@ function adjustTimelineHeight() {
     });
 }
 
-// Update testLoading2 to include duration update
-const originalTestLoading2 = testLoading2;
-async function testLoading2() {
-    updateTripDurationDisplay();
-    return originalTestLoading2();
-}
