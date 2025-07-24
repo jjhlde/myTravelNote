@@ -1558,7 +1558,7 @@ function showDetailedPlan() {
                             <div class="flex gap-3">
                                 <div class="flex flex-col items-center">
                                     <span class="text-red-500 font-bold text-sm">${act.time}</span>
-                                    ${actIndex < day.activities.length - 1 ? '<div class="w-0.5 h-12 bg-gray-200 mt-1"></div>' : ''}
+                                    ${actIndex < day.activities.length - 1 ? '<div class="w-0.5 h-24 bg-gray-200 mt-1"></div>' : ''}
                                 </div>
                                 <div class="flex-1">
                                     <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
@@ -1568,9 +1568,11 @@ function showDetailedPlan() {
                                                 <p class="font-semibold text-gray-800 text-sm">${act.activity}</p>
                                                 <p class="text-gray-600 text-xs mt-1">${act.detail}</p>
                                                 ${act.type === 'food' || act.type === 'sightseeing' ? 
-                                                    `<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                                        <i class="fas fa-check-circle mr-1"></i>예약 가능
-                                                    </span>` : ''
+                                                    `<div class="mt-2 max-w-full">
+                                                        <span class="inline-block text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                                            <i class="fas fa-check-circle mr-1"></i>예약 가능
+                                                        </span>
+                                                    </div>` : ''
                                                 }
                                             </div>
                                         </div>
@@ -2247,7 +2249,7 @@ function showModernDetailModal(travelData) {
                             <div class="flex gap-3">
                                 <div class="flex flex-col items-center">
                                     <span class="text-red-500 font-bold text-sm">${activity.time}</span>
-                                    ${actIndex < day.activities.length - 1 ? '<div class="w-0.5 h-16 bg-gray-200 mt-1"></div>' : ''}
+                                    ${actIndex < day.activities.length - 1 ? '<div class="w-0.5 h-24 bg-gray-200 mt-1"></div>' : ''}
                                 </div>
                                 <div class="flex-1">
                                     <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
@@ -2257,9 +2259,11 @@ function showModernDetailModal(travelData) {
                                                 <p class="font-semibold text-gray-800 text-sm">${activity.activity}</p>
                                                 <p class="text-gray-600 text-xs mt-1">${activity.location}${activity.duration ? ` (${activity.duration})` : ''}</p>
                                                 ${activity.tips ? `
-                                                    <span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full tip-text-short">
-                                                        <i class="fas fa-lightbulb mr-1"></i>${optimizeTipText(activity.tips)}
-                                                    </span>
+                                                    <div class="mt-2 max-w-full">
+                                                        <span class="inline-block text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
+                                                            <i class="fas fa-lightbulb mr-1"></i>${optimizeTipText(activity.tips)}
+                                                        </span>
+                                                    </div>
                                                 ` : ''}
                                             </div>
                                         </div>
