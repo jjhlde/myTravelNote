@@ -6,7 +6,316 @@
     <title>TripGenie - AI 여행 플래너</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="chatbot_ver2.css">
+    <style>
+        :root {
+            /* Main Colors - Revenue Optimized */
+            --primary: #FF5A5F;
+            --primary-hover: #E84E54;
+            --primary-light: #FFF5F5;
+            
+            --trust: #0064D2;
+            --trust-light: #E6F2FF;
+            
+            --premium: #FFB400;
+            --premium-light: #FFF9E6;
+            
+            --success: #00C896;
+            --success-light: #E6FFF8;
+            
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --text-primary: #1A202C;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse-scale {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes progress-fill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typing-bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .fade-enter {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        .loading-step {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .loading-step.active {
+            display: flex;
+        }
+
+        .orbit-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-premium {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 180, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 180, 0, 0); }
+        }
+
+        /* Message Animation */
+        .message-enter {
+            animation: fade-in-up 0.3s ease-out;
+        }
+
+        /* Typing Indicator */
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin: 0 2px;
+            animation: typing-bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing-bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Premium Badge */
+        .premium-badge {
+            background: linear-gradient(135deg, var(--premium) 0%, #FFA000 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            animation: pulse-premium 2s infinite;
+        }
+
+        /* Sample Card Hover */
+        .sample-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .sample-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .sample-card:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        .card-image {
+            transition: transform 0.5s ease;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: white;
+            font-weight: 600;
+            padding: 14px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 95, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Premium Button */
+        .btn-premium {
+            background: linear-gradient(135deg, var(--premium) 0%, #FFA000 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        /* Trust Badge */
+        .trust-badge {
+            background: var(--trust-light);
+            color: var(--trust);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Image Overlay */
+        .image-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+        }
+
+        /* Progress Steps */
+        .step {
+            position: relative;
+            flex: 1;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+        }
+
+        .step.active::after {
+            background: var(--primary);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        /* Loading Animations */
+        .travel-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .travel-loading span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: travel-bounce 1.4s ease-in-out infinite;
+        }
+
+        .travel-loading span:nth-child(2) { animation-delay: 0.2s; }
+        .travel-loading span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes travel-bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+
+        /* Modal Background */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 <body>
     <div id="app" class="flex flex-col h-screen bg-white">
@@ -358,6 +667,41 @@
             </div>
         </div>
 
+        <style>
+            @keyframes shimmerEffect {
+                0% { 
+                    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+                    background-size: 200% 100%;
+                    background-position: -200% 0;
+                }
+                100% { 
+                    background-position: 200% 0;
+                }
+            }
+            
+            .shimmer-line {
+                background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+                background-size: 200% 100%;
+                animation: shimmerEffect 1.5s linear infinite;
+            }
+            
+            .ai-wand {
+                animation: float 2s ease-in-out infinite;
+            }
+            
+            .mini-spinner {
+                animation: spin 1s linear infinite;
+            }
+            
+            .step-complete {
+                animation: checkIn 0.3s ease-out forwards;
+            }
+            
+            @keyframes checkIn {
+                0% { transform: scale(0) rotate(-180deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+        </style>
 
         <!-- Second Loading: Detail Planning - Enhanced -->
         <div id="detailLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
@@ -447,6 +791,62 @@
             </div>
         </div>
 
+        <style>
+            .travel-image {
+                opacity: 0;
+                animation: imageFloat 3s ease-in-out infinite;
+            }
+            
+            @keyframes imageFloat {
+                0%, 100% { 
+                    opacity: 0.7;
+                    transform: translateY(0) scale(0.95);
+                }
+                50% { 
+                    opacity: 1;
+                    transform: translateY(-5px) scale(1);
+                }
+            }
+            
+            .calendar-popup {
+                animation: popIn 0.6s ease-out 2s forwards;
+            }
+            
+            @keyframes popIn {
+                to {
+                    transform: scale(1);
+                }
+            }
+            
+            .activity-item {
+                animation: slideInLeft 0.5s ease-out forwards;
+            }
+            
+            .activity-item:nth-child(1) { animation-delay: 1s; }
+            .activity-item:nth-child(2) { animation-delay: 2.5s; }
+            .activity-item:nth-child(3) { animation-delay: 4s; }
+            .activity-item:nth-child(4) { animation-delay: 5.5s; }
+            
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            .pulse-dot {
+                animation: pulseDot 2s ease-in-out infinite;
+            }
+            
+            @keyframes pulseDot {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.5); opacity: 0.5; }
+            }
+        </style>
 
         <!-- Third Loading: Final Confirmation with Place API -->
         <div id="finalLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
@@ -548,6 +948,30 @@
             </div>
         </div>
 
+        <style>
+            .spinner {
+                border-top-color: #3B82F6;
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            .api-complete {
+                animation: completeCheck 0.5s ease-out forwards;
+            }
+            
+            @keyframes completeCheck {
+                0% { transform: scale(0) rotate(0deg); }
+                50% { transform: scale(1.2) rotate(180deg); }
+                100% { transform: scale(1) rotate(360deg); }
+            }
+            
+            .pin-marker {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            }
+        </style>
 
         <!-- Success Screen -->
         <div id="successScreen" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4">
@@ -588,7 +1012,9 @@
         </div>
     </div>
 
-    <script src="chatbot_ver2.js"></script>
+    <script>
+        // Global State
+        let currentStep = 'initial';
         let conversationHistory = [];
         let systemData = {};
         let previewPlan = {};

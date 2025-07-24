@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .image-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .image-item { text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 8px; }
+        .image-item img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; }
+        .image-item h3 { margin: 10px 0 5px 0; font-size: 14px; }
+        .image-item p { margin: 0; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>챗봇 이미지 로딩 테스트</h1>
+    <p>모든 이미지가 정상적으로 로딩되는지 확인합니다.</p>
+    
+    <div class="image-grid">
+        <div class="image-item">
+            <img src="https://picsum.photos/800/400?random=1" alt="Travel Hero">
+            <h3>메인 히어로</h3>
+            <p>800x400</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/300?random=2" alt="Tokyo">
+            <h3>도쿄 카드</h3>
+            <p>400x300</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/300?random=3" alt="Jeju">
+            <h3>제주도 카드</h3>
+            <p>400x300</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/300?random=4" alt="Europe">  
+            <h3>유럽 카드</h3>
+            <p>400x300</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/300?random=5" alt="Busan">
+            <h3>부산 카드</h3>
+            <p>400x300</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/150/150?random=6" alt="Temple">
+            <h3>사원 (로딩)</h3>
+            <p>150x150</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/150/150?random=7" alt="Food">
+            <h3>음식 (로딩)</h3>
+            <p>150x150</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/150/150?random=8" alt="Hotel">
+            <h3>호텔 (로딩)</h3>
+            <p>150x150</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/200/150?random=12" alt="Asakusa">
+            <h3>아사쿠사 센소지</h3>
+            <p>200x150</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/200/150?random=13" alt="Shibuya">
+            <h3>시부야 스크램블</h3>
+            <p>200x150</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/200?random=16" alt="Tokyo Cityscape">
+            <h3>도쿄 시티스케이프</h3>
+            <p>400x200</p>
+        </div>
+        <div class="image-item">
+            <img src="https://picsum.photos/400/200?random=17" alt="Asakusa Day">
+            <h3>아사쿠사 (상세)</h3>
+            <p>400x200</p>
+        </div>
+    </div>
+
+    <script>
+        // 이미지 로딩 상태 체크
+        let loadedCount = 0;
+        let totalImages = document.querySelectorAll('img').length;
+        
+        document.querySelectorAll('img').forEach((img, index) => {
+            img.onload = () => {
+                loadedCount++;
+                console.log(`이미지 ${index + 1} 로딩 완료`);
+                if (loadedCount === totalImages) {
+                    console.log('모든 이미지 로딩 완료!');
+                    document.title = '✅ 이미지 테스트 - 모두 성공!';
+                }
+            };
+            
+            img.onerror = () => {
+                console.error(`이미지 ${index + 1} 로딩 실패:`, img.src);
+                img.style.border = '2px solid red';
+                img.parentElement.style.backgroundColor = '#ffe6e6';
+            };
+        });
+        
+        // 5초 후 결과 출력
+        setTimeout(() => {
+            console.log(`결과: ${loadedCount}/${totalImages} 이미지가 성공적으로 로딩됨`);
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Places API 테스트 - 마카오 여행 PWA</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4F46E5;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #4F46E5;
+        }
+        
+        .test-button {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #4338CA;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            color: #4F46E5;
+            font-style: italic;
+        }
+        
+        .success {
+            color: #059669;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .place-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #10b981;
+        }
+        
+        .place-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .place-address {
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .place-rating {
+            color: #f59e0b;
+            margin-bottom: 8px;
+        }
+        
+        .place-link {
+            display: inline-block;
+            background: #4F46E5;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .place-link:hover {
+            background: #4338CA;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Google Places API 테스트</h1>
+        
+        <div class="test-section">
+            <h3>📍 단일 장소 검색 테스트</h3>
+            <button class="test-button" onclick="testSinglePlace('마카오국제공항')">마카오국제공항</button>
+            <button class="test-button" onclick="testSinglePlace('갤럭시 마카오')">갤럭시 마카오</button>
+            <button class="test-button" onclick="testSinglePlace('세나도 광장')">세나도 광장</button>
+            <button class="test-button" onclick="testSinglePlace('성 바울 성당 유적')">성 바울 성당 유적</button>
+            <div id="single-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 전체 장소 데이터 업데이트 테스트</h3>
+            <button class="test-button" onclick="testAllPlaces()">모든 주요 장소 검색</button>
+            <div id="all-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 개선된 맵 링크 테스트</h3>
+            <button class="test-button" onclick="testMapLinks()">맵 링크 자동 개선</button>
+            <div id="links-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ 실제 장소 카드 렌더링</h3>
+            <div id="place-cards"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="./config.js"></script>
+    <script src="./places-api.js"></script>
+    
+    <script>
+        // 단일 장소 테스트
+        async function testSinglePlace(placeName) {
+            const resultDiv = document.getElementById('single-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span class="loading">🔍 "${placeName}" 검색 중...</span>`;
+            
+            try {
+                if (!placesService) {
+                    throw new Error('Places Service가 초기화되지 않았습니다.');
+                }
+                
+                const result = await placesService.findPlaceByName(placeName);
+                
+                resultDiv.innerHTML = `<span class="success">✅ 검색 완료!</span>\n\n` + 
+                    JSON.stringify(result, null, 2);
+                
+                // 장소 카드로 렌더링
+                renderPlaceCard(result);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ 오류 발생:</span>\n${error.message}`;
+            }
+        }
+
+        // 전체 장소 테스트
+        async function testAllPlaces() {
+            const resultDiv = document.getElementById('all-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span class="loading">🔄 모든 주요 장소 검색 중... (시간이 걸릴 수 있습니다)</span>`;
+            
+            try {
+                if (!placesService) {
+                    throw new Error('Places Service가 초기화되지 않았습니다.');
+                }
+                
+                const results = await placesService.updateAllPlaces();
+                
+                resultDiv.innerHTML = `<span class="success">✅ 전체 업데이트 완료!</span>\n\n` + 
+                    JSON.stringify(results, null, 2);
+                
+                // 모든 장소 카드 렌더링
+                Object.values(results).forEach(place => {
+                    renderPlaceCard(place);
+                });
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ 오류 발생:</span>\n${error.message}`;
+            }
+        }
+
+        // 맵 링크 개선 테스트
+        function testMapLinks() {
+            const resultDiv = document.getElementById('links-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span class="loading">🔗 맵 링크 개선 중...</span>`;
+            
+            try {
+                // 가상의 맵 링크들 생성
+                const testLinks = [
+                    { name: '마카오국제공항', coords: { lat: 22.1496, lng: 113.5913 } },
+                    { name: '갤럭시 마카오', coords: { lat: 22.1489, lng: 113.5543 } },
+                    { name: '세나도 광장', coords: { lat: 22.1935, lng: 113.5398 } }
+                ];
+                
+                let improvedLinks = '';
+                testLinks.forEach(link => {
+                    const improvedUrl = `https://maps.google.com/maps/search/${encodeURIComponent(link.name)}/@${link.coords.lat},${link.coords.lng},15z`;
+                    improvedLinks += `${link.name}: ${improvedUrl}\n\n`;
+                });
+                
+                resultDiv.innerHTML = `<span class="success">✅ 맵 링크 개선 완료!</span>\n\n${improvedLinks}`;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ 오류 발생:</span>\n${error.message}`;
+            }
+        }
+
+        // 장소 카드 렌더링
+        function renderPlaceCard(place) {
+            const cardsContainer = document.getElementById('place-cards');
+            
+            const card = document.createElement('div');
+            card.className = 'place-card';
+            
+            card.innerHTML = `
+                <div class="place-name">${place.name}</div>
+                <div class="place-address">📍 ${place.address}</div>
+                <div class="place-rating">⭐ ${place.rating > 0 ? `${place.rating}/5.0` : '평점 없음'} 
+                    ${place.userRatingsTotal > 0 ? `(${place.userRatingsTotal}개 리뷰)` : ''}</div>
+                ${place.website ? `<div>🌐 <a href="${place.website}" target="_blank">공식 웹사이트</a></div>` : ''}
+                ${place.phoneNumber ? `<div>📞 ${place.phoneNumber}</div>` : ''}
+                <a href="${place.mapLink}" target="_blank" class="place-link">구글맵에서 보기</a>
+                ${place.fallback ? '<div style="color: #dc2626; font-size: 12px; margin-top: 8px;">⚠️ API 응답 없음 - 기본 데이터 사용</div>' : ''}
+            `;
+            
+            cardsContainer.appendChild(card);
+        }
+
+        // 페이지 로드 시 API 키 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            const status = document.createElement('div');
+            status.style.cssText = 'text-align: center; margin-bottom: 20px; padding: 10px; border-radius: 8px;';
+            
+            if (typeof CONFIG !== 'undefined' && CONFIG.GOOGLE_PLACES_API_KEY && CONFIG.GOOGLE_PLACES_API_KEY !== 'AIzaSyDERW_lRSOP3dcot_xSIgiTWhHRX4U1RXU') {
+                status.innerHTML = '✅ Google Places API 설정 확인됨';
+                status.style.background = '#ecfdf5';
+                status.style.color = '#059669';
+            } else {
+                status.innerHTML = '⚠️ Google Places API 키를 config.js에 설정해주세요';
+                status.style.background = '#fef2f2';
+                status.style.color = '#dc2626';
+            }
+            
+            document.querySelector('.container').insertBefore(status, document.querySelector('h1').nextSibling);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TripGenie - AI 여행 플래너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="chatbot_ver2.css">
+</head>
+<body>
+    <div id="app" class="flex flex-col h-screen bg-white">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fas fa-magic text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">TripGenie</h1>
+                        <p class="text-xs text-gray-500">AI가 만드는 완벽한 여행</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 text-sm">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            
+            <!-- Test Loading Buttons -->
+            <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                <button onclick="testLoading1()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-red-500"></i>
+                    로딩1
+                </button>
+                <button onclick="testLoading2()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-blue-500"></i>
+                    로딩2
+                </button>
+                <button onclick="testLoading3()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <i class="fas fa-vial text-green-500"></i>
+                    로딩3
+                </button>
+            </div>
+        </header>
+
+        <!-- Progress Bar - Figma Community 참고 개선 -->
+        <div class="bg-white px-6 py-4 border-b border-gray-100" id="progressBar" style="display: none;">
+            <div class="max-w-xs mx-auto">
+                <!-- Progress Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-sm font-medium text-gray-600">여행 계획 진행도</p>
+                    <span class="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full" id="progressText">1/3 단계</span>
+                </div>
+                
+                <!-- Progress Track -->
+                <div class="relative mb-4">
+                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all duration-700 ease-out" 
+                             id="progressFill" style="width: 33%"></div>
+                    </div>
+                </div>
+                
+                <!-- Step Dots & Labels -->
+                <div class="flex justify-between items-start">
+                    <div class="flex flex-col items-center flex-1" id="step1">
+                        <div class="w-3 h-3 bg-red-500 rounded-full mb-2 shadow-sm step-dot active"></div>
+                        <span class="text-xs text-gray-700 font-medium text-center leading-tight">정보<br>수집</span>
+                    </div>
+                    <div class="flex flex-col items-center flex-1" id="step2">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full mb-2 step-dot"></div>
+                        <span class="text-xs text-gray-400 text-center leading-tight">계획<br>생성</span>
+                    </div>
+                    <div class="flex flex-col items-center flex-1" id="step3">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full mb-2 step-dot"></div>
+                        <span class="text-xs text-gray-400 text-center leading-tight">최종<br>확정</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 overflow-y-auto bg-gray-50" id="chatContainer">
+            <!-- Initial State -->
+            <div id="initialScreen" class="p-4 space-y-4">
+                <!-- Hero Section -->
+                <div class="relative rounded-2xl overflow-hidden h-48 mb-6">
+                    <img src="https://picsum.photos/800/400?random=1" alt="Travel" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 image-overlay flex items-end p-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2">어디로 떠나고 싶으신가요?</h2>
+                            <p class="text-white/90 text-sm">AI가 당신만의 특별한 여행을 만들어드려요 ✨</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="message-enter">
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fas fa-magic text-white text-sm"></i>
+                        </div>
+                        <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%]">
+                            <p class="text-sm text-gray-800">안녕하세요! 여행의 모든 것을 도와드리는 <span class="text-red-500 font-semibold">TripGenie</span>입니다 🧞‍♂️</p>
+                            <p class="text-sm mt-2 text-gray-600">아래 인기 여행지를 선택하거나, 원하는 여행을 자유롭게 말씀해주세요!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Destinations -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700">🔥 지금 인기있는 여행</h3>
+                        <span class="text-xs text-gray-500">실시간 트렌드</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('도쿄 3박 4일 여행 계획 짜줘')">
+                            <div class="relative h-28">
+                                <img src="https://picsum.photos/400/300?random=2" alt="Tokyo" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">HOT</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">도쿄</h3>
+                                    <p class="text-xs text-white/80">3박 4일</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 2시간 30분</span>
+                                    <span class="text-xs font-semibold text-red-500">₩89만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('제주도 힐링 여행 추천해줘')">
+                            <div class="relative h-28">
+                                <img src="https://picsum.photos/400/300?random=3" alt="Jeju" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">힐링</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">제주도</h3>
+                                    <p class="text-xs text-white/80">자연 속 휴식</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 1시간</span>
+                                    <span class="text-xs font-semibold text-red-500">₩45만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('유럽 배낭여행 2주 코스')">
+                            <div class="relative h-28">
+                                <img src="https://picsum.photos/400/300?random=4" alt="Europe" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">모험</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">유럽</h3>
+                                    <p class="text-xs text-white/80">2주 배낭여행</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">✈️ 12시간</span>
+                                    <span class="text-xs font-semibold text-red-500">₩250만~</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sample-card bg-white rounded-xl overflow-hidden shadow-sm" onclick="selectSample('부산 맛집 투어 주말여행')">
+                            <div class="relative h-28">
+                                <img src="https://picsum.photos/400/300?random=5" alt="Busan" class="card-image w-full h-full object-cover">
+                                <div class="absolute inset-0 image-overlay"></div>
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">맛집</span>
+                                </div>
+                                <div class="absolute bottom-2 left-2">
+                                    <h3 class="text-sm font-bold text-white">부산</h3>
+                                    <p class="text-xs text-white/80">미식 여행</p>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">🚄 2시간 30분</span>
+                                    <span class="text-xs font-semibold text-red-500">₩35만~</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="messagesContainer" class="p-4 space-y-4"></div>
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="hidden p-4">
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-magic text-white text-sm"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
+                        <div class="flex gap-1">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Preview Plan Modal -->
+        <div id="previewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+            <div class="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-map-marked-alt text-red-500"></i>
+                        여행 계획 미리보기
+                    </h2>
+                    <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="previewContent" class="flex-1 p-4 overflow-y-auto bg-gray-50"></div>
+                <div class="p-4 border-t border-gray-200 bg-white space-y-3">
+                    <button onclick="confirmPreview()" class="w-full btn-primary">
+                        <i class="fas fa-check mr-2"></i>
+                        좋아요! 상세 계획 만들기
+                    </button>
+                    <button onclick="editPreview()" class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-edit mr-2"></i>
+                        수정할게요
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Plan Modal -->
+        <div id="detailedModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+            <div class="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i class="fas fa-route text-red-500"></i>
+                                상세 여행 계획
+                            </h2>
+                            <p class="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                확정 후에는 수정이 어렵습니다
+                            </p>
+                        </div>
+                        <button onclick="closeDetailedModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="detailedContent" class="flex-1 p-4 overflow-y-auto bg-gray-50"></div>
+                <div class="p-4 border-t border-gray-200 bg-white">
+                    <button onclick="finalizeplan()" class="w-full btn-primary mb-2">
+                        <i class="fas fa-check-double mr-2"></i>
+                        최종 확정하기
+                    </button>
+                    <button onclick="backToChat()" class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        다시 상담하기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlays -->
+        <!-- First Loading: Plan Generation -->
+        <div id="planningLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4">
+                
+                <!-- Preview Construction Animation -->
+                <div class="relative h-40 mb-6 rounded-2xl overflow-hidden">
+                    <!-- Background gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+                    
+                    <!-- Building blocks animation -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="relative">
+                            <!-- Central preview mockup -->
+                            <div class="w-24 h-32 bg-white rounded-lg shadow-lg border-2 border-gray-100 overflow-hidden preview-mockup">
+                                <!-- Mock header -->
+                                <div class="h-8 bg-gradient-to-r from-red-500 to-pink-500 relative">
+                                    <div class="absolute inset-x-0 bottom-0 h-1 bg-white/20 loading-bar"></div>
+                                </div>
+                                <!-- Mock content bars -->
+                                <div class="p-2 space-y-1">
+                                    <div class="h-2 bg-gray-200 rounded loading-content" style="animation-delay: 0.5s"></div>
+                                    <div class="h-2 bg-gray-200 rounded w-3/4 loading-content" style="animation-delay: 1s"></div>
+                                    <div class="h-2 bg-gray-200 rounded w-1/2 loading-content" style="animation-delay: 1.5s"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Floating elements -->
+                            <div class="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-br from-red-400 to-red-500 rounded-lg shadow-lg floating-element opacity-80" style="animation-delay: 0s">
+                                <i class="fas fa-map-marker-alt text-white text-xs flex items-center justify-center h-full"></i>
+                            </div>
+                            <div class="absolute -top-2 -right-6 w-6 h-6 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full shadow-lg floating-element opacity-80" style="animation-delay: 0.8s">
+                                <i class="fas fa-camera text-white text-xs flex items-center justify-center h-full"></i>
+                            </div>
+                            <div class="absolute -bottom-3 -right-2 w-7 h-7 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg shadow-lg floating-element opacity-80" style="animation-delay: 1.6s">
+                                <i class="fas fa-utensils text-white text-xs flex items-center justify-center h-full"></i>
+                            </div>
+                            <div class="absolute -bottom-4 -left-6 w-6 h-6 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full shadow-lg floating-element opacity-80" style="animation-delay: 2.4s">
+                                <i class="fas fa-plane text-white text-xs flex items-center justify-center h-full"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Magic sparkles -->
+                    <div class="absolute top-4 left-4 text-yellow-400 sparkle" style="animation-delay: 0.3s">✨</div>
+                    <div class="absolute top-8 right-6 text-yellow-400 sparkle" style="animation-delay: 1.1s">✨</div>
+                    <div class="absolute bottom-6 left-8 text-yellow-400 sparkle" style="animation-delay: 1.9s">✨</div>
+                </div>
+                
+                <!-- Compact Header -->
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-bold bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                        여행 정보 분석 중 🔍
+                    </h3>
+                </div>
+                
+                <!-- Compact Analysis UI -->
+                <div class="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 rounded-xl p-4 mb-3 border border-orange-100">
+                    
+                    <!-- Compact Analysis Items -->
+                    <div class="space-y-3">
+                        <div class="analysis-item flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                            <div class="w-8 h-8 bg-gradient-to-br from-red-400 to-red-500 rounded-full flex items-center justify-center">
+                                <div class="infinite-spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-800 text-sm">여행 정보 수집</h5>
+                                <p class="text-xs text-gray-600">목적지, 일정, 예산 분석 중...</p>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+                                <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-item flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                            <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
+                                <div class="infinite-spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" style="animation-delay: 0.3s"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-800 text-sm">취향 패턴 분석</h5>
+                                <p class="text-xs text-gray-600">선호 스타일, 활동 유형 파악 중...</p>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
+                                <div class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                                <div class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-item flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                            <div class="w-8 h-8 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center">
+                                <div class="infinite-spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" style="animation-delay: 0.6s"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-800 text-sm">맞춤 추천 생성</h5>
+                                <p class="text-xs text-gray-600">베스트 코스, 맛집 선별 중...</p>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <div class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                                <div class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0.6s"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Compact Status -->
+                    <div class="mt-4 p-3 bg-gradient-to-r from-red-100 to-orange-100 rounded-lg border border-red-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-gradient-to-br from-red-500 to-orange-500 rounded-md flex items-center justify-center">
+                                <i class="fas fa-cog text-white text-xs animate-spin"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p id="currentAnalysisText" class="text-xs font-medium text-gray-800">
+                                    AI가 여행 정보를 종합 분석하고 있어요...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Loading: Detail Planning - Enhanced -->
+        <div id="detailLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4">
+                <!-- Travel Collage Animation -->
+                <div class="relative h-48 mb-6 rounded-2xl overflow-hidden">
+                    <!-- Background gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-100 via-pink-100 to-orange-100"></div>
+                    
+                    <!-- Rotating Image Carousel -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="relative w-32 h-32 rounded-xl overflow-hidden shadow-2xl">
+                            <!-- 회전하는 이미지들 -->
+                            <div class="carousel-image active rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=6" alt="Travel" class="w-full h-full object-cover">
+                            </div>
+                            <div class="carousel-image rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=7" alt="Food" class="w-full h-full object-cover">
+                            </div>
+                            <div class="carousel-image rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=8" alt="Hotel" class="w-full h-full object-cover">
+                            </div>
+                            <div class="carousel-image rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=9" alt="Shopping" class="w-full h-full object-cover">
+                            </div>
+                            <div class="carousel-image rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=10" alt="Nature" class="w-full h-full object-cover">
+                            </div>
+                            <div class="carousel-image rounded-xl overflow-hidden absolute inset-0">
+                                <img src="https://picsum.photos/150/150?random=11" alt="Museum" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <!-- 주변 떠다니는 작은 이미지들 -->
+                        <div class="floating-mini-image absolute -top-4 -left-6 w-12 h-12 rounded-lg overflow-hidden shadow-lg opacity-80" style="animation-delay: 0.5s">
+                            <img src="https://picsum.photos/150/150?random=12" alt="Mini1" class="w-full h-full object-cover">
+                        </div>
+                        <div class="floating-mini-image absolute -top-2 -right-8 w-10 h-10 rounded-full overflow-hidden shadow-lg opacity-75" style="animation-delay: 1.2s">
+                            <img src="https://picsum.photos/150/150?random=13" alt="Mini2" class="w-full h-full object-cover">
+                        </div>
+                        <div class="floating-mini-image absolute -bottom-3 -right-4 w-14 h-14 rounded-lg overflow-hidden shadow-lg opacity-70" style="animation-delay: 2.1s">
+                            <img src="https://picsum.photos/150/150?random=14" alt="Mini3" class="w-full h-full object-cover">
+                        </div>
+                        <div class="floating-mini-image absolute -bottom-6 -left-4 w-11 h-11 rounded-full overflow-hidden shadow-lg opacity-85" style="animation-delay: 2.8s">
+                            <img src="https://picsum.photos/150/150?random=15" alt="Mini4" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <!-- Center Calendar Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl transform scale-0 calendar-popup">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <p id="tripDurationDisplay" class="font-bold text-gray-800">3박 4일</p>
+                                    <p class="text-xs text-gray-600">완벽한 일정 제작 중</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Thinking Section -->
+                <div class="ai-thinking-section text-center mb-6">
+                    <div class="ai-brain-icon mb-3">
+                        <div class="w-16 h-16 mx-auto bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg breathe-animation">
+                            <i class="fas fa-magic text-white text-2xl sparkle-rotate"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="thinking-text-container">
+                        <h3 id="thinkingMessage" class="text-xl font-bold text-gray-800 mb-2">
+                            AI가 도쿄의 숨은 명소를 분석하고 있어요<span class="typing-dots">...</span>
+                        </h3>
+                        <div class="time-display mb-4">
+                            <span id="elapsedTime" class="text-sm text-indigo-600 font-semibold">3초</span> 
+                            <span class="text-sm text-gray-600">동안 열심히 생각 중</span>
+                            <div class="text-xs text-gray-500 mt-1">
+                                ⏰ 완벽한 계획을 위해 3-5분 정도 소요될 수 있어요
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Context Hints -->
+                <div class="context-hints space-y-2 mb-6">
+                    <div class="hint-card bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 transform transition-all duration-300 opacity-0 hint-fade-in" style="animation-delay: 0.5s">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-gamepad text-white text-sm"></i>
+                            </div>
+                            <span class="text-sm text-green-800 font-medium">게임쇼 일정 고려중</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hint-card bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl p-3 transform transition-all duration-300 opacity-0 hint-fade-in" style="animation-delay: 1s">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-utensils text-white text-sm"></i>
+                            </div>
+                            <span class="text-sm text-orange-800 font-medium">현지 맛집 발굴중</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hint-card bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 transform transition-all duration-300 opacity-0 hint-fade-in" style="animation-delay: 1.5s">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-yen-sign text-white text-sm"></i>
+                            </div>
+                            <span class="text-sm text-blue-800 font-medium">100만원 예산 최적화중</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Message -->
+                <div class="text-center">
+                    <p id="statusMessage" class="text-xs text-gray-500 italic transition-opacity duration-500">
+                        💡 혼자 여행하는 당신을 위한 특별한 경험을 찾고 있어요
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integrated Travel Plan Modal (Preview + Detailed) -->
+        <div id="integratedPlanModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="integratedTitle">🗾 제주도 2박3일 가족여행</h2>
+                            <p class="text-sm text-gray-600 mt-1" id="integratedSubtitle">완벽한 여행 계획이 완성되었습니다!</p>
+                        </div>
+                        <button onclick="closeIntegratedModal()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                            <i class="fas fa-times text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Container -->
+                <div class="overflow-y-auto max-h-[calc(90vh-140px)]">
+                    <!-- Preview Section -->
+                    <div id="previewSection" class="p-4">
+                        <!-- Main Highlights -->
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 mb-3">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-map-marked-alt text-white text-sm"></i>
+                                </div>
+                                <h3 class="text-base font-bold text-gray-800">📍 주요 방문지</h3>
+                            </div>
+                            
+                            <div class="highlights-scroll flex gap-3 overflow-x-auto pb-2" id="highlightsGrid">
+                                <!-- Sample highlights - will be populated by JavaScript -->
+                                <div class="bg-white rounded-xl p-4 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-2xl">🌅</span>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">성산일출봉</h4>
+                                            <p class="text-xs text-gray-600">제주 대표 명소</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-4 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-2xl">⛰️</span>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">한라산 국립공원</h4>
+                                            <p class="text-xs text-gray-600">자연 트레킹</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-4 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-2xl">🏖️</span>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">협재해수욕장</h4>
+                                            <p class="text-xs text-gray-600">에메랄드 바다</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-4 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-2xl">🍖</span>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800">흑돼지거리</h4>
+                                            <p class="text-xs text-gray-600">제주 별미</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget Summary -->
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 mb-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-wallet text-white text-xs"></i>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-800">💰 예상 비용</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-lg font-bold text-green-600" id="totalBudget">120만원</span>
+                                    <span class="text-xs text-gray-600 ml-1">(1인당 30만원)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Button -->
+                        <div class="text-center">
+                            <button id="toggleDetailBtn" onclick="toggleDetailedView()" 
+                                    class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg">
+                                <i class="fas fa-calendar-alt mr-2"></i>
+                                📋 상세 일정 보기 ▼
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Section (Initially Hidden) -->
+                    <div id="detailedSection" class="hidden">
+                        <!-- Simplified Preview Header -->
+                        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm text-gray-600">📍 주요 방문지:</span>
+                                    <span class="text-sm font-medium text-gray-800">성산일출봉, 한라산, 협재해수욕장, 흑돼지거리</span>
+                                </div>
+                                <button id="collapseDetailBtn" onclick="toggleDetailedView()" 
+                                        class="text-blue-500 hover:text-blue-600 text-sm font-medium flex items-center gap-1">
+                                    간단히 보기 ▲
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Timeline -->
+                        <div class="p-6" id="detailedTimeline">
+                            <!-- Day 1 -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        1
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800">📅 DAY 1 (2024-03-15 금)</h3>
+                                        <p class="text-sm text-gray-600">🎯 테마: 제주 도착 & 동부 탐방</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="ml-6 space-y-4">
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-blue-600">09:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">✈️</span>
+                                                <h4 class="font-semibold text-gray-800">제주공항 도착</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">김포공항에서 1시간 15분 소요</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-blue-600">10:30</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">🚗</span>
+                                                <h4 class="font-semibold text-gray-800">렌터카 픽업</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">제주공항 1층 렌터카 데스크</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-blue-600">11:30</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">🌅</span>
+                                                <h4 class="font-semibold text-gray-800">성산일출봉</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">제주 대표 명소, 등반 1시간 소요</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-blue-600">13:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">🍜</span>
+                                                <h4 class="font-semibold text-gray-800">성산 맛집에서 점심</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">갈치조림과 성게미역국 추천</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Day 2 -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        2
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800">📅 DAY 2 (2024-03-16 토)</h3>
+                                        <p class="text-sm text-gray-600">🎯 테마: 자연 탐방 & 해변</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="ml-6 space-y-4">
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-green-600">09:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">⛰️</span>
+                                                <h4 class="font-semibold text-gray-800">한라산 국립공원</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">어리목 탐방로 (왕복 3시간)</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-green-600">14:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">🏖️</span>
+                                                <h4 class="font-semibold text-gray-800">협재해수욕장</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">에메랄드빛 바다와 하얀 모래사장</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Day 3 -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        3
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800">📅 DAY 3 (2024-03-17 일)</h3>
+                                        <p class="text-sm text-gray-600">🎯 테마: 맛집 탐방 & 출발</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="ml-6 space-y-4">
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-purple-600">11:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">🍖</span>
+                                                <h4 class="font-semibold text-gray-800">흑돼지거리</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">제주 흑돼지 BBQ와 막걸리</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div class="w-16 text-center">
+                                            <div class="text-sm font-bold text-purple-600">15:00</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xl">✈️</span>
+                                                <h4 class="font-semibold text-gray-800">제주공항 출발</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600">서울 김포공항 도착</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="p-6 bg-gray-50 border-t border-gray-100">
+                    <div class="flex gap-4">
+                        <button onclick="requestModification()" 
+                                class="flex-1 bg-white border border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-edit mr-2"></i>
+                            ✏️ 수정하기
+                        </button>
+                        <button onclick="confirmIntegratedPlan()" 
+                                class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105">
+                            <i class="fas fa-check mr-2"></i>
+                            ✅ 계획 확정
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third Loading: Final Confirmation with Place API -->
+        <div id="finalLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full mx-4">
+                <!-- App Creation Visual -->
+                <div class="relative w-40 h-40 mx-auto mb-6">
+                    <!-- Phone Mockup -->
+                    <div class="absolute inset-0 bg-gray-900 rounded-3xl shadow-2xl overflow-hidden">
+                        <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gray-700 rounded-full"></div>
+                        <div class="absolute inset-3 bg-white rounded-2xl overflow-hidden">
+                            <!-- App Preview -->
+                            <div class="bg-gradient-to-b from-red-500 to-pink-500 h-16 flex items-center justify-center">
+                                <i class="fas fa-route text-white text-2xl"></i>
+                            </div>
+                            <div class="p-2 space-y-1">
+                                <div class="h-2 bg-gray-200 rounded animate-pulse"></div>
+                                <div class="h-2 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                                <div class="h-8 bg-gray-100 rounded mt-2 animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Floating Icons -->
+                    <div class="absolute -top-2 -right-2 bg-green-500 rounded-full p-2 shadow-lg animate-bounce">
+                        <i class="fas fa-check text-white text-sm"></i>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">거의 다 됐어요! 📱</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">폰에 쏙 들어갈 여행 가이드 만드는 중...</p>
+                
+                <!-- Feature Integration -->
+                <div class="space-y-3 mb-6">
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl" data-delay="0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-map-marker-alt text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">길 안 헤매게 📍</p>
+                                <p class="text-xs text-gray-500">정확한 위치 저장 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl" data-delay="800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-clock text-blue-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">문 닫았나? 🕐</p>
+                                <p class="text-xs text-gray-500">오늘 영업시간 확인 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl" data-delay="1600">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-star text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">진짜 맛집? ⭐</p>
+                                <p class="text-xs text-gray-500">리얼 후기 체크 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-item flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl" data-delay="2400">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                <i class="fas fa-images text-purple-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">인스타 각? 📸</p>
+                                <p class="text-xs text-gray-500">예쁜 사진 모으는 중</p>
+                            </div>
+                        </div>
+                        <div class="status-icon">
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Indicator -->
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <i class="fas fa-mobile-alt text-gray-400"></i>
+                    <span>곧 완성돼요! 조금만 기다려주세요</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="successScreen" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4">
+            <div class="bg-white rounded-2xl p-6 text-center max-w-sm shadow-2xl">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">여행 계획 완성! 🎉</h2>
+                <p class="text-gray-600 mb-6">이제 언제 어디서나 여행 계획을 확인할 수 있어요</p>
+                
+                <div class="space-y-3">
+                    <button onclick="viewApp()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-mobile-alt"></i>
+                        내 여행 앱 보기
+                    </button>
+                    <button onclick="downloadPWA()" class="w-full bg-gray-100 text-gray-700 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-download"></i>
+                        앱 다운로드하기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Panel (Hidden by default) -->
+        <div id="confirmationPanel" class="confirmation-panel hidden">
+            <div class="ai-summary-card">
+                <div class="summary-header">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <span class="text-lg font-semibold text-gray-800">여행 정보 확인</span>
+                    </div>
+                </div>
+                <div class="summary-content" id="summaryText">
+                    <!-- AI 확인 메시지가 여기에 표시됩니다 -->
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="modifyBtn" class="btn-secondary">
+                    <i class="fas fa-edit"></i>
+                    <span>수정할게요</span>
+                </button>
+                <button id="confirmBtn" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    <span>여행 계획 만들기</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-4 border-t border-gray-200 bg-white" id="chatInputContainer">
+            <div class="flex gap-2">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    placeholder="여행에 대해 자유롭게 이야기해주세요..."
+                    class="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()" class="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-xl px-4 py-3 hover:shadow-lg transition-all">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="chatbot_ver2.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "userMessage": "좋아요! 9월 25일경 도쿄에서 2박 3일 동안 혼자, 100만원 이내 예산으로 항공편은 미정이고 도쿄 게임쇼를 일정에 넣는 여행을 계획해 드릴까요? ✨",
+  "systemData": {
+    "destination": "도쿄",
+    "startDate": "2025-09-25",
+    "endDate": "2025-09-27",
+    "travelers": {"adults": 1, "children_age": []},
+    "tripType": "solo",
+    "budget": {"range": "mid", "amount": 1000000},
+    "transport": {"type": "flight", "details": "미정"},
+    "preferences": ["도쿄 게임쇼"],
+    "notes": ""
+  }
+}

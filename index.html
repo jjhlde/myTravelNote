@@ -75,8 +75,15 @@
         </div>
         
         <div class="header">
-            <h1>🇲🇴 마카오 가족여행</h1>
-            <p>37개월 딸과 함께하는 특별한 여행</p>
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>🇲🇴 마카오 가족여행</h1>
+                    <p>37개월 딸과 함께하는 특별한 여행</p>
+                </div>
+                <div class="header-utils">
+                    <button class="util-btn" id="exchangeRateBtn" title="환율 계산기">💱</button>
+                </div>
+            </div>
 
             <div class="day-tabs">
                 <div class="day-tab active" data-page="0">📋 정보</div>
@@ -84,7 +91,7 @@
                 <div class="day-tab" data-page="2">2일차</div>
                 <div class="day-tab" data-page="3">3일차</div>
                 <div class="day-tab" data-page="4">4일차</div>
-                <div class="day-tab" data-page="5">💰 예산</div>
+                <div class="day-tab" data-page="5">📝 준비물</div>
             </div>
         </div>
 
@@ -138,7 +145,61 @@
         </div>
     </div>
 
+    <!-- 환율 계산기 팝업 -->
+    <div class="exchange-popup-overlay" id="exchangePopupOverlay">
+        <div class="exchange-popup-content">
+            <div class="exchange-popup-header">
+                <h3>💱 환율 계산기</h3>
+                <button class="exchange-popup-close" id="exchangePopupClose">✕</button>
+            </div>
+            
+            <div class="exchange-rate-info">
+                <div class="rate-display">
+                    <span class="rate-text">현재 환율: 1 MOP = 170 KRW</span>
+                    <span class="rate-date">(2024년 평균)</span>
+                </div>
+            </div>
+
+            <div class="exchange-calculator">
+                <div class="exchange-input-group">
+                    <label for="mopInput">마카오 파타카 (MOP)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="mopInput" placeholder="0" step="0.01" min="0">
+                        <span class="currency-label">MOP</span>
+                    </div>
+                </div>
+
+                <div class="exchange-arrow">⇩</div>
+
+                <div class="exchange-input-group">
+                    <label for="krwOutput">한국 원 (KRW)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="krwOutput" placeholder="0" readonly>
+                        <span class="currency-label">원</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exchange-shortcuts">
+                <button class="shortcut-btn" data-amount="100">100 MOP</button>
+                <button class="shortcut-btn" data-amount="500">500 MOP</button>
+                <button class="shortcut-btn" data-amount="1000">1,000 MOP</button>
+                <button class="shortcut-btn" data-amount="5000">5,000 MOP</button>
+            </div>
+
+            <div class="exchange-tips">
+                <div class="tips-title">💡 환율 팁</div>
+                <div class="tips-content">
+                    • 마카오 대부분 상점에서 홍콩달러(HKD)도 사용 가능<br>
+                    • 카지노에서는 HKD가 더 선호됨<br>
+                    • 현금 환전보다 카드 결제가 환율상 유리
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript 파일 -->
+    <script src="./places-api.js"></script>
     <script src="./macau.js"></script>
 </body>
 </html>

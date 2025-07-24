@@ -35,13 +35,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 파일 구조
 
-### 📱 실제 PWA 생성 시스템 파일들 (핵심)
+### 📱 실제 MVP 챗봇 시스템 파일들 (핵심) ⭐ **현재 개발 완료**
 ```
 myTravelNote/
-├── chatbot.html        # AI 여행 챗봇 (메인 진입점)
-├── chatbot.js          # PWA 생성 엔진 로직
-├── chatbot.css         # 챗봇 스타일시트
-├── config.js           # API 설정 (Gemini, Google OAuth)
+├── chatbot_ver2_clean.html     # 🎯 메인 챗봇 인터페이스 (기본 베이스)
+├── chatbot_ver2.js             # 🧠 완전한 대화 로직 + Gemini API 연동
+├── chatbot_ver2.css            # 🎨 챗봇 전용 스타일시트
+├── config.js                   # 🔑 API 설정 (Gemini API 키 포함)
+├── server.js                   # 🖥️ Node.js 개발 서버 (포트 9000)
+├── prompts/                    # 📋 AI 프롬프트 시스템
+│   └── first_step.txt          # 1단계 정보 수집 지침 (완성)
+└── package.json                # 📦 Node.js 의존성 관리
+```
+
+### 🚀 **2024-07-23 개발 완료 현황**
+- ✅ **1단계**: Gemini API 연결 및 기본 대화 기능
+- ✅ **2단계**: `first_step.txt` 프롬프트 시스템 연동
+- ✅ **3단계**: 체계적 정보 수집 대화 로직 구현
+- ✅ **4단계**: JSON 응답 파싱 및 구조화된 데이터 저장
+- ✅ **5단계**: 완전한 여행 계획 대화 플로우 검증
+
+### 📱 구축 예정인 PWA 생성 시스템 파일들
+```
+myTravelNote/
 ├── templates/          # PWA 생성용 템플릿 파일들
 │   ├── main-template.html      # 메인 PWA 템플릿
 │   ├── info-template.html      # 여행 정보 템플릿
@@ -51,7 +67,6 @@ myTravelNote/
 │   └── manifest-template.json  # PWA 매니페스트 템플릿
 ├── main-script.js      # 동적 PWA 렌더링 스크립트
 ├── landing.html        # 마케팅 랜딩 페이지 (TripBot 브랜딩)
-├── prompt2.txt         # AI 시스템 프롬프트
 └── sw.js              # Service Worker (오프라인 캐싱)
 ```
 
@@ -71,21 +86,30 @@ myTravelNote/
 └── images/            # 마카오 여행 이미지들
 ```
 
-### 🔄 PWA 생성 플로우
+### 🔄 **현재 구현된 대화 플로우 (2024-07-23 완성)**
 ```
-1. chatbot.html에서 사용자 입력
+1. chatbot_ver2_clean.html에서 사용자 여행 의도 입력
    ↓
-2. chatbot.js가 Gemini API 호출
+2. chatbot_ver2.js가 first_step.txt 프롬프트 로드
+   ↓  
+3. Gemini 2.5 Flash API로 적응형 질문 생성
    ↓
-3. AI 응답 → localStorage에 JSON 저장
+4. 3단계 정보 수집 (기본틀 → 실행조건 → 개인화)
    ↓
-4. 고유 session ID 생성
+5. 사용자 확인 시 구조화된 JSON 응답 생성
    ↓
-5. /app?session=abc123 형태로 접근
+6. conversationState에 여행 데이터 저장 완료
+```
+
+### 🔄 **향후 구현할 PWA 생성 플로우**
+```
+6. 저장된 JSON 데이터 → 고유 session ID 생성
    ↓
-6. templates/main-template.html 로드
+7. /app?session=abc123 형태로 PWA 접근 URL 생성
    ↓
-7. main-script.js가 session 데이터 렌더링
+8. templates/main-template.html 로드
+   ↓
+9. main-script.js가 session 데이터를 PWA로 렌더링
 ```
 
 ## 🚀 MVP 핵심 전략
@@ -886,3 +910,171 @@ claude mcp remove youtube-mcp
 "C:\Users\jjhld\AppData\Roaming\Claude\claude_desktop_config.json" 이 파일이 존재한다면 클로드 데스크탑이 설치된 상태야.
 이 파일의 mcpServers 내용을 클로드 코드 설정 파일(C:\Users\{사용자명}\.claude.json)의 user 스코프 위치(projects 항목에 속하지 않은 mcpServers가 user 스코프에 해당)로 그대로 가지고 오면 돼.
 가지고 온 후, task를 통해 디버그 모드로 서브 에이전트 구동하여 (claude --debug) 클로드 코드에 문제가 없는지 확인할 것
+
+---
+
+## 📋 **2024-07-23 최신 개발 현황**
+
+### ✅ **MVP 챗봇 시스템 완성**
+- **기본 베이스**: `chatbot_ver2_clean.html` (외부 CSS/JS 분리 완료)
+- **Gemini API 연동**: 완전한 대화형 AI 시스템 구축
+- **프롬프트 시스템**: `first_step.txt` + `second_step.txt` 2단계 지침 완료
+- **정보 수집 로직**: 3단계 그룹별 효율적 데이터 수집
+- **JSON 구조화**: `userMessage` + `systemData` 완벽한 파싱
+- **개발 서버**: Node.js (포트 8002) 안정적 운영
+
+### 🎨 **최신 UI/UX 완성 (최종 단계)**
+- **1단계 로딩**: Figma Community 기반 Preview 생성 애니메이션
+  - Preview 건설 모킹, 플로팅 요소, 스파클 효과
+  - 인디고/퍼플 색상으로 2단계와 차별화
+- **2단계 로딩**: 여행 콜라주 애니메이션 (사용자 만족도 100%)
+- **단계별 최적화**: 각 phase별 Gemini API generationConfig 최적화
+
+### 🎯 **성공적으로 검증된 대화 시나리오**
+```
+사용자: "도쿄 여행 가고 싶어"
+AI: "언제, 며칠, 몇 분이서 가실 예정이야?" (기본틀 그룹)
+
+사용자: "다음 달 15일부터 3박 4일로 친구 2명과 함께"  
+AI: "예산은 어느 정도로 생각하고, 항공편은 정해졌어?" (실행조건 그룹)
+
+사용자: "예산은 1인당 100만원 정도, 항공편으로 갈 예정"
+AI: "특별히 해보고 싶은 활동이나 가보고 싶은 곳 있어?" (개인화 그룹)
+
+사용자: "문화체험과 맛집 탐방 위주로 하고 싶어"
+AI: "도쿄 문화 & 미식 탐방 계획 세워볼게. 맞니?" (확인)
+
+사용자: "네, 맞아요"
+AI: ✅ JSON 출력 성공!
+```
+
+### 🔧 **핵심 기술 구현 사항**
+- **Gemini 2.5 Flash API**: 안정적 연동 및 한국어 응답 최적화
+- **프롬프트 로딩**: 동적 `first_step.txt` + `second_step.txt` 시스템
+- **상태 관리**: `conversationState` 기반 대화 추적
+- **JSON 파싱**: 마크다운 블록 및 다양한 형식 지원
+- **에러 처리**: 포괄적 오류 복구 시스템
+- **이미지 최적화**: Picsum Photos API로 안정적 이미지 표시
+- **GenerationConfig 최적화**: Phase별 AI 응답 품질 차별화
+  - Phase 1: temperature=0.7, topK=30, topP=0.8, maxOutputTokens=4000
+  - Phase 2: temperature=0.8, topK=40, topP=0.85, maxOutputTokens=3500
+  - Phase 3: temperature=0.6, topK=25, topP=0.75, maxOutputTokens=6000
+
+### 📊 **출력되는 JSON 데이터 구조**
+```json
+{
+  "userMessage": "확인 메시지",
+  "systemData": {
+    "destination": "여행지",
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD", 
+    "travelers": {"adults": "number", "children_age": "array"},
+    "tripType": "solo|family|couple|friends|business",
+    "budget": {"range": "budget|mid|luxury", "amount": "number"},
+    "transport": {"type": "flight|train|car", "details": "string"},
+    "preferences": ["선호사항 배열"],
+    "notes": "여행 컨셉 요약"
+  }
+}
+```
+
+---
+
+## 🛠️ **개발 환경 및 실행 방법**
+
+### **로컬 개발 서버 실행**
+```bash
+cd "G:\Programming\travel-master\myTravelNote"
+node server.js
+# 서버 실행: http://localhost:8002
+# 챗봇 접속: http://localhost:8002/chatbot_ver2_clean.html
+```
+
+### **API 키 설정**
+- `config.js`에 Gemini API 키 설정 완료
+- 현재 개발용 키 활성화 상태
+
+### **디버깅 도구**
+- **브라우저 콘솔**: API 호출 로그, JSON 파싱 상태 확인
+- **네트워크 탭**: Gemini API 요청/응답 모니터링
+- **conversationState**: 실시간 대화 상태 추적
+
+---
+
+## 📝 **개발 규칙 및 지침**
+
+### **중요 규칙**
+**코드 수정 후에는 반드시 git commit, push 해주세요.**
+
+### **새로운 개발 지침 (2024-07-23 추가)**
+
+#### **1. Context7 MCP 활용 지침** 🔍
+- **모든 코드 작업**에서 **Context7 MCP**를 적극 활용할 것
+- 라이브러리 문서 조회, API 레퍼런스 확인 시 Context7 우선 사용
+- 새로운 기술 스택 도입 시 Context7로 최신 정보 확인
+- 프레임워크별 베스트 프랙티스는 Context7를 통해 학습
+
+**사용 예시:**
+```
+- React 컴포넌트 패턴 확인
+- API 연동 방법 조회  
+- 성능 최적화 기법 학습
+- 에러 처리 방식 연구
+```
+
+#### **2. Figma Community 디자인 레퍼런스 지침** 🎨
+- **모든 UI/UX 디자인 작업**에서 **Figma Community** 적극 참고
+- 여행 앱, 챗봇 인터페이스 디자인 트렌드 조사
+- 사용자 경험(UX) 패턴 및 플로우 연구
+- 컬러 팔레트, 타이포그래피, 아이콘 시스템 참고
+
+**참고 키워드:**
+```
+- Travel App UI Kit
+- Chatbot Interface Design
+- Mobile Travel Planner
+- AI Chat Interface
+- PWA Design System
+```
+
+#### **3. 기술 의사결정 프로세스**
+1. 새로운 기능 구현 시 Context7로 기술 조사
+2. 디자인 개선 시 Figma Community에서 레퍼런스 수집
+3. 구현 후 기존 코드 스타일과 일관성 유지
+4. 반드시 테스트 후 Git 커밋
+
+---
+
+## 🚀 **다음 개발 단계 로드맵**
+
+### **Phase 1: PWA 생성 시스템 구축** (다음 우선순위)
+- 저장된 JSON 데이터 → PWA 템플릿 렌더링
+- 고유 session ID 기반 개인 전용 앱 생성
+- Service Worker 및 오프라인 기능 구현
+
+### **Phase 2: 사용자 인증 및 데이터 관리**
+- Google OAuth 원클릭 로그인
+- 임시세션 → 정식계정 데이터 이전
+- 사용자별 여행 기록 관리
+
+### **Phase 3: 고도화 기능**
+- 2단계, 3단계 프롬프트 시스템 확장
+- 실시간 여행 정보 API 연동
+- 소셜 공유 및 협업 기능
+
+---
+
+## 📚 **참고 자료 및 문서**
+
+### **API 문서**
+- [Gemini API 공식 문서](https://ai.google.dev/docs)
+- [Google Maps API](https://developers.google.com/maps)
+
+### **디자인 레퍼런스**
+- [Figma Community - Travel Apps](https://www.figma.com/community/search?model_type=files&q=travel%20app)
+- [Figma Community - Chat Interface](https://www.figma.com/community/search?model_type=files&q=chat%20interface)
+
+### **개발 도구**
+- Context7 MCP를 통한 라이브러리 문서 조회
+- Node.js 로컬 개발 서버 (포트 9000)
+- 브라우저 개발자 도구 (Console, Network, Application)
