@@ -1711,226 +1711,18 @@ async function testLoading1() {
 }
 
 async function testLoading2() {
-    // Update trip duration display first
-    updateTripDurationDisplay();
+    console.log('🧪 2단계 로딩 애니메이션 테스트 시작');
     
-    const loader = document.getElementById('detailLoader');
-    if (loader.classList.contains('hidden')) {
-        loader.classList.remove('hidden');
-        console.log('📋 2단계 로딩 화면 표시 + 실제 2단계 지침 API 호출 시작...');
-        
-        // AI Thinking Messages with Context (Extended for longer wait times)
-        const thinkingMessages = [
-            "🤖 AI가 도쿄의 숨은 명소를 분석하고 있어요...",
-            "🎮 게임쇼 일정에 맞는 최적 경로를 계산 중...",
-            "🍜 현지인만 아는 진짜 맛집을 선별하고 있어요...",
-            "💰 100만원 예산에 맞는 완벽한 플랜 구성 중...",
-            "📱 혼자 여행하는 당신만의 가이드를 완성하고 있어요...",
-            "🗾 도쿄의 15,000개 장소 중 최적의 조합을 찾는 중...",
-            "⏰ 9월 25일 날씨와 이벤트 정보를 종합 분석중...",
-            "🚇 지하철 노선과 교통비를 최적화하고 있어요...",
-            "🎌 일본 문화 체험과 게임쇼를 완벽하게 조합중...",
-            "🎯 현지 전문가 수준의 인사이트를 생성하고 있어요...",
-            "📊 실시간 정보와 리뷰 데이터를 분석 중...",
-            "🌟 다른 여행앱에선 찾을 수 없는 특별한 경험을 준비중..."
-        ];
-        
-        const statusMessages = [
-            "💡 혼자 여행하는 당신을 위한 특별한 경험을 찾고 있어요",
-            "🎯 도쿄 게임쇼와 현지 문화를 완벽하게 조합하는 중이에요",
-            "✨ 100만원으로 최고의 가치를 만들어드릴게요",
-            "🌟 현지 전문가도 인정하는 숨은 보석들을 발굴 중입니다",
-            "🎨 당신만의 특별한 도쿄 스토리를 만들고 있어요",
-            "⚡ 복잡한 계산이 필요한 완벽한 일정을 만들고 있어요",
-            "🧠 AI가 깊이 생각할수록 더 좋은 결과가 나올 거예요",
-            "🕐 잠시만 더 기다려주세요. 정말 특별한 걸 준비 중이에요",
-            "🔥 현재 도쿄에서 가장 핫한 숨은 명소들을 발굴 중...",
-            "💎 다른 곳에서는 절대 찾을 수 없는 보석 같은 정보들을 모으는 중"
-        ];
-        
-        let messageIndex = 0;
-        let elapsedSeconds = 0;
-        
-        // Update elapsed time every second
-        const timeInterval = setInterval(() => {
-            elapsedSeconds++;
-            const timeDisplay = document.getElementById('elapsedTime');
-            if (timeDisplay) {
-                timeDisplay.textContent = `${elapsedSeconds}초`;
-            }
-        }, 1000);
-        
-        // Change thinking message every 5 seconds
-        const messageInterval = setInterval(() => {
-            messageIndex = (messageIndex + 1) % thinkingMessages.length;
-            
-            const thinkingMessage = document.getElementById('thinkingMessage');
-            const statusMessage = document.getElementById('statusMessage');
-            
-            if (thinkingMessage) {
-                thinkingMessage.style.opacity = '0.5';
-                setTimeout(() => {
-                    thinkingMessage.innerHTML = thinkingMessages[messageIndex] + '<span class="typing-dots">...</span>';
-                    thinkingMessage.style.opacity = '1';
-                }, 300);
-            }
-            
-            if (statusMessage) {
-                statusMessage.style.opacity = '0.5';
-                setTimeout(() => {
-                    statusMessage.textContent = statusMessages[messageIndex] || statusMessages[0];
-                    statusMessage.style.opacity = '1';
-                }, 300);
-            }
-        }, 5000);
-        
-        try {
-            // 1. Load first step mock data
-            console.log('📂 1단계 모크 데이터 로드 중...');
-            const firstStepResponse = await fetch('./first_step_mock_response.json');
-            const firstStepData = await firstStepResponse.json();
-            console.log('✅ 1단계 데이터 로드 완료:', firstStepData);
-            
-            // 2. Load second step prompt
-            console.log('📂 2단계 지침 로드 중...');
-            const secondStepResponse = await fetch('./prompts/second_step.txt');
-            const secondStepPrompt = await secondStepResponse.text();
-            console.log('✅ 2단계 지침 로드 완료');
-            
-            // 3. Combine prompt with first step data
-            const combinedPrompt = `${secondStepPrompt}
-
-[1단계에서 수집된 사용자 데이터]
-${JSON.stringify(firstStepData.systemData)}
-
-위 사용자 데이터를 바탕으로 OUTPUT_FORMAT에 맞는 완전한 여행계획을 JSON 형태로 생성해주세요.`;
-            
-            console.log('🤖 Gemini API 호출 준비 완료');
-            
-            // 4. Call Gemini API with second step prompt
-            const requestBody = {
-                contents: [{
-                    parts: [{
-                        text: combinedPrompt
-                    }]
-                }],
-                generationConfig: GENERATION_CONFIGS.phase2
-            };
-            
-            // API 키 및 네트워크 상태 체크
-            if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-                throw new Error('❌ API 키가 설정되지 않았습니다.');
-            }
-            
-            if (!navigator.onLine) {
-                throw new Error('❌ 인터넷 연결이 끊어졌습니다.');
-            }
-            
-            console.log('🚀 API 요청 전송 시작...');
-            console.log('📤 요청 URL:', `${GEMINI_API_URL}?key=${CONFIG.GEMINI_API_KEY.substring(0, 10)}...`);
-            console.log('📤 요청 바디 크기:', JSON.stringify(requestBody).length, 'characters');
-            console.log('📤 프롬프트 길이:', combinedPrompt.length, 'characters');
-            
-            // 타임아웃 및 진행 표시 설정 (5분으로 연장)
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                console.log('⏰ API 호출 타임아웃 (5분)');
-                controller.abort();
-            }, 300000); // 5분 = 300초
-            
-            // 진행 상황 주기적 업데이트
-            let progressCounter = 0;
-            const progressInterval = setInterval(() => {
-                progressCounter++;
-                console.log(`⏳ API 호출 진행 중... (${progressCounter}초)`);
-            }, 1000);
-            
-            console.log('⏳ API 응답 대기 중...');
-            
-            const response = await fetch(`${GEMINI_API_URL}?key=${CONFIG.GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-                signal: controller.signal
-            });
-            
-            // 타임아웃 및 진행 표시 정리
-            clearTimeout(timeoutId);
-            clearInterval(progressInterval);
-            
-            console.log('📥 응답 상태:', response.status, response.statusText);
-            console.log('📥 응답 헤더:', [...response.headers.entries()]);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ API 응답 에러 상세:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorBody: errorText
-                });
-                throw new Error(`API 호출 실패: ${response.status} - ${errorText}`);
-            }
-            
-            console.log('✅ API 호출 성공! JSON 파싱 시작...');
-            const apiResponse = await response.json();
-            console.log('📋 API 응답 구조:', {
-                candidates: apiResponse.candidates?.length || 0,
-                usageMetadata: apiResponse.usageMetadata
-            });
-            
-            if (!apiResponse.candidates || !apiResponse.candidates[0]) {
-                console.error('❌ 응답 구조 오류:', apiResponse);
-                throw new Error('AI 응답에 candidates가 없습니다.');
-            }
-            
-            const aiText = apiResponse.candidates[0].content.parts[0].text;
-            console.log('🤖 2단계 AI 응답 받음 (길이:', aiText.length, 'characters)');
-            console.log('🔍 응답 미리보기:', aiText.substring(0, 500) + '...');
-            
-            // 5. Parse second step JSON response
-            const secondStepJSON = parseSecondStepJSON(aiText);
-            
-            // 6. Show result
-            clearInterval(timeInterval);
-            clearInterval(messageInterval);
-            loader.classList.add('hidden');
-            
-            if (secondStepJSON) {
-                console.log('✅ 2단계 실제 데이터로 모달 표시');
-                showModernDetailModal(secondStepJSON);
-            } else {
-                console.log('⚠️ JSON 파싱 실패, 모크 데이터 사용');
-                showModernDetailModal(getMockTravelData());
-            }
-            
-        } catch (error) {
-            console.error('❌ 2단계 API 호출 오류 상세:');
-            console.error('- 오류 타입:', error.name);
-            console.error('- 오류 메시지:', error.message);
-            console.error('- 전체 스택:', error.stack);
-            
-            if (error.name === 'AbortError') {
-                console.error('⏰ 타임아웃으로 인한 취소 (5분 초과)');
-            } else if (error.name === 'TypeError') {
-                console.error('🌐 네트워크 연결 문제 가능성');
-            }
-            
-            // 정리 작업
-            clearInterval(timeInterval);
-            clearInterval(messageInterval);
-            loader.classList.add('hidden');
-            
-            // Fallback to mock data
-            console.log('🔄 오류 발생, 모크 데이터로 표시');
-            showModernDetailModal(getMockTravelData());
-        }
-        
-    } else {
-        loader.classList.add('hidden');
-    }
+    // 2단계 로딩 애니메이션 시작
+    const intervalId = startPlanLoadingAnimation();
+    
+    // 5초 후 자동으로 중지 (테스트용)
+    setTimeout(() => {
+        stopPlanLoadingAnimation(intervalId);
+        console.log('🧪 2단계 로딩 애니메이션 테스트 완료');
+    }, 5000);
 }
+
 
 // Parse Second Step JSON to UI Format
 function parseSecondStepJSON(aiResponse) {
@@ -2578,6 +2370,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize flippable hint cards
     initializeFlippableHints();
 });
+
+// 2단계 로딩 애니메이션 함수들
+const startPlanLoadingAnimation = () => {
+    const planGenerationLoader = document.getElementById('planGenerationLoader');
+    const loadingIconContainer = document.getElementById('plan-loading-icon-container');
+    const loadingText = document.getElementById('plan-loading-text');
+    const icons = loadingIconContainer.querySelectorAll('i');
+    const texts = [
+        "항공편 정보를 확인 중입니다...", 
+        "최적의 숙소를 검색 중입니다...",
+        "현지 맛집을 수집 중입니다...", 
+        "최고의 동선을 분석 중입니다..."
+    ];
+    let currentIndex = 0;
+
+    // 로딩 오버레이 표시
+    planGenerationLoader.classList.remove('hidden');
+    setTimeout(() => planGenerationLoader.classList.add('active'), 10);
+
+    // 아이콘과 텍스트 순환 애니메이션
+    const intervalId = setInterval(() => {
+        // 모든 아이콘에서 active 클래스 제거
+        icons.forEach(icon => icon.classList.remove('active'));
+        
+        // 다음 아이콘으로 이동
+        currentIndex = (currentIndex + 1) % icons.length;
+        
+        // 현재 아이콘 활성화 및 텍스트 변경
+        icons[currentIndex].classList.add('active');
+        loadingText.textContent = texts[currentIndex];
+    }, 1500);
+
+    console.log('🔄 2단계 로딩 애니메이션 시작');
+    return intervalId;
+};
+
+const stopPlanLoadingAnimation = (intervalId) => {
+    const planGenerationLoader = document.getElementById('planGenerationLoader');
+    
+    // 애니메이션 중지
+    if (intervalId) {
+        clearInterval(intervalId);
+    }
+    
+    // 오버레이 숨기기
+    planGenerationLoader.classList.remove('active');
+    setTimeout(() => planGenerationLoader.classList.add('hidden'), 300);
+    
+    console.log('✅ 2단계 로딩 애니메이션 중지');
+};
 
 // Image Carousel Functionality
 function initializeImageCarousel() {

@@ -23,27 +23,27 @@ class PlacesService {
         }
 
         try {
-            let searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json`;
+            // 서버 프록시 엔드포인트 사용 (CORS 우회)
+            let searchUrl = `/api/places/textsearch`;
             const params = new URLSearchParams({
-                input: placeName,
-                inputtype: 'textquery',
-                fields: 'place_id,name,formatted_address,geometry,rating,photos,price_level,opening_hours,types',
-                key: this.apiKey
+                query: placeName,
+                key: this.apiKey,
+                language: 'ko'
             });
 
-            // 좌표가 있으면 위치 바이어스 추가
+            // 좌표가 있으면 위치 정보 추가 (텍스트 검색에서는 location 포함)
             if (coordinates) {
-                params.append('locationbias', `circle:2000@${coordinates.lat},${coordinates.lng}`);
+                params.append('query', `${placeName} near ${coordinates.lat},${coordinates.lng}`);
             } else {
                 // 마카오 지역으로 제한
-                params.append('locationbias', `circle:${this.macauBounds.radius}@${this.macauBounds.lat},${this.macauBounds.lng}`);
+                params.append('query', `${placeName} 마카오`);
             }
 
             const response = await fetch(`${searchUrl}?${params}`);
             const data = await response.json();
 
-            if (data.status === 'OK' && data.candidates.length > 0) {
-                const place = data.candidates[0];
+            if (data.status === 'OK' && data.results && data.results.length > 0) {
+                const place = data.results[0]; // Text Search API는 results 배열 사용
                 
                 // 상세 정보 가져오기
                 const detailedInfo = await this.getPlaceDetails(place.place_id);
@@ -66,12 +66,13 @@ class PlacesService {
     // Place ID로 상세 정보 가져오기
     async getPlaceDetails(placeId) {
         try {
-            const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json`;
+            // 서버 프록시 엔드포인트 사용 (CORS 우회)
+            const detailsUrl = `/api/places/details`;
             const params = new URLSearchParams({
                 place_id: placeId,
-                fields: 'name,formatted_address,geometry,rating,user_ratings_total,photos,reviews,opening_hours,price_level,website,formatted_phone_number,types',
                 key: this.apiKey,
-                language: 'ko' // 한국어 우선
+                language: 'ko', // 한국어 우선
+                fields: 'name,formatted_address,geometry,rating,user_ratings_total,photos,reviews,opening_hours,price_level,website,formatted_phone_number,types'
             });
 
             const response = await fetch(`${detailsUrl}?${params}`);
@@ -252,6 +253,7 @@ let placesService;
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof CONFIG !== 'undefined' && CONFIG.GOOGLE_PLACES_API_KEY) {
         placesService = new PlacesService();
+        window.placesService = placesService; // 전역으로 노출
         console.log('🗺️ Places Service 초기화 완료');
     } else {
         console.warn('⚠️ Google Places API 키가 설정되지 않았습니다.');

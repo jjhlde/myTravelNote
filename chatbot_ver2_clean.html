@@ -812,6 +812,94 @@
             </div>
         </div>
 
+        <!-- Second Loading: Detail Planning - Enhanced (2단계 로딩) -->
+        <div id="planGenerationLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+            <div class="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4">
+                <!-- Travel Collage Animation -->
+                <div class="relative h-48 mb-6 rounded-2xl overflow-hidden">
+                    <!-- Background gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-100 via-pink-100 to-orange-100"></div>
+                    
+                    <!-- Animated Images Grid -->
+                    <div class="absolute inset-0 grid grid-cols-3 gap-2 p-2">
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-3" style="animation-delay: 0ms">
+                            <img src="https://source.unsplash.com/150x150/?temple,japan" alt="Travel" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-2" style="animation-delay: 200ms">
+                            <img src="https://source.unsplash.com/150x150/?food,restaurant" alt="Food" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-1" style="animation-delay: 400ms">
+                            <img src="https://source.unsplash.com/150x150/?hotel,luxury" alt="Hotel" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-3" style="animation-delay: 600ms">
+                            <img src="https://source.unsplash.com/150x150/?shopping,mall" alt="Shopping" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform rotate-2" style="animation-delay: 800ms">
+                            <img src="https://source.unsplash.com/150x150/?nature,park" alt="Nature" class="w-full h-full object-cover">
+                        </div>
+                        <div class="travel-image rounded-lg overflow-hidden shadow-lg transform -rotate-1" style="animation-delay: 1000ms">
+                            <img src="https://source.unsplash.com/150x150/?museum,art" alt="Museum" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <!-- Center Calendar Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl transform scale-0 calendar-popup">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <p id="tripDurationDisplay" class="font-bold text-gray-800">3박 4일</p>
+                                    <p class="text-xs text-gray-600">완벽한 일정 제작 중</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">당신만의 특별한 여행을<br> 만들고 있어요</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">AI가 날짜별로 딱딱 맞춰드릴게요 🎨</p>
+                
+                <!-- Activity Timeline -->
+                <div class="space-y-3">
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-red-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">아침엔 뭐하지? ☀️</span>
+                            <i class="fas fa-camera text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">점심은 여기서! 🍜</span>
+                            <i class="fas fa-utensils text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">오후엔 신나게! 🛍️</span>
+                            <i class="fas fa-shopping-bag text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="activity-item flex items-center gap-3 opacity-0">
+                        <div class="w-2 h-2 bg-purple-500 rounded-full pulse-dot"></div>
+                        <div class="flex-1 flex items-center justify-between">
+                            <span class="text-sm text-gray-700">저녁엔 편안하게 🌙</span>
+                            <i class="fas fa-moon text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fun Loading Text -->
+                <div class="mt-6 text-center">
+                    <p id="tipText" class="text-xs text-gray-500 italic transition-opacity duration-500 opacity-100">🎯 Tip: 예산에 맞는 최고의 장소들을 선별하고 있어요</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Third Loading: Final Confirmation with Place API -->
         <div id="finalLoader" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
             <div class="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full mx-4">

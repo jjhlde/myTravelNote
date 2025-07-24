@@ -1619,6 +1619,57 @@ body {
     50% { background-position: 100% 50%; }
 }
 
+/* Plan Loading Animation - 2단게 로딩 */
+.loading-modal {
+    text-align: center;
+    padding: 30px;
+}
+
+.loading-icon-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.loading-icon-container i {
+    font-size: 32px;
+    color: #CBD5E1;
+    transition: all 0.3s ease;
+    transform: scale(0.8);
+}
+
+.loading-icon-container i.active {
+    color: #4F46E5;
+    transform: scale(1.2) rotate(10deg);
+    animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { 
+        transform: scale(1.2) rotate(10deg);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.4) rotate(-5deg);
+        opacity: 0.8;
+    }
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-top: 10px;
+    animation: textFade 0.5s ease-in-out;
+}
+
+@keyframes textFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Image Carousel Animations */
 .carousel-image {
     opacity: 0;
