@@ -401,3 +401,80 @@ function getCategoryIcon(categoryId) {
     };
     return categoryIcons[categoryId] || '💳';
 }
+
+/**
+ * 지출 데이터 업데이트
+ * @param {string} expenseId - 지출 ID
+ * @param {Object} updatedExpense - 업데이트된 지출 데이터
+ * @returns {boolean} 성공 여부
+ */
+export function updateExpenseInStorage(expenseId, updatedExpense) {
+    try {
+        // 메인 데이터 업데이트
+        const macauExpenseData = getStorageItem('macau_expense_data', { expenses: [] });
+        const expenseIndex = macauExpenseData.expenses.findIndex(e => e.id === expenseId);
+        
+        if (expenseIndex !== -1) {
+            macauExpenseData.expenses[expenseIndex] = updatedExpense;
+            macauExpenseData.lastUpdated = Date.now();
+            setStorageItem('macau_expense_data', macauExpenseData);
+        }
+        
+        // 레거시 데이터도 업데이트
+        const legacyExpenses = getStorageItem('travelExpenses', []);
+        const legacyIndex = legacyExpenses.findIndex(e => e.id === expenseId);
+        
+        if (legacyIndex !== -1) {
+            legacyExpenses[legacyIndex] = {
+                id: updatedExpense.id,
+                amount: updatedExpense.amount,
+                date: updatedExpense.date,
+                category: {
+                    id: updatedExpense.category,
+                    name: getCategoryName(updatedExpense.category),
+                    icon: getCategoryIcon(updatedExpense.category)
+                },
+                memo: updatedExpense.memo,
+                timestamp: updatedExpense.timestamp
+            };
+            setStorageItem('travelExpenses', legacyExpenses);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating expense:', error);
+        return false;
+    }
+}
+
+/**
+ * 지출 데이터 삭제
+ * @param {string} expenseId - 지출 ID
+ * @returns {boolean} 성공 여부
+ */
+export function removeExpenseFromStorage(expenseId) {
+    try {
+        // 메인 데이터에서 삭제
+        const macauExpenseData = getStorageItem('macau_expense_data', { expenses: [] });
+        macauExpenseData.expenses = macauExpenseData.expenses.filter(e => e.id !== expenseId);
+        macauExpenseData.lastUpdated = Date.now();
+        setStorageItem('macau_expense_data', macauExpenseData);
+        
+        // 레거시 데이터에서도 삭제
+        const legacyExpenses = getStorageItem('travelExpenses', []);
+        const filteredLegacy = legacyExpenses.filter(e => e.id !== expenseId);
+        setStorageItem('travelExpenses', filteredLegacy);
+        
+        // 예산 데이터에서도 삭제
+        const budgetData = getStorageItem('travelBudget', {});
+        if (budgetData.expenses) {
+            budgetData.expenses = budgetData.expenses.filter(e => e.id !== expenseId);
+            setStorageItem('travelBudget', budgetData);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error removing expense:', error);
+        return false;
+    }
+}

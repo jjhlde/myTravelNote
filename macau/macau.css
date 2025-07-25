@@ -218,7 +218,7 @@ body {
 /* Activities */
 .activity {
     margin-bottom: 20px;
-    padding: 20px;
+    padding: 15px;
     background: white;
     border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
@@ -3246,10 +3246,56 @@ body {
     color: #6b7280;
 }
 
+.recent-expense-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
 .recent-expense-amount {
     font-size: 16px;
     font-weight: 700;
     color: #dc2626;
+}
+
+.recent-expense-memo {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.recent-expense-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.recent-expense-item:hover .recent-expense-actions {
+    opacity: 1;
+}
+
+.edit-expense-btn,
+.delete-expense-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.edit-expense-btn:hover {
+    background: #f3f4f6;
+    transform: scale(1.1);
+}
+
+.delete-expense-btn:hover {
+    background: #fef2f2;
+    transform: scale(1.1);
 }
 
 /* 모바일 최적화 */
@@ -3607,6 +3653,29 @@ body {
     padding: 6px 10px;
     border-radius: 16px;
     border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+.transport-info {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    border-left: 4px solid #007bff;
+    margin: 10px 0;
+}
+
+.transport-info .activity-time {
+    color: #007bff;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.transport-info .location-title {
+    color: #495057;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+.transport-info .activity-desc {
+    font-size: 0.85em;
+    padding: 10px 15px;
 }
 
 /* 모바일 최적화 */

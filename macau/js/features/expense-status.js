@@ -2,7 +2,7 @@
  * 지출 현황 페이지 시스템
  */
 
-import { getAllExpenses } from '../core/storage.js';
+import { getAllExpenses, updateExpenseInStorage, removeExpenseFromStorage } from '../core/storage.js';
 import { getElement } from '../utils/dom-helpers.js';
 
 // 카테고리 정보
@@ -198,20 +198,39 @@ function updateRecentExpenses(expenses) {
         });
         
         return `
-            <div class="recent-expense-item">
+            <div class="recent-expense-item" data-expense-id="${expense.id}">
                 <div class="recent-expense-info">
                     <div class="recent-expense-icon">${category.icon}</div>
                     <div class="recent-expense-details">
                         <div class="recent-expense-category">${category.name}</div>
                         <div class="recent-expense-time">${timeString}</div>
+                        ${expense.memo ? `<div class="recent-expense-memo">${expense.memo}</div>` : ''}
                     </div>
                 </div>
-                <div class="recent-expense-amount">${expense.amount.toLocaleString()}원</div>
+                <div class="recent-expense-right">
+                    <div class="recent-expense-amount">${expense.amount.toLocaleString()}원</div>
+                    <button class="expense-menu-btn" onclick="toggleExpenseMenu('${expense.id}')" title="메뉴">⋯</button>
+                    <div class="expense-menu" id="expenseMenu_${expense.id}" style="display: none;">
+                        <button class="expense-menu-item edit-btn" onclick="editExpense('${expense.id}')">
+                            <span class="menu-icon">✏️</span>
+                            <span class="menu-text">수정</span>
+                        </button>
+                        <button class="expense-menu-item delete-btn" onclick="deleteExpense('${expense.id}')">
+                            <span class="menu-icon">🗑️</span>
+                            <span class="menu-text">삭제</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     }).join('');
     
     recentExpensesList.innerHTML = expenseHTML;
+    
+    // 전역 함수로 등록
+    window.editExpense = editExpense;
+    window.deleteExpense = deleteExpense;
+    window.toggleExpenseMenu = toggleExpenseMenu;
 }
 
 /**
@@ -222,6 +241,107 @@ function formatDateKorean(dateString) {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     return `${month}/${day}`;
+}
+
+/**
+ * 지출 메뉴 토글 함수
+ * @param {string} expenseId - 지출 ID
+ */
+function toggleExpenseMenu(expenseId) {
+    // 다른 열린 메뉴들 닫기
+    document.querySelectorAll('.expense-menu').forEach(menu => {
+        if (menu.id !== `expenseMenu_${expenseId}`) {
+            menu.style.display = 'none';
+        }
+    });
+    
+    // 현재 메뉴 토글
+    const menu = document.getElementById(`expenseMenu_${expenseId}`);
+    if (menu) {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    // 메뉴 외부 클릭 시 닫기 위한 이벤트 리스너 추가
+    if (menu && menu.style.display === 'block') {
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('.recent-expense-right')) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }, 100);
+    }
+}
+
+/**
+ * 지출 편집 함수
+ * @param {string} expenseId - 지출 ID
+ */
+function editExpense(expenseId) {
+    // 메뉴 닫기
+    const menu = document.getElementById(`expenseMenu_${expenseId}`);
+    if (menu) menu.style.display = 'none';
+    const expenses = getAllExpenses();
+    const expense = expenses.find(e => e.id === expenseId);
+    
+    if (!expense) {
+        alert('지출 내역을 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 간단한 프롬프트로 수정
+    const newAmount = prompt('새로운 금액을 입력하세요:', expense.amount);
+    if (newAmount === null) return; // 취소
+    
+    const amount = parseInt(newAmount);
+    if (isNaN(amount) || amount <= 0) {
+        alert('올바른 금액을 입력해주세요.');
+        return;
+    }
+    
+    const newMemo = prompt('메모를 입력하세요 (선택사항):', expense.memo || '');
+    if (newMemo === null) return; // 취소
+    
+    // 지출 데이터 업데이트
+    expense.amount = amount;
+    expense.memo = newMemo;
+    
+    // 저장소 업데이트
+    updateExpenseInStorage(expenseId, expense);
+    
+    // UI 업데이트
+    updateExpenseStatus();
+    
+    // 커스텀 이벤트 발생
+    document.dispatchEvent(new CustomEvent('expenseUpdated', { detail: expense }));
+    
+    alert('지출 내역이 수정되었습니다.');
+}
+
+/**
+ * 지출 삭제 함수
+ * @param {string} expenseId - 지출 ID
+ */
+function deleteExpense(expenseId) {
+    // 메뉴 닫기
+    const menu = document.getElementById(`expenseMenu_${expenseId}`);
+    if (menu) menu.style.display = 'none';
+    
+    if (!confirm('이 지출 내역을 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    // 저장소에서 삭제
+    removeExpenseFromStorage(expenseId);
+    
+    // UI 업데이트
+    updateExpenseStatus();
+    
+    // 커스텀 이벤트 발생
+    document.dispatchEvent(new CustomEvent('expenseDeleted', { detail: { id: expenseId } }));
+    
+    alert('지출 내역이 삭제되었습니다.');
 }
 
 /**
