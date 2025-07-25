@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Day1 Places Update</title>
+    <script src="config.js"></script>
+    <script src="places-api.js"></script>
+</head>
+<body>
+    <h1>Day1 장소 정보 업데이트</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function updateDay1Places() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // 1. 마카오 국제공항
+                console.log('🔍 마카오 국제공항 검색 중...');
+                resultsDiv.innerHTML += '<p>🔍 마카오 국제공항 검색 중...</p>';
+                
+                const airportData = await placesService.findPlaceByName('Macau International Airport', {lat: 22.1496, lng: 113.5919});
+                console.log('✅ 마카오 국제공항:', airportData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                        <h3>✈️ ${airportData.name}</h3>
+                        <p><strong>평점:</strong> ${airportData.rating}/5 (${airportData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>주소:</strong> ${airportData.address}</p>
+                        <p><strong>전화:</strong> ${airportData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>웹사이트:</strong> ${airportData.website || '정보 없음'}</p>
+                        <p><strong>운영시간:</strong> ${airportData.openingHours.length > 0 ? airportData.openingHours.join('<br>') : '24시간 운영'}</p>
+                        <p><strong>사진:</strong> ${airportData.photos.length}개</p>
+                        <p><strong>리뷰 예시:</strong> ${airportData.reviews.slice(0, 2).map(r => `"${r.text}" (${r.rating}⭐)`).join(' | ')}</p>
+                        <a href="${airportData.mapLink}" target="_blank">Google Maps 보기</a>
+                    </div>
+                `;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 2. 안다즈 마카오
+                console.log('🔍 안다즈 마카오 검색 중...');
+                resultsDiv.innerHTML += '<p>🔍 안다즈 마카오 검색 중...</p>';
+                
+                const andazData = await placesService.findPlaceByName('Andaz Macau', {lat: 22.1489, lng: 113.5543});
+                console.log('✅ 안다즈 마카오:', andazData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                        <h3>🏨 ${andazData.name}</h3>
+                        <p><strong>평점:</strong> ${andazData.rating}/5 (${andazData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>주소:</strong> ${andazData.address}</p>
+                        <p><strong>전화:</strong> ${andazData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>웹사이트:</strong> ${andazData.website || '정보 없음'}</p>
+                        <p><strong>사진:</strong> ${andazData.photos.length}개</p>
+                        <p><strong>리뷰 예시:</strong> ${andazData.reviews.slice(0, 2).map(r => `"${r.text}" (${r.rating}⭐)`).join(' | ')}</p>
+                        <a href="${andazData.mapLink}" target="_blank">Google Maps 보기</a>
+                    </div>
+                `;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 3. 브로드웨이 푸드스트리트
+                console.log('🔍 브로드웨이 푸드스트리트 검색 중...');
+                resultsDiv.innerHTML += '<p>🔍 브로드웨이 푸드스트리트 검색 중...</p>';
+                
+                const broadwayData = await placesService.findPlaceByName('Broadway Food Street Macau', {lat: 22.1472, lng: 113.5497});
+                console.log('✅ 브로드웨이 푸드스트리트:', broadwayData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                        <h3>🍽️ ${broadwayData.name}</h3>
+                        <p><strong>평점:</strong> ${broadwayData.rating}/5 (${broadwayData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>주소:</strong> ${broadwayData.address}</p>
+                        <p><strong>전화:</strong> ${broadwayData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>웹사이트:</strong> ${broadwayData.website || '정보 없음'}</p>
+                        <p><strong>운영시간:</strong> ${broadwayData.openingHours.length > 0 ? broadwayData.openingHours.join('<br>') : '정보 없음'}</p>
+                        <p><strong>사진:</strong> ${broadwayData.photos.length}개</p>
+                        <p><strong>리뷰 예시:</strong> ${broadwayData.reviews.slice(0, 2).map(r => `"${r.text}" (${r.rating}⭐)`).join(' | ')}</p>
+                        <a href="${broadwayData.mapLink}" target="_blank">Google Maps 보기</a>
+                    </div>
+                `;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 4. 팀호완
+                console.log('🔍 팀호완 검색 중...');
+                resultsDiv.innerHTML += '<p>🔍 팀호완 검색 중...</p>';
+                
+                const timHoWanData = await placesService.findPlaceByName('Tim Ho Wan Broadway Macau', {lat: 22.1472, lng: 113.5497});
+                console.log('✅ 팀호완:', timHoWanData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                        <h3>🥟 ${timHoWanData.name}</h3>
+                        <p><strong>평점:</strong> ${timHoWanData.rating}/5 (${timHoWanData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>주소:</strong> ${timHoWanData.address}</p>
+                        <p><strong>전화:</strong> ${timHoWanData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>웹사이트:</strong> ${timHoWanData.website || '정보 없음'}</p>
+                        <p><strong>운영시간:</strong> ${timHoWanData.openingHours.length > 0 ? timHoWanData.openingHours.join('<br>') : '정보 없음'}</p>
+                        <p><strong>사진:</strong> ${timHoWanData.photos.length}개</p>
+                        <p><strong>리뷰 예시:</strong> ${timHoWanData.reviews.slice(0, 2).map(r => `"${r.text}" (${r.rating}⭐)`).join(' | ')}</p>
+                        <a href="${timHoWanData.mapLink}" target="_blank">Google Maps 보기</a>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML += '<h2>✅ Day1 장소 정보 수집 완료!</h2>';
+                
+            } catch (error) {
+                console.error('❌ 오류:', error);
+                resultsDiv.innerHTML += `<p style="color: red;">❌ 오류: ${error.message}</p>`;
+            }
+        }
+
+        // 페이지 로드 후 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.placesService) {
+                    updateDay1Places();
+                } else {
+                    document.getElementById('results').innerHTML = '❌ Places Service 초기화 실패';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

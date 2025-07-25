@@ -60,7 +60,11 @@
       "Bash(sed:*)",
       "Bash(echo $OS)",
       "Bash(vercel:*)",
-      "WebFetch(domain:www.data.go.kr)"
+      "WebFetch(domain:www.data.go.kr)",
+      "Bash(start http://localhost:8008/test-places-day2.html)",
+      "Bash(start \"\" \"http://localhost:8008/test-places-day2.html\")",
+      "Bash(start http://localhost:8008/test-places-day1.html)",
+      "mcp__google-maps__maps_search_places"
     ],
     "deny": []
   },

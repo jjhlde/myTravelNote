@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day2 Places API Test</title>
+    <script src="config.js"></script>
+    <script src="places-api.js"></script>
+</head>
+<body>
+    <h1>Day2 Places API 테스트</h1>
+    <div id="results"></div>
+    
+    <script>
+        // day2.html에 나오는 주요 장소들
+        const day2Places = [
+            {
+                name: 'Grand Resort Deck Galaxy Macau waterpark',
+                coordinates: { lat: 22.1489, lng: 113.5543 }
+            },
+            {
+                name: 'teamLab SuperNature Macao',
+                coordinates: { lat: 22.1452, lng: 113.5599 }
+            },
+            {
+                name: 'Taipa Village Macau',
+                coordinates: { lat: 22.1567, lng: 113.5493 }
+            },
+            {
+                name: 'Our Lady of Carmel Church Taipa',
+                coordinates: { lat: 22.1570, lng: 113.5495 }
+            },
+            {
+                name: 'La Famiglia restaurant Taipa Village',
+                coordinates: { lat: 22.1567, lng: 113.5493 }
+            },
+            {
+                name: 'Urban Kitchen JW Marriott Macau',
+                coordinates: { lat: 22.1489, lng: 113.5543 }
+            },
+            {
+                name: 'Surf Bar Galaxy Macau',
+                coordinates: { lat: 22.1489, lng: 113.5543 }
+            },
+            {
+                name: 'Breeze Cafe Galaxy Macau',
+                coordinates: { lat: 22.1489, lng: 113.5543 }
+            }
+        ];
+
+        let allPlaceData = {};
+
+        async function testAllPlaces() {
+            console.log('🔄 Places API 테스트 시작...');
+            const resultsDiv = document.getElementById('results');
+            
+            for (const place of day2Places) {
+                try {
+                    console.log(`📍 검색 중: ${place.name}`);
+                    resultsDiv.innerHTML += `<p>🔍 검색 중: ${place.name}</p>`;
+                    
+                    const placeData = await placesService.findPlaceByName(place.name, place.coordinates);
+                    allPlaceData[place.name] = placeData;
+                    
+                    resultsDiv.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h3>${placeData.name}</h3>
+                            <p><strong>주소:</strong> ${placeData.address}</p>
+                            <p><strong>평점:</strong> ${placeData.rating}/5 (${placeData.userRatingsTotal}개 리뷰)</p>
+                            <p><strong>사진:</strong> ${placeData.photos.length}개</p>
+                            <p><strong>리뷰:</strong> ${placeData.reviews.length}개</p>
+                            <p><strong>운영시간:</strong> ${placeData.openingHours.length > 0 ? placeData.openingHours[0] : '정보 없음'}</p>
+                            <p><strong>웹사이트:</strong> ${placeData.website || '정보 없음'}</p>
+                            <p><strong>전화:</strong> ${placeData.phoneNumber || '정보 없음'}</p>
+                            <a href="${placeData.mapLink}" target="_blank">Google Maps에서 보기</a>
+                        </div>
+                    `;
+                    
+                    console.log(`✅ 완료: ${placeData.name}`);
+                    
+                    // API 요청 제한을 위한 딜레이
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error(`❌ 오류: ${place.name}`, error);
+                    resultsDiv.innerHTML += `<p style="color: red;">❌ 오류: ${place.name} - ${error.message}</p>`;
+                }
+            }
+            
+            // 결과를 JSON으로 출력
+            console.log('📊 모든 장소 데이터:', allPlaceData);
+            resultsDiv.innerHTML += `
+                <div style="background: #f0f0f0; padding: 20px; margin-top: 20px;">
+                    <h3>JSON 데이터 (콘솔에서도 확인 가능)</h3>
+                    <pre>${JSON.stringify(allPlaceData, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // 페이지 로드 후 테스트 시작
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.placesService) {
+                    testAllPlaces();
+                } else {
+                    document.getElementById('results').innerHTML = '❌ Places Service가 초기화되지 않았습니다. config.js와 places-api.js를 확인하세요.';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

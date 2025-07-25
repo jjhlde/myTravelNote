@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Day1 실제 Places API 테스트</title>
+    <script src="config.js"></script>
+    <script src="places-api.js"></script>
+</head>
+<body>
+    <h1>Day1 실제 Places API 데이터 수집</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testRealPlacesAPI() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // 1. 마카오 국제공항
+                console.log('🔍 마카오 국제공항 실제 데이터 검색 중...');
+                resultsDiv.innerHTML += '<h2>🛬 마카오 국제공항</h2><p>검색 중...</p>';
+                
+                const airportData = await placesService.findPlaceByName('Macau International Airport', {lat: 22.1496, lng: 113.5919});
+                console.log('✅ 마카오 국제공항 실제 데이터:', airportData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 2px solid #4CAF50; margin: 20px 0; padding: 15px; border-radius: 8px;">
+                        <h3>✈️ ${airportData.name}</h3>
+                        <p><strong>⭐ 실제 평점:</strong> ${airportData.rating}/5 (${airportData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>📍 실제 주소:</strong> ${airportData.address}</p>
+                        <p><strong>📞 전화:</strong> ${airportData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>🌐 웹사이트:</strong> ${airportData.website || '정보 없음'}</p>
+                        <p><strong>⏰ 운영시간:</strong> ${airportData.openingHours.length > 0 ? airportData.openingHours.join('<br>') : '24시간 운영'}</p>
+                        <p><strong>📸 실제 사진:</strong> ${airportData.photos.length}개</p>
+                        <p><strong>💬 실제 리뷰:</strong></p>
+                        ${airportData.reviews.slice(0, 3).map(r => `<div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 5px;">"${r.text}" (${r.rating}⭐ - ${r.authorName})</div>`).join('')}
+                        <p><strong>🖼️ 실제 이미지 URL들:</strong></p>
+                        ${airportData.photos.slice(0, 3).map((photo, i) => `<div><img src="${photo}" alt="공항 사진 ${i+1}" style="width: 200px; height: 150px; object-fit: cover; margin: 5px;"><br>URL: ${photo}</div>`).join('')}
+                    </div>
+                `;
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 2. 안다즈 마카오
+                console.log('🔍 안다즈 마카오 실제 데이터 검색 중...');
+                resultsDiv.innerHTML += '<h2>🏨 안다즈 마카오</h2><p>검색 중...</p>';
+                
+                const andazData = await placesService.findPlaceByName('Andaz Macau', {lat: 22.1489, lng: 113.5543});
+                console.log('✅ 안다즈 마카오 실제 데이터:', andazData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 2px solid #2196F3; margin: 20px 0; padding: 15px; border-radius: 8px;">
+                        <h3>🏨 ${andazData.name}</h3>
+                        <p><strong>⭐ 실제 평점:</strong> ${andazData.rating}/5 (${andazData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>📍 실제 주소:</strong> ${andazData.address}</p>
+                        <p><strong>📞 전화:</strong> ${andazData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>🌐 웹사이트:</strong> ${andazData.website || '정보 없음'}</p>
+                        <p><strong>📸 실제 사진:</strong> ${andazData.photos.length}개</p>
+                        <p><strong>💬 실제 리뷰:</strong></p>
+                        ${andazData.reviews.slice(0, 3).map(r => `<div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 5px;">"${r.text}" (${r.rating}⭐ - ${r.authorName})</div>`).join('')}
+                        <p><strong>🖼️ 실제 이미지 URL들:</strong></p>
+                        ${andazData.photos.slice(0, 3).map((photo, i) => `<div><img src="${photo}" alt="호텔 사진 ${i+1}" style="width: 200px; height: 150px; object-fit: cover; margin: 5px;"><br>URL: ${photo}</div>`).join('')}
+                    </div>
+                `;
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 3. 팀호완
+                console.log('🔍 팀호완 실제 데이터 검색 중...');
+                resultsDiv.innerHTML += '<h2>🥟 팀호완</h2><p>검색 중...</p>';
+                
+                const timHoWanData = await placesService.findPlaceByName('Tim Ho Wan Broadway Macau', {lat: 22.1472, lng: 113.5497});
+                console.log('✅ 팀호완 실제 데이터:', timHoWanData);
+                
+                resultsDiv.innerHTML += `
+                    <div style="border: 2px solid #FF9800; margin: 20px 0; padding: 15px; border-radius: 8px;">
+                        <h3>🥟 ${timHoWanData.name}</h3>
+                        <p><strong>⭐ 실제 평점:</strong> ${timHoWanData.rating}/5 (${timHoWanData.userRatingsTotal}개 리뷰)</p>
+                        <p><strong>📍 실제 주소:</strong> ${timHoWanData.address}</p>
+                        <p><strong>📞 전화:</strong> ${timHoWanData.phoneNumber || '정보 없음'}</p>
+                        <p><strong>⏰ 운영시간:</strong> ${timHoWanData.openingHours.length > 0 ? timHoWanData.openingHours.join('<br>') : '정보 없음'}</p>
+                        <p><strong>📸 실제 사진:</strong> ${timHoWanData.photos.length}개</p>
+                        <p><strong>💬 실제 리뷰:</strong></p>
+                        ${timHoWanData.reviews.slice(0, 3).map(r => `<div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 5px;">"${r.text}" (${r.rating}⭐ - ${r.authorName})</div>`).join('')}
+                        <p><strong>🖼️ 실제 이미지 URL들:</strong></p>
+                        ${timHoWanData.photos.slice(0, 3).map((photo, i) => `<div><img src="${photo}" alt="레스토랑 사진 ${i+1}" style="width: 200px; height: 150px; object-fit: cover; margin: 5px;"><br>URL: ${photo}</div>`).join('')}
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML += '<h2 style="color: green;">🎉 실제 Places API 데이터 수집 완료!</h2>';
+                
+            } catch (error) {
+                console.error('❌ 실제 Places API 데이터 수집 오류:', error);
+                resultsDiv.innerHTML += `<p style="color: red;">❌ 오류: ${error.message}</p>`;
+            }
+        }
+
+        // 페이지 로드 후 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.placesService) {
+                    testRealPlacesAPI();
+                } else {
+                    document.getElementById('results').innerHTML = '❌ Places Service 초기화 실패';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

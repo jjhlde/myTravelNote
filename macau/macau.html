@@ -436,15 +436,119 @@
     <!-- 레거시 지원을 위한 기존 코드 (임시) -->
     <script>
         // 전역 함수들을 임시로 유지 (모듈화 완료 후 제거 예정)
+        // 슬라이더 상태 관리
+        const sliderState = {};
+
+        function initSlider(sliderId) {
+            if (!sliderState[sliderId]) {
+                const slider = document.getElementById(sliderId);
+                if (slider) {
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    sliderState[sliderId] = {
+                        currentIndex: 0,
+                        totalSlides: images.length
+                    };
+                }
+            }
+        }
+
         function showSlide(sliderId, slideIndex) {
-            console.log('Legacy showSlide called:', sliderId, slideIndex);
+            initSlider(sliderId);
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+
+            const sliderContainer = slider.querySelector('.place-images-slider');
+            const dots = slider.querySelectorAll('.place-images-dot');
+            const counter = slider.querySelector('.place-images-counter');
+            
+            if (!sliderContainer || !sliderState[sliderId]) return;
+
+            const totalSlides = sliderState[sliderId].totalSlides;
+            
+            // 인덱스 범위 체크
+            if (slideIndex < 0) slideIndex = totalSlides - 1;
+            if (slideIndex >= totalSlides) slideIndex = 0;
+            
+            sliderState[sliderId].currentIndex = slideIndex;
+            
+            // 슬라이더 이동
+            sliderContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+            
+            // 도트 활성화 상태 업데이트
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex);
+            });
+            
+            // 카운터 업데이트
+            if (counter) {
+                counter.textContent = `${slideIndex + 1}/${totalSlides}`;
+            }
         }
+
         function nextSlide(sliderId) {
-            console.log('Legacy nextSlide called:', sliderId);
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const nextIndex = sliderState[sliderId].currentIndex + 1;
+                showSlide(sliderId, nextIndex);
+            }
         }
+
         function prevSlide(sliderId) {
-            console.log('Legacy prevSlide called:', sliderId);
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const prevIndex = sliderState[sliderId].currentIndex - 1;
+                showSlide(sliderId, prevIndex);
+            }
         }
+
+        // 이미지 확대 기능
+        function openImageModal(imageSrc, altText) {
+            // 모달 생성
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="image-modal-overlay" onclick="closeImageModal()">
+                    <div class="image-modal-content">
+                        <img src="${imageSrc}" alt="${altText}" onclick="event.stopPropagation()">
+                        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 애니메이션을 위한 지연
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeImageModal() {
+            const modal = document.querySelector('.image-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // 페이지 로드 시 모든 슬라이더 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            // 모든 슬라이더 찾기
+            const sliders = document.querySelectorAll('.place-images');
+            sliders.forEach(slider => {
+                const sliderId = slider.id;
+                if (sliderId) {
+                    initSlider(sliderId);
+                    showSlide(sliderId, 0); // 첫 번째 슬라이드 표시
+                    
+                    // 이미지 클릭 이벤트 추가 (확대)
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    images.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', () => {
+                            openImageModal(img.src, img.alt);
+                        });
+                    });
+                }
+            });
+        });
         function openFlightTicket() {
             console.log('Legacy openFlightTicket called');
         }
