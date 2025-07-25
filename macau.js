@@ -967,14 +967,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const mopInput = document.getElementById('mopInput');
     const krwOutput = document.getElementById('krwOutput');
     const shortcutBtns = document.querySelectorAll('.shortcut-btn');
+    const currentRateElement = document.getElementById('currentRate');
+    const rateDateElement = document.getElementById('rateDate');
 
-    // 환율 (1 MOP = 170 KRW 기준)
-    const MOP_TO_KRW_RATE = 170;
+    // 환율 변수 (실시간으로 업데이트됨)
+    let MOP_TO_KRW_RATE = 170; // 기본값
+
+    // 실시간 환율 가져오기
+    async function fetchExchangeRate() {
+        try {
+            // ExchangeRate-API 사용 (무료, CORS 지원)
+            const response = await fetch('https://api.exchangerate-api.com/v4/latest/MOP');
+            const data = await response.json();
+            
+            if (data && data.rates && data.rates.KRW) {
+                MOP_TO_KRW_RATE = data.rates.KRW;
+                currentRateElement.textContent = `1 MOP = ${MOP_TO_KRW_RATE.toFixed(2)} KRW`;
+                rateDateElement.textContent = `${new Date().toLocaleDateString('ko-KR')} 업데이트`;
+                console.log('환율 업데이트 성공:', MOP_TO_KRW_RATE);
+            } else {
+                throw new Error('환율 데이터 없음');
+            }
+        } catch (error) {
+            console.log('환율 API 오류, 백업 환율 사용:', error);
+            // 백업: 간접 계산 (USD 기준)
+            try {
+                const usdResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const usdData = await usdResponse.json();
+                
+                if (usdData && usdData.rates && usdData.rates.MOP && usdData.rates.KRW) {
+                    MOP_TO_KRW_RATE = usdData.rates.KRW / usdData.rates.MOP;
+                    currentRateElement.textContent = `1 MOP = ${MOP_TO_KRW_RATE.toFixed(2)} KRW`;
+                    rateDateElement.textContent = `${new Date().toLocaleDateString('ko-KR')} 업데이트`;
+                    console.log('백업 환율 업데이트 성공:', MOP_TO_KRW_RATE);
+                } else {
+                    throw new Error('백업 환율 데이터 없음');
+                }
+            } catch (backupError) {
+                console.log('백업 환율도 실패, 기본값 사용:', backupError);
+                currentRateElement.textContent = `1 MOP = ${MOP_TO_KRW_RATE} KRW (기본값)`;
+                rateDateElement.textContent = '환율 업데이트 실패 - 기본값 사용';
+            }
+        }
+    }
+
+    // 페이지 로드 시 환율 가져오기
+    fetchExchangeRate();
 
     // 환율 계산기 팝업 열기
     exchangeRateBtn?.addEventListener('click', () => {
         exchangePopupOverlay.classList.add('show');
         document.body.style.overflow = 'hidden';
+        // 팝업 열 때마다 최신 환율 가져오기
+        fetchExchangeRate();
         // 포커스를 입력 필드로 이동 (약간의 딜레이 후)
         setTimeout(() => {
             mopInput.focus();
