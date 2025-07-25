@@ -1645,3 +1645,539 @@ body {
         font-size: 14px;
     }
 }
+
+/* 유틸리티 허브 스타일 */
+.utility-hub {
+    position: relative;
+    display: inline-block;
+}
+
+.util-hub-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+}
+
+.util-hub-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.util-hub-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(45deg);
+}
+
+.utility-menu {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 5;
+}
+
+.utility-menu.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+.utility-item {
+    position: absolute;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    border: none;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+    transform: scale(0);
+}
+
+.utility-menu.show .utility-item {
+    transform: scale(1);
+}
+
+.utility-item:nth-child(1) {
+    top: -80px;
+    right: -10px;
+    transition-delay: 0.1s;
+}
+
+.utility-item:nth-child(2) {
+    top: -60px;
+    right: -70px;
+    transition-delay: 0.2s;
+}
+
+.utility-item:nth-child(3) {
+    top: 20px;
+    right: -70px;
+    transition-delay: 0.3s;
+}
+
+.utility-item:nth-child(4) {
+    top: 40px;
+    right: -10px;
+    transition-delay: 0.4s;
+}
+
+.utility-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+}
+
+.utility-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.utility-label {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* 유틸리티 메뉴 배경 오버레이 */
+.utility-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.utility-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .utility-item {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .utility-icon {
+        font-size: 18px;
+    }
+    
+    .utility-label {
+        font-size: 9px;
+    }
+    
+    .utility-item:nth-child(1) {
+        top: -75px;
+        right: -8px;
+    }
+    
+    .utility-item:nth-child(2) {
+        top: -55px;
+        right: -65px;
+    }
+    
+    .utility-item:nth-child(3) {
+        top: 18px;
+        right: -65px;
+    }
+    
+    .utility-item:nth-child(4) {
+        top: 35px;
+        right: -8px;
+    }
+}
+
+/* 카테고리 선택 UI */
+.category-selection {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.category-selection label {
+    display: block;
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.category-btn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.category-btn:hover {
+    border-color: #4F46E5;
+    background: #f8faff;
+    transform: translateY(-1px);
+}
+
+.category-btn.selected {
+    border-color: #4F46E5;
+    background: #4F46E5;
+    color: white;
+}
+
+.category-btn.selected .category-text {
+    color: white;
+}
+
+.category-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.category-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.2;
+}
+
+/* 지출 입력 폼 */
+.expense-form {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.selected-category {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0f9ff;
+    border: 2px solid #0284c7;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.selected-icon {
+    font-size: 24px;
+}
+
+.selected-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0284c7;
+}
+
+.expense-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.expense-amount-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.expense-amount-input input {
+    flex: 1;
+    padding: 12px 16px;
+    padding-right: 50px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: right;
+    transition: border-color 0.2s ease;
+}
+
+.expense-amount-input input:focus {
+    outline: none;
+    border-color: #4F46E5;
+}
+
+.currency-unit {
+    position: absolute;
+    right: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.expense-memo-input input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.expense-memo-input input:focus {
+    outline: none;
+    border-color: #4F46E5;
+}
+
+.expense-buttons {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+}
+
+/* 오늘 지출 내역 */
+.today-expenses {
+    padding: 24px;
+}
+
+.expenses-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.expenses-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.today-total {
+    font-size: 18px;
+    font-weight: 700;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+}
+
+.expenses-list {
+    min-height: 100px;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.expense-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.expense-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.expense-category-icon {
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.expense-details {
+    flex: 1;
+}
+
+.expense-category-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.expense-memo {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.expense-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.expense-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.expense-edit-btn,
+.expense-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.expense-edit-btn {
+    color: #4f46e5;
+}
+
+.expense-edit-btn:hover {
+    background: #f0f9ff;
+}
+
+.expense-delete-btn {
+    color: #dc2626;
+}
+
+.expense-delete-btn:hover {
+    background: #fef2f2;
+}
+
+/* 지출 통계 */
+.expense-summary {
+    padding: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.expense-summary h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.summary-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.summary-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.summary-info {
+    flex: 1;
+}
+
+.summary-category {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.summary-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.summary-percentage {
+    font-size: 12px;
+    color: #6b7280;
+    background: #e5e7eb;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* 카테고리 선택 모바일 최적화 */
+@media (max-width: 768px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .category-btn {
+        padding: 12px 6px;
+    }
+    
+    .category-icon {
+        font-size: 20px;
+    }
+    
+    .category-text {
+        font-size: 11px;
+    }
+    
+    .expense-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .today-total {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+}

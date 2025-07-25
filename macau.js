@@ -1098,8 +1098,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('Exchange rate calculator initialized');
     
-    // 예산 관리 초기화도 함께 실행
-    initBudgetManager();
+    // 예산 관리 초기화도 함께 실행 (새로운 카테고리 시스템)
+    initBudgetManagerNew();
+    
+    // 유틸리티 허브 초기화
+    initUtilityHub();
 });
 
 // 예산 관리 기능
@@ -1442,4 +1445,493 @@ function openFlightTicket() {
         console.error('이미지 팝업 요소를 찾을 수 없습니다.');
         alert('비행기표를 표시할 수 없습니다. 페이지를 새로고침해주세요.');
     }
+}
+
+// 유틸리티 허브 기능
+function initUtilityHub() {
+    const utilityHubBtn = document.getElementById('utilityHubBtn');
+    const utilityMenu = document.getElementById('utilityMenu');
+    const utilityItems = document.querySelectorAll('.utility-item');
+    let isMenuOpen = false;
+
+    // 배경 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.className = 'utility-overlay';
+    overlay.id = 'utilityOverlay';
+    document.body.appendChild(overlay);
+
+    // 허브 버튼 클릭
+    utilityHubBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleUtilityMenu();
+    });
+
+    // 오버레이 클릭으로 메뉴 닫기
+    overlay.addEventListener('click', closeUtilityMenu);
+
+    // 유틸리티 아이템 클릭 처리
+    utilityItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const tool = item.dataset.tool;
+            handleUtilityClick(tool);
+            closeUtilityMenu();
+        });
+    });
+
+    // ESC 키로 메뉴 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeUtilityMenu();
+        }
+    });
+
+    function toggleUtilityMenu() {
+        if (isMenuOpen) {
+            closeUtilityMenu();
+        } else {
+            openUtilityMenu();
+        }
+    }
+
+    function openUtilityMenu() {
+        isMenuOpen = true;
+        utilityHubBtn.classList.add('active');
+        utilityMenu.classList.add('show');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        
+        // 접근성을 위한 포커스 트랩
+        utilityItems[0]?.focus();
+    }
+
+    function closeUtilityMenu() {
+        isMenuOpen = false;
+        utilityHubBtn.classList.remove('active');
+        utilityMenu.classList.remove('show');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function handleUtilityClick(tool) {
+        switch(tool) {
+            case 'exchange':
+                // 기존 환율 계산기 열기
+                const exchangePopupOverlay = document.getElementById('exchangePopupOverlay');
+                if (exchangePopupOverlay) {
+                    exchangePopupOverlay.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                    // 환율 가져오기
+                    fetchExchangeRate();
+                    // 포커스
+                    setTimeout(() => {
+                        document.getElementById('mopInput')?.focus();
+                    }, 300);
+                }
+                break;
+                
+            case 'weather':
+                showComingSoon('🌦️ 날씨 정보', '마카오 실시간 날씨 정보를 제공할 예정입니다.');
+                break;
+                
+            case 'time':
+                showComingSoon('⏰ 시차 계산기', '한국-마카오 시차 정보를 제공할 예정입니다.');
+                break;
+                
+            case 'translate':
+                showComingSoon('🗣️ 간단 번역', '기본 중국어/포르투갈어 문구를 제공할 예정입니다.');
+                break;
+                
+            default:
+                console.log('Unknown utility tool:', tool);
+        }
+    }
+
+    function showComingSoon(title, message) {
+        // 임시 알림 - 추후 전용 모달로 교체 예정
+        const notification = document.createElement('div');
+        notification.className = 'coming-soon-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+                <button class="notification-close">확인</button>
+            </div>
+        `;
+        
+        // 스타일 추가
+        notification.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        const content = notification.querySelector('.notification-content');
+        content.style.cssText = `
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 300px;
+            margin: 20px;
+        `;
+        
+        const titleEl = notification.querySelector('.notification-title');
+        titleEl.style.cssText = `
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        `;
+        
+        const messageEl = notification.querySelector('.notification-message');
+        messageEl.style.cssText = `
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        `;
+        
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.style.cssText = `
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 닫기 버튼 이벤트
+        closeBtn.addEventListener('click', () => {
+            notification.remove();
+        });
+        
+        // 배경 클릭으로 닫기
+        notification.addEventListener('click', (e) => {
+            if (e.target === notification) {
+                notification.remove();
+            }
+        });
+        
+        // 3초 후 자동 닫기
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    console.log('Utility hub initialized');
+}
+
+// 카테고리 선택 UI 초기화
+function initCategorySelection() {
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const categorySelection = document.querySelector('.category-selection');
+    const expenseForm = document.getElementById('expenseForm');
+    
+    categoryButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // 이전 선택 제거
+            categoryButtons.forEach(b => b.classList.remove('selected'));
+            
+            // 현재 버튼 선택
+            btn.classList.add('selected');
+            
+            // 선택된 카테고리 정보 저장
+            const category = btn.dataset.category;
+            const icon = btn.dataset.icon;
+            const text = btn.querySelector('.category-text').textContent;
+            
+            // 지출 입력 폼 표시
+            showExpenseForm(category, icon, text);
+        });
+    });
+}
+
+// 지출 입력 폼 표시
+function showExpenseForm(category, icon, text) {
+    const expenseForm = document.getElementById('expenseForm');
+    const selectedIcon = document.getElementById('selectedIcon');
+    const selectedText = document.getElementById('selectedText');
+    const expenseAmount = document.getElementById('expenseAmount');
+    const expenseMemo = document.getElementById('expenseMemo');
+    
+    // 선택된 카테고리 표시
+    selectedIcon.textContent = icon;
+    selectedText.textContent = text;
+    
+    // 폼에 카테고리 정보 저장
+    expenseForm.dataset.category = category;
+    expenseForm.dataset.icon = icon;
+    expenseForm.dataset.text = text;
+    
+    // 폼 표시 및 입력 필드 초기화
+    expenseForm.style.display = 'block';
+    expenseAmount.value = '';
+    expenseMemo.value = '';
+    expenseAmount.focus();
+    
+    // 카테고리 선택 부분 숨기기 (선택사항)
+    document.querySelector('.category-selection').style.display = 'none';
+}
+
+// 지출 입력 폼 리셋
+function resetExpenseForm() {
+    const expenseForm = document.getElementById('expenseForm');
+    const categorySelection = document.querySelector('.category-selection');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    
+    // 폼 숨기기
+    expenseForm.style.display = 'none';
+    
+    // 카테고리 선택 부분 표시
+    categorySelection.style.display = 'block';
+    
+    // 선택된 카테고리 제거
+    categoryButtons.forEach(btn => btn.classList.remove('selected'));
+    
+    // 입력 필드 초기화
+    document.getElementById('expenseAmount').value = '';
+    document.getElementById('expenseMemo').value = '';
+}
+
+// 카테고리와 함께 지출 추가
+function addExpenseWithCategory() {
+    const expenseForm = document.getElementById('expenseForm');
+    const amount = parseInt(document.getElementById('expenseAmount').value);
+    const memo = document.getElementById('expenseMemo').value.trim();
+    
+    if (!amount || amount <= 0) {
+        alert('올바른 금액을 입력해주세요.');
+        return;
+    }
+
+    const category = expenseForm.dataset.category;
+    const icon = expenseForm.dataset.icon;
+    const text = expenseForm.dataset.text;
+
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const expense = {
+        id: Date.now(),
+        amount,
+        timestamp: Date.now(),
+        category: {
+            id: category,
+            name: text,
+            icon: icon
+        },
+        memo: memo || ''
+    };
+
+    budgetData.expenses.push(expense);
+    localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+
+    // UI 업데이트
+    updateBudgetStatus(budgetData);
+    loadTodayExpenses();
+    updateExpenseSummary(budgetData);
+    
+    // 폼 리셋
+    resetExpenseForm();
+    
+    console.log('Expense added with category:', expense);
+}
+
+// 오늘 지출 내역 로드 (새로운 버전)
+function loadTodayExpenses() {
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const today = new Date().toDateString();
+    const todayExpenses = budgetData.expenses.filter(expense => 
+        new Date(expense.timestamp).toDateString() === today
+    );
+
+    const expensesList = document.getElementById('expensesList');
+    const todayTotal = document.getElementById('todayTotal');
+    
+    if (todayExpenses.length === 0) {
+        expensesList.innerHTML = '<div class="no-expenses">아직 지출 내역이 없습니다</div>';
+        todayTotal.textContent = '0원';
+        return;
+    }
+
+    const totalAmount = todayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    todayTotal.textContent = formatCurrency(totalAmount);
+
+    expensesList.innerHTML = todayExpenses.map(expense => `
+        <div class="expense-item" data-id="${expense.id}">
+            <div class="expense-info">
+                <div class="expense-category-icon">${expense.category?.icon || '💳'}</div>
+                <div class="expense-details">
+                    <div class="expense-category-name">${expense.category?.name || '미분류'}</div>
+                    ${expense.memo ? `<div class="expense-memo">${expense.memo}</div>` : ''}
+                </div>
+            </div>
+            <div class="expense-amount">${formatCurrency(expense.amount)}</div>
+            <div class="expense-actions">
+                <button class="expense-edit-btn" onclick="editExpense(${expense.id})">✏️</button>
+                <button class="expense-delete-btn" onclick="deleteExpense(${expense.id})">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 지출 내역 수정
+function editExpense(expenseId) {
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const expense = budgetData.expenses.find(exp => exp.id === expenseId);
+    
+    if (!expense) return;
+    
+    const newAmount = prompt('새로운 금액을 입력하세요:', expense.amount);
+    const newMemo = prompt('새로운 메모를 입력하세요:', expense.memo || '');
+    
+    if (newAmount && !isNaN(newAmount) && newAmount > 0) {
+        expense.amount = parseInt(newAmount);
+        expense.memo = newMemo?.trim() || '';
+        
+        localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+        
+        // UI 업데이트
+        updateBudgetStatus(budgetData);
+        loadTodayExpenses();
+        updateExpenseSummary(budgetData);
+    }
+}
+
+// 지출 내역 삭제
+function deleteExpense(expenseId) {
+    if (!confirm('이 지출 내역을 삭제하시겠습니까?')) return;
+    
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    budgetData.expenses = budgetData.expenses.filter(exp => exp.id !== expenseId);
+    
+    localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+    
+    // UI 업데이트
+    updateBudgetStatus(budgetData);
+    loadTodayExpenses();
+    updateExpenseSummary(budgetData);
+}
+
+// 지출 통계 업데이트
+function updateExpenseSummary(budgetData) {
+    const today = new Date().toDateString();
+    const todayExpenses = budgetData.expenses.filter(expense => 
+        new Date(expense.timestamp).toDateString() === today
+    );
+    
+    if (todayExpenses.length === 0) {
+        document.getElementById('expenseSummary').style.display = 'none';
+        return;
+    }
+    
+    // 카테고리별 집계
+    const categoryTotals = {};
+    todayExpenses.forEach(expense => {
+        const categoryId = expense.category?.id || 'other';
+        const categoryName = expense.category?.name || '기타';
+        const categoryIcon = expense.category?.icon || '💳';
+        
+        if (!categoryTotals[categoryId]) {
+            categoryTotals[categoryId] = {
+                name: categoryName,
+                icon: categoryIcon,
+                amount: 0
+            };
+        }
+        categoryTotals[categoryId].amount += expense.amount;
+    });
+    
+    const totalAmount = todayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const summaryChart = document.getElementById('summaryChart');
+    
+    summaryChart.innerHTML = Object.entries(categoryTotals).map(([categoryId, data]) => {
+        const percentage = Math.round((data.amount / totalAmount) * 100);
+        return `
+            <div class="summary-item">
+                <div class="summary-icon">${data.icon}</div>
+                <div class="summary-info">
+                    <div class="summary-category">${data.name}</div>
+                    <div class="summary-amount">${formatCurrency(data.amount)}</div>
+                </div>
+                <div class="summary-percentage">${percentage}%</div>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('expenseSummary').style.display = 'block';
+}
+
+// 기존 예산 관리 함수 업데이트
+function initBudgetManagerNew() {
+    const budgetBtn = document.getElementById('budgetBtn');
+    const budgetPopupOverlay = document.getElementById('budgetPopupOverlay');
+    const budgetPopupClose = document.getElementById('budgetPopupClose');
+    
+    // 예산 관리 팝업 열기
+    budgetBtn?.addEventListener('click', () => {
+        budgetPopupOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        loadBudgetData();
+    });
+
+    // 예산 관리 팝업 닫기
+    function closeBudgetPopup() {
+        budgetPopupOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+        resetExpenseForm();
+    }
+
+    budgetPopupClose?.addEventListener('click', closeBudgetPopup);
+
+    // 배경 클릭으로 닫기
+    budgetPopupOverlay?.addEventListener('click', (e) => {
+        if (e.target === budgetPopupOverlay) {
+            closeBudgetPopup();
+        }
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && budgetPopupOverlay.classList.contains('show')) {
+            closeBudgetPopup();
+        }
+    });
+
+    // 예산 설정 버튼
+    const setBudgetBtn = document.getElementById('setBudgetBtn');
+    setBudgetBtn?.addEventListener('click', setBudget);
+
+    // 카테고리 선택 초기화
+    initCategorySelection();
+
+    // 지출 추가 및 취소 버튼
+    const addExpenseBtn = document.getElementById('addExpenseBtn');
+    const cancelExpenseBtn = document.getElementById('cancelExpenseBtn');
+    
+    addExpenseBtn?.addEventListener('click', addExpenseWithCategory);
+    cancelExpenseBtn?.addEventListener('click', resetExpenseForm);
+
+    // 엔터 키로 지출 추가
+    const expenseAmount = document.getElementById('expenseAmount');
+    expenseAmount?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addExpenseWithCategory();
+        }
+    });
+    
+    console.log('New budget manager initialized');
 }
