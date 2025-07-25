@@ -2214,3 +2214,1126 @@ body {
         padding: 6px 10px;
     }
 }
+
+/* ===============================
+   하단 Floating Action Button 시스템
+   =============================== */
+
+.fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+}
+
+/* 메인 FAB 버튼 */
+.fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    border: none;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab-main:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+}
+
+.fab-main:active {
+    transform: scale(0.95);
+}
+
+.fab-main.active {
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+}
+
+.fab-icon {
+    font-size: 20px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.fab-main.active .fab-icon {
+    transform: rotate(-45deg);
+}
+
+/* FAB 메뉴 */
+.fab-menu {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.fab-menu.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+/* FAB 메뉴 아이템 */
+.fab-item {
+    position: absolute;
+    bottom: 28px;
+    right: 28px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0) translate(0, 0);
+    opacity: 0;
+}
+
+.fab-menu.active .fab-item {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 개별 FAB 아이템 위치 (방사형 배치) */
+.fab-menu.active .fab-expense {
+    transform: scale(1) translate(-80px, -20px);
+    transition-delay: 0.1s;
+}
+
+.fab-menu.active .fab-exchange {
+    transform: scale(1) translate(-110px, -60px);
+    transition-delay: 0.15s;
+}
+
+.fab-menu.active .fab-weather {
+    transform: scale(1) translate(-110px, -110px);
+    transition-delay: 0.2s;
+}
+
+.fab-menu.active .fab-time {
+    transform: scale(1) translate(-70px, -140px);
+    transition-delay: 0.25s;
+}
+
+.fab-menu.active .fab-translate {
+    transform: scale(1) translate(-20px, -150px);
+    transition-delay: 0.3s;
+}
+
+.fab-item:hover {
+    transform: scale(1.1) translate(var(--hover-x, 0), var(--hover-y, 0));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.fab-item-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.fab-item-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1;
+}
+
+/* 특정 FAB 아이템 색상 */
+.fab-expense {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+}
+
+.fab-expense .fab-item-label {
+    color: white;
+}
+
+.fab-exchange {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: white;
+}
+
+.fab-exchange .fab-item-label {
+    color: white;
+}
+
+.fab-weather {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    color: white;
+}
+
+.fab-weather .fab-item-label {
+    color: white;
+}
+
+.fab-time {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    color: white;
+}
+
+.fab-time .fab-item-label {
+    color: white;
+}
+
+.fab-translate {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+}
+
+.fab-translate .fab-item-label {
+    color: white;
+}
+
+/* FAB 배경 오버레이 */
+.fab-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.fab-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .fab-main {
+        width: 52px;
+        height: 52px;
+    }
+    
+    .fab-item {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .fab-item-icon {
+        font-size: 16px;
+    }
+    
+    .fab-item-label {
+        font-size: 8px;
+    }
+    
+    /* 모바일에서 더 컴팩트한 배치 */
+    .fab-menu.active .fab-expense {
+        transform: scale(1) translate(-70px, -15px);
+    }
+    
+    .fab-menu.active .fab-exchange {
+        transform: scale(1) translate(-95px, -50px);
+    }
+    
+    .fab-menu.active .fab-weather {
+        transform: scale(1) translate(-95px, -95px);
+    }
+    
+    .fab-menu.active .fab-time {
+        transform: scale(1) translate(-60px, -120px);
+    }
+    
+    .fab-menu.active .fab-translate {
+        transform: scale(1) translate(-15px, -130px);
+    }
+}
+
+/* ===============================
+   새로운 지출 입력 팝업 시스템
+   =============================== */
+
+.expense-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expense-popup-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.expense-popup-content {
+    background: white;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expense-popup-overlay.show .expense-popup-content {
+    transform: scale(1) translateY(0);
+}
+
+/* 팝업 헤더 */
+.expense-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 20px;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+}
+
+.expense-popup-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.expense-popup-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.expense-popup-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* 카테고리 탭 */
+.expense-categories-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.category-tab {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 70px;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--category-color, #6b7280);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.category-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--category-color, #6b7280);
+}
+
+.category-tab.active {
+    background: var(--category-color, #6b7280);
+    border-color: var(--category-color, #6b7280);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.category-tab.active::before {
+    opacity: 0.1;
+}
+
+.tab-icon {
+    font-size: 20px;
+    transition: transform 0.2s ease;
+    z-index: 1;
+    position: relative;
+}
+
+.category-tab.active .tab-icon {
+    transform: scale(1.1);
+}
+
+.tab-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    z-index: 1;
+    position: relative;
+}
+
+.category-tab.active .tab-label {
+    color: white;
+}
+
+/* 금액 입력 섹션 */
+.expense-amount-section {
+    padding: 30px 24px 20px;
+    text-align: center;
+    background: white;
+}
+
+.amount-display {
+    margin-bottom: 20px;
+}
+
+.currency-symbol {
+    font-size: 28px;
+    font-weight: 700;
+    color: #6b7280;
+    margin-right: 8px;
+}
+
+.amount-value {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1f2937;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* 빠른 금액 버튼 */
+.quick-amount-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.quick-amount-btn {
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-amount-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.quick-amount-btn:active {
+    transform: translateY(0);
+    background: #cbd5e1;
+}
+
+/* 메모 입력 */
+.expense-memo-section {
+    margin-bottom: 20px;
+}
+
+.expense-memo-section input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.expense-memo-section input:focus {
+    outline: none;
+    border-color: #4F46E5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.expense-memo-section input::placeholder {
+    color: #94a3b8;
+}
+
+/* 커스텀 키패드 */
+.custom-keypad {
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.keypad-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.keypad-row:last-child {
+    margin-bottom: 0;
+}
+
+.key-btn {
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.key-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.2s ease;
+}
+
+.key-btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+.key-btn.number {
+    background: white;
+    color: #1f2937;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.key-btn.number:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.key-btn.number:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.key-btn.clear {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.key-btn.clear:hover {
+    background: linear-gradient(135deg, #DC2626, #B91C1C);
+}
+
+.key-btn.backspace {
+    background: linear-gradient(135deg, #6B7280, #4B5563);
+    color: white;
+    font-size: 18px;
+}
+
+.key-btn.backspace:hover {
+    background: linear-gradient(135deg, #4B5563, #374151);
+}
+
+/* 액션 버튼 */
+.expense-actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+    padding: 20px 24px 24px;
+    background: white;
+}
+
+.expense-actions .btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.expense-actions .btn-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.expense-actions .btn-primary {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.expense-actions .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4338CA, #6D28D9);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.5);
+}
+
+.expense-actions .btn-primary:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 동적 카테고리 색상 적용 */
+.category-tab[data-color="#3B82F6"] {
+    --category-color: #3B82F6;
+}
+
+.category-tab[data-color="#F59E0B"] {
+    --category-color: #F59E0B;
+}
+
+.category-tab[data-color="#10B981"] {
+    --category-color: #10B981;
+}
+
+.category-tab[data-color="#8B5CF6"] {
+    --category-color: #8B5CF6;
+}
+
+.category-tab[data-color="#EF4444"] {
+    --category-color: #EF4444;
+}
+
+.category-tab[data-color="#F97316"] {
+    --category-color: #F97316;
+}
+
+.category-tab[data-color="#059669"] {
+    --category-color: #059669;
+}
+
+.category-tab[data-color="#6B7280"] {
+    --category-color: #6B7280;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .expense-popup-content {
+        width: 95%;
+        margin: 20px;
+        border-radius: 20px;
+    }
+    
+    .expense-categories-tabs {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 16px;
+    }
+    
+    .category-tab {
+        padding: 10px 6px;
+        min-height: 65px;
+    }
+    
+    .tab-icon {
+        font-size: 18px;
+    }
+    
+    .tab-label {
+        font-size: 10px;
+    }
+    
+    .amount-value {
+        font-size: 40px;
+    }
+    
+    .currency-symbol {
+        font-size: 24px;
+    }
+    
+    .quick-amount-buttons {
+        gap: 8px;
+    }
+    
+    .quick-amount-btn {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+    
+    .key-btn {
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .key-btn.clear {
+        font-size: 11px;
+    }
+}
+
+/* ========================================
+   지출 현황 페이지 스타일 (정보 페이지)
+   ======================================== */
+
+.expense-status-section {
+    padding: 20px;
+    margin-top: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.expense-status-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 24px;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 총 지출 현황 카드 */
+.total-expense-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.total-expense-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.total-expense-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.total-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.total-amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1e293b;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.expense-progress {
+    margin-top: 16px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #64748b;
+    text-align: center;
+}
+
+/* 카테고리별 지출 현황 */
+.category-expense-section {
+    margin-bottom: 32px;
+}
+
+.category-expense-section h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.category-expense-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.category-expense-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-expense-item:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.category-expense-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e5e7eb;
+    transition: background 0.2s ease;
+}
+
+.category-expense-item[data-category="transport"]::before { background: #3B82F6; }
+.category-expense-item[data-category="food"]::before { background: #F59E0B; }
+.category-expense-item[data-category="snack"]::before { background: #10B981; }
+.category-expense-item[data-category="shopping"]::before { background: #8B5CF6; }
+.category-expense-item[data-category="souvenir"]::before { background: #EF4444; }
+.category-expense-item[data-category="attraction"]::before { background: #F97316; }
+.category-expense-item[data-category="accommodation"]::before { background: #059669; }
+.category-expense-item[data-category="other"]::before { background: #6B7280; }
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.category-info .category-icon {
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.category-info .category-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.category-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: right;
+}
+
+/* 날짜별 지출 현황 */
+.daily-expense-section {
+    margin-bottom: 32px;
+}
+
+.daily-expense-section h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.daily-expense-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.daily-expense-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.daily-expense-item:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.daily-expense-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 0 2px 2px 0;
+}
+
+.daily-date {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-day {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.date-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.daily-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* 최근 지출 내역 */
+.recent-expenses-section h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.recent-expenses-list {
+    min-height: 120px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    background: #fafbfc;
+}
+
+.no-expenses-message {
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px 0;
+}
+
+.no-expenses-message small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.recent-expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.recent-expense-item:last-child {
+    border-bottom: none;
+}
+
+.recent-expense-item:hover {
+    background: #f8fafc;
+    margin: 0 -12px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.recent-expense-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.recent-expense-icon {
+    font-size: 18px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.recent-expense-details {
+    flex: 1;
+}
+
+.recent-expense-category {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.recent-expense-time {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.recent-expense-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #dc2626;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 480px) {
+    .expense-status-section {
+        padding: 16px;
+        margin-top: 16px;
+    }
+    
+    .expense-status-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    
+    .total-expense-card {
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .total-amount {
+        font-size: 24px;
+    }
+    
+    .category-expense-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .category-expense-item {
+        padding: 14px;
+    }
+    
+    .daily-expense-item {
+        padding: 14px 16px;
+    }
+    
+    .recent-expenses-list {
+        padding: 16px;
+    }
+}

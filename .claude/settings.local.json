@@ -57,7 +57,10 @@
       "mcp__playwright__browser_press_key",
       "Bash(git commit:*)",
       "Bash(find:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(echo $OS)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:www.data.go.kr)"
     ],
     "deny": []
   },

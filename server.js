@@ -224,9 +224,9 @@ const server = http.createServer((req, res) => {
   }
 
   // 정적 파일 서빙 (기존 로직)
-  // 기본 경로 처리
+  // 기본 경로 처리 - index.html로 리다이렉트
   if (pathname === '/') {
-    pathname = '/chatbot.html';
+    pathname = '/index.html';  // chatbot.html에서 index.html로 변경
   } else if (pathname === '/test') {
     pathname = '/test-template-rendering.html';
   }
@@ -253,7 +253,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`✅ 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
-  console.log(`📱 메인 페이지: http://localhost:${PORT}/chatbot.html`);
+  console.log(`🏠 메인 페이지: http://localhost:${PORT}/ (index.html로 리다이렉트)`);
+  console.log(`📱 인덱스 페이지: http://localhost:${PORT}/index.html`);
   console.log(`🧪 템플릿 테스트: http://localhost:${PORT}/test`);
   console.log(`🏠 랜딩 페이지: http://localhost:${PORT}/landing.html`);
   console.log(`🔧 기존 예제: http://localhost:${PORT}/main.html`);

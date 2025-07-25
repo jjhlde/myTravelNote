@@ -1101,8 +1101,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 예산 관리 초기화도 함께 실행 (새로운 카테고리 시스템)
     initBudgetManagerNew();
     
-    // 유틸리티 허브 초기화
-    initUtilityHub();
+    // 하단 FAB 시스템 초기화
+    initFABSystem();
 });
 
 // 예산 관리 기능
@@ -1464,74 +1464,81 @@ async function openFlightTicket() {
     }
 }
 
-// 유틸리티 허브 기능
-function initUtilityHub() {
-    const utilityHubBtn = document.getElementById('utilityHubBtn');
-    const utilityMenu = document.getElementById('utilityMenu');
-    const utilityItems = document.querySelectorAll('.utility-item');
+// 하단 Floating Action Button 시스템
+function initFABSystem() {
+    const fabMain = document.getElementById('fabMain');
+    const fabMenu = document.getElementById('fabMenu');
+    const fabOverlay = document.getElementById('fabOverlay');
+    const fabItems = document.querySelectorAll('.fab-item');
     let isMenuOpen = false;
 
-    // 배경 오버레이 생성
-    const overlay = document.createElement('div');
-    overlay.className = 'utility-overlay';
-    overlay.id = 'utilityOverlay';
-    document.body.appendChild(overlay);
-
-    // 허브 버튼 클릭
-    utilityHubBtn?.addEventListener('click', (e) => {
+    // 메인 FAB 버튼 클릭
+    fabMain?.addEventListener('click', (e) => {
         e.stopPropagation();
-        toggleUtilityMenu();
+        toggleFABMenu();
     });
 
     // 오버레이 클릭으로 메뉴 닫기
-    overlay.addEventListener('click', closeUtilityMenu);
+    fabOverlay?.addEventListener('click', closeFABMenu);
 
-    // 유틸리티 아이템 클릭 처리
-    utilityItems.forEach(item => {
+    // FAB 아이템 클릭 처리
+    fabItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.stopPropagation();
-            const tool = item.dataset.tool;
-            handleUtilityClick(tool);
-            closeUtilityMenu();
+            const action = item.dataset.action;
+            handleFABClick(action);
+            closeFABMenu();
         });
     });
 
     // ESC 키로 메뉴 닫기
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && isMenuOpen) {
-            closeUtilityMenu();
+            closeFABMenu();
         }
     });
 
-    function toggleUtilityMenu() {
+    // 바깥 영역 클릭으로 메뉴 닫기
+    document.addEventListener('click', (e) => {
+        if (isMenuOpen && !e.target.closest('.fab-container')) {
+            closeFABMenu();
+        }
+    });
+
+    function toggleFABMenu() {
         if (isMenuOpen) {
-            closeUtilityMenu();
+            closeFABMenu();
         } else {
-            openUtilityMenu();
+            openFABMenu();
         }
     }
 
-    function openUtilityMenu() {
+    function openFABMenu() {
         isMenuOpen = true;
-        utilityHubBtn.classList.add('active');
-        utilityMenu.classList.add('show');
-        overlay.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        fabMain.classList.add('active');
+        fabMenu.classList.add('active');
+        fabOverlay.classList.add('active');
         
-        // 접근성을 위한 포커스 트랩
-        utilityItems[0]?.focus();
+        // 햅틱 피드백 (지원하는 디바이스에서)
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
     }
 
-    function closeUtilityMenu() {
+    function closeFABMenu() {
         isMenuOpen = false;
-        utilityHubBtn.classList.remove('active');
-        utilityMenu.classList.remove('show');
-        overlay.classList.remove('show');
-        document.body.style.overflow = '';
+        fabMain.classList.remove('active');
+        fabMenu.classList.remove('active');
+        fabOverlay.classList.remove('active');
     }
 
-    function handleUtilityClick(tool) {
-        switch(tool) {
+    function handleFABClick(action) {
+        switch(action) {
+            case 'expense':
+                // 새로운 지출 추가 기능 (추후 구현)
+                showExpenseInput();
+                break;
+                
             case 'exchange':
                 // 기존 환율 계산기 열기
                 const exchangePopupOverlay = document.getElementById('exchangePopupOverlay');
@@ -1560,14 +1567,28 @@ function initUtilityHub() {
                 break;
                 
             default:
-                console.log('Unknown utility tool:', tool);
+                console.log('Unknown FAB action:', action);
+        }
+    }
+
+    function showExpenseInput() {
+        // 새로운 지출 입력 팝업 열기
+        const expensePopupOverlay = document.getElementById('expensePopupOverlay');
+        if (expensePopupOverlay) {
+            expensePopupOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // 지출 입력 시스템 초기화
+            initExpenseInput();
+        } else {
+            showComingSoon('💰 지출 추가', '새로운 지출 입력 UI를 준비 중입니다.');
         }
     }
 
     function showComingSoon(title, message) {
-        // 임시 알림 - 추후 전용 모달로 교체 예정
+        // 모던한 토스트 알림 스타일
         const notification = document.createElement('div');
-        notification.className = 'coming-soon-notification';
+        notification.className = 'fab-notification';
         notification.innerHTML = `
             <div class="notification-content">
                 <div class="notification-title">${title}</div>
@@ -1576,45 +1597,49 @@ function initUtilityHub() {
             </div>
         `;
         
-        // 스타일 추가
+        // 스타일 적용
         notification.style.cssText = `
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         `;
         
         const content = notification.querySelector('.notification-content');
         content.style.cssText = `
             background: white;
-            padding: 24px;
-            border-radius: 16px;
+            padding: 28px 24px;
+            border-radius: 20px;
             text-align: center;
-            max-width: 300px;
+            max-width: 320px;
             margin: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-10px);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         `;
         
         const titleEl = notification.querySelector('.notification-title');
         titleEl.style.cssText = `
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             margin-bottom: 12px;
-            color: #333;
+            color: #1f2937;
         `;
         
         const messageEl = notification.querySelector('.notification-message');
         messageEl.style.cssText = `
-            font-size: 14px;
-            color: #666;
+            font-size: 15px;
+            color: #6b7280;
             line-height: 1.5;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         `;
         
         const closeBtn = notification.querySelector('.notification-close');
@@ -1622,35 +1647,68 @@ function initUtilityHub() {
             background: linear-gradient(135deg, #4F46E5, #7C3AED);
             color: white;
             border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 500;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         `;
+        
+        // 애니메이션 키프레임 추가
+        if (!document.querySelector('#fab-animations')) {
+            const style = document.createElement('style');
+            style.id = 'fab-animations';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
         
         document.body.appendChild(notification);
         
         // 닫기 버튼 이벤트
         closeBtn.addEventListener('click', () => {
-            notification.remove();
+            notification.style.animation = 'fadeOut 0.2s ease';
+            setTimeout(() => notification.remove(), 200);
+        });
+        
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.transform = 'translateY(-1px)';
+            closeBtn.style.boxShadow = '0 6px 16px rgba(79, 70, 229, 0.4)';
+        });
+        
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.transform = 'translateY(0)';
+            closeBtn.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.3)';
         });
         
         // 배경 클릭으로 닫기
         notification.addEventListener('click', (e) => {
             if (e.target === notification) {
-                notification.remove();
+                notification.style.animation = 'fadeOut 0.2s ease';
+                setTimeout(() => notification.remove(), 200);
             }
         });
         
         // 3초 후 자동 닫기
         setTimeout(() => {
             if (document.body.contains(notification)) {
-                notification.remove();
+                notification.style.animation = 'fadeOut 0.2s ease';
+                setTimeout(() => notification.remove(), 200);
             }
         }, 3000);
     }
 
-    console.log('Utility hub initialized');
+    console.log('FAB system initialized');
 }
 
 // 카테고리 선택 UI 초기화
@@ -1952,3 +2010,628 @@ function initBudgetManagerNew() {
     
     console.log('New budget manager initialized');
 }
+
+// 새로운 지출 입력 시스템
+function initExpenseInput() {
+    let currentAmount = 0;
+    let selectedCategory = {
+        id: 'transport',
+        name: '교통비',
+        icon: '🚗',
+        color: '#3B82F6'
+    };
+
+    // DOM 요소들
+    const expensePopupOverlay = document.getElementById('expensePopupOverlay');
+    const expensePopupClose = document.getElementById('expensePopupClose');
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    const amountDisplay = document.getElementById('amountDisplay');
+    const quickAmountBtns = document.querySelectorAll('.quick-amount-btn');
+    const keypadButtons = document.querySelectorAll('.key-btn');
+    const memoInput = document.getElementById('expenseMemoInput');
+    const cancelBtn = document.getElementById('expenseCancelBtn');
+    const addBtn = document.getElementById('expenseAddBtn');
+
+    // 팝업 닫기 이벤트
+    expensePopupClose?.addEventListener('click', closeExpensePopup);
+    cancelBtn?.addEventListener('click', closeExpensePopup);
+    
+    // 배경 클릭으로 닫기
+    expensePopupOverlay?.addEventListener('click', (e) => {
+        if (e.target === expensePopupOverlay) {
+            closeExpensePopup();
+        }
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', handleKeyDown);
+
+    // 카테고리 탭 선택
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // 이전 선택 제거
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            
+            // 새 카테고리 선택
+            tab.classList.add('active');
+            selectedCategory = {
+                id: tab.dataset.category,
+                name: tab.querySelector('.tab-label').textContent,
+                icon: tab.dataset.icon,
+                color: tab.dataset.color
+            };
+            
+            // 햅틱 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+        });
+    });
+
+    // 빠른 금액 버튼
+    quickAmountBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const amount = parseInt(btn.dataset.amount);
+            currentAmount += amount;
+            updateAmountDisplay();
+            updateAddButton();
+            
+            // 햅틱 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+        });
+    });
+
+    // 키패드 버튼
+    keypadButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            handleKeypadInput(btn.dataset.value);
+            
+            // 햅틱 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+        });
+    });
+
+    // 지출 추가 버튼
+    addBtn?.addEventListener('click', addExpense);
+
+    // 금액 표시 업데이트
+    function updateAmountDisplay() {
+        const formattedAmount = currentAmount.toLocaleString('ko-KR');
+        amountDisplay.textContent = formattedAmount;
+    }
+
+    // 추가 버튼 상태 업데이트
+    function updateAddButton() {
+        if (currentAmount > 0) {
+            addBtn.disabled = false;
+        } else {
+            addBtn.disabled = true;
+        }
+    }
+
+    // 키패드 입력 처리
+    function handleKeypadInput(value) {
+        switch(value) {
+            case 'clear':
+                currentAmount = 0;
+                break;
+            case 'backspace':
+                currentAmount = Math.floor(currentAmount / 10);
+                break;
+            default:
+                if (!isNaN(value)) {
+                    // 최대 7자리까지만 입력 가능 (9,999,999원)
+                    if (currentAmount < 999999) {
+                        currentAmount = currentAmount * 10 + parseInt(value);
+                    }
+                }
+        }
+        
+        updateAmountDisplay();
+        updateAddButton();
+    }
+
+    // 키보드 입력 처리
+    function handleKeyDown(e) {
+        if (!expensePopupOverlay.classList.contains('show')) return;
+        
+        if (e.key === 'Escape') {
+            closeExpensePopup();
+        } else if (e.key >= '0' && e.key <= '9') {
+            e.preventDefault();
+            handleKeypadInput(e.key);
+        } else if (e.key === 'Backspace') {
+            e.preventDefault();
+            handleKeypadInput('backspace');
+        } else if (e.key === 'Enter' && currentAmount > 0) {
+            e.preventDefault();
+            addExpense();
+        }
+    }
+
+    // 지출 추가
+    function addExpense() {
+        if (currentAmount <= 0) return;
+
+        const memo = memoInput.value.trim();
+        const now = new Date();
+        const today = now.toDateString();
+
+        // 새로운 지출 데이터 구조 (단순화)
+        const expense = {
+            id: Date.now(),
+            amount: currentAmount,
+            category: selectedCategory,
+            memo: memo,
+            date: today,
+            timestamp: now.toISOString()
+        };
+
+        // localStorage에 저장
+        saveExpenseToStorage(expense);
+
+        // 성공 알림
+        showSuccessMessage();
+
+        // 팝업 닫기
+        closeExpensePopup();
+
+        // 데이터 새로고침 (기존 시스템과 연동)
+        refreshExpenseData();
+    }
+
+    // localStorage에 지출 저장
+    function saveExpenseToStorage(expense) {
+        const existingData = JSON.parse(localStorage.getItem('travelExpenses') || '[]');
+        existingData.push(expense);
+        localStorage.setItem('travelExpenses', JSON.stringify(existingData));
+        
+        // 새로운 통합 데이터 구조에 저장 (지출 현황 페이지용)
+        const macauExpenseData = JSON.parse(localStorage.getItem('macau_expense_data') || '{"expenses": []}');
+        if (!macauExpenseData.expenses) macauExpenseData.expenses = [];
+        
+        // 새로운 형식으로 변환
+        const normalizedExpense = {
+            id: expense.id,
+            amount: expense.amount,
+            date: expense.date,
+            category: expense.category.id,
+            memo: expense.memo || '',
+            timestamp: Date.now()
+        };
+        
+        macauExpenseData.expenses.push(normalizedExpense);
+        localStorage.setItem('macau_expense_data', JSON.stringify(macauExpenseData));
+        
+        // 기존 예산 데이터와도 동기화 (호환성 유지)
+        const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+        if (!budgetData.expenses) budgetData.expenses = [];
+        
+        // 기존 형식으로 변환
+        const legacyExpense = {
+            id: expense.id,
+            amount: expense.amount,
+            timestamp: Date.now(),
+            category: {
+                id: expense.category.id,
+                name: expense.category.name,
+                icon: expense.category.icon
+            },
+            memo: expense.memo || ''
+        };
+        
+        budgetData.expenses.push(legacyExpense);
+        localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+        
+        // 지출 현황 페이지 업데이트 트리거
+        if (typeof onExpenseSaved === 'function') {
+            onExpenseSaved();
+        }
+    }
+
+    // 성공 메시지 표시
+    function showSuccessMessage() {
+        const message = `${selectedCategory.icon} ${selectedCategory.name} ${currentAmount.toLocaleString('ko-KR')}원이 추가되었습니다!`;
+        
+        // 간단한 토스트 메시지
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 3000;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+            animation: slideDown 0.3s ease;
+        `;
+        toast.textContent = message;
+        
+        // 애니메이션 키프레임 추가
+        if (!document.querySelector('#toast-animations')) {
+            const style = document.createElement('style');
+            style.id = 'toast-animations';
+            style.textContent = `
+                @keyframes slideDown {
+                    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                    to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(toast);
+        
+        // 3초 후 제거
+        setTimeout(() => {
+            toast.style.animation = 'slideUp 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // 기존 데이터 새로고침
+    function refreshExpenseData() {
+        // 기존 예산 관리 시스템의 데이터 새로고침
+        const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+        if (budgetData.totalBudget) {
+            updateBudgetStatus(budgetData);
+            loadTodayExpenses();
+            updateExpenseSummary(budgetData);
+        }
+    }
+
+    // 팝업 닫기
+    function closeExpensePopup() {
+        expensePopupOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+        
+        // 상태 초기화
+        currentAmount = 0;
+        updateAmountDisplay();
+        updateAddButton();
+        memoInput.value = '';
+        
+        // 기본 카테고리로 리셋
+        categoryTabs.forEach(t => t.classList.remove('active'));
+        categoryTabs[0]?.classList.add('active');
+        selectedCategory = {
+            id: 'transport',
+            name: '교통비',
+            icon: '🚗',
+            color: '#3B82F6'
+        };
+        
+        // 이벤트 리스너 정리
+        document.removeEventListener('keydown', handleKeyDown);
+    }
+
+    // 초기 상태 설정
+    updateAmountDisplay();
+    updateAddButton();
+    
+    console.log('Expense input system initialized');
+}
+
+// ========================================
+// 지출 현황 페이지 관리 시스템
+// ========================================
+
+/**
+ * 지출 현황 페이지를 업데이트하는 메인 함수
+ */
+function updateExpenseStatusPage() {
+    if (getCurrentPageIndex() !== 0) return; // 정보 페이지가 아니면 스킵
+    
+    const expenses = getAllExpenses();
+    
+    updateTotalExpenseCard(expenses);
+    updateCategoryExpenses(expenses);
+    updateDailyExpenses(expenses);
+    updateRecentExpenses(expenses);
+    
+    console.log('Expense status page updated with', expenses.length, 'expenses');
+}
+
+/**
+ * 모든 지출 데이터를 가져오는 함수 (기존 데이터 호환성 포함)
+ */
+function getAllExpenses() {
+    // 새로운 데이터 구조 확인
+    const macauExpenseData = localStorage.getItem('macau_expense_data');
+    if (macauExpenseData) {
+        try {
+            const parsed = JSON.parse(macauExpenseData);
+            return parsed.expenses || [];
+        } catch (error) {
+            console.error('Error parsing macau expense data:', error);
+        }
+    }
+    
+    // 기존 데이터 구조 확인 (호환성)
+    const legacyData = localStorage.getItem('travelExpenses');
+    if (legacyData) {
+        try {
+            const expenses = JSON.parse(legacyData);
+            // 기존 형식을 새로운 형식으로 변환
+            return expenses.map(expense => ({
+                id: expense.id,
+                amount: expense.amount,
+                date: expense.date,
+                category: expense.category?.id || 'other',
+                memo: expense.memo || '',
+                timestamp: expense.timestamp || Date.now()
+            }));
+        } catch (error) {
+            console.error('Error parsing legacy expense data:', error);
+        }
+    }
+    
+    // travelBudget에서 데이터 확인 (최후 호환성)
+    const budgetData = localStorage.getItem('travelBudget');
+    if (budgetData) {
+        try {
+            const parsed = JSON.parse(budgetData);
+            if (parsed.expenses && Array.isArray(parsed.expenses)) {
+                return parsed.expenses.map(expense => ({
+                    id: expense.id,
+                    amount: expense.amount,
+                    date: new Date(expense.timestamp).toISOString(),
+                    category: expense.category?.id || 'other',
+                    memo: expense.memo || '',
+                    timestamp: expense.timestamp || Date.now()
+                }));
+            }
+        } catch (error) {
+            console.error('Error parsing budget expense data:', error);
+        }
+    }
+    
+    return [];
+}
+
+/**
+ * 총 지출 현황 카드 업데이트
+ */
+function updateTotalExpenseCard(expenses) {
+    const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalAmountElement = document.getElementById('totalExpenseAmount');
+    const progressElement = document.getElementById('expenseProgress');
+    
+    if (totalAmountElement) {
+        totalAmountElement.textContent = formatKoreanWon(totalAmount);
+    }
+    
+    if (progressElement) {
+        // 예상 범위: 75만원 ~ 120만원
+        const minBudget = 750000;
+        const maxBudget = 1200000;
+        
+        let progressPercent = 0;
+        if (totalAmount > 0) {
+            progressPercent = Math.min((totalAmount / maxBudget) * 100, 100);
+        }
+        
+        progressElement.style.width = `${progressPercent}%`;
+        
+        // 예산 초과 시 색상 변경
+        if (totalAmount > maxBudget) {
+            progressElement.style.background = 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)';
+        } else if (totalAmount > minBudget) {
+            progressElement.style.background = 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)';
+        } else {
+            progressElement.style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+        }
+    }
+}
+
+/**
+ * 카테고리별 지출 현황 업데이트
+ */
+function updateCategoryExpenses(expenses) {
+    const categoryTotals = {};
+    
+    // 카테고리별 합계 계산
+    expenses.forEach(expense => {
+        const category = expense.category || 'other';
+        categoryTotals[category] = (categoryTotals[category] || 0) + expense.amount;
+    });
+    
+    // UI 업데이트
+    const categoryItems = document.querySelectorAll('.category-expense-item');
+    categoryItems.forEach(item => {
+        const category = item.dataset.category;
+        const amountElement = item.querySelector('.category-amount');
+        
+        if (amountElement) {
+            const amount = categoryTotals[category] || 0;
+            amountElement.textContent = formatKoreanWon(amount);
+            amountElement.dataset.amount = amount;
+            
+            // 금액에 따른 시각적 효과
+            if (amount > 0) {
+                item.style.borderColor = '#d1d5db';
+                item.style.background = '#fafbfc';
+            } else {
+                item.style.borderColor = '#e5e7eb';
+                item.style.background = '#ffffff';
+            }
+        }
+    });
+}
+
+/**
+ * 날짜별 지출 현황 업데이트
+ */
+function updateDailyExpenses(expenses) {
+    const dailyTotals = {};
+    
+    // 날짜별 합계 계산
+    expenses.forEach(expense => {
+        const date = expense.date.split('T')[0]; // YYYY-MM-DD 형식으로 변환
+        dailyTotals[date] = (dailyTotals[date] || 0) + expense.amount;
+    });
+    
+    // UI 업데이트
+    const dailyItems = document.querySelectorAll('.daily-expense-item');
+    dailyItems.forEach(item => {
+        const date = item.dataset.date;
+        const amountElement = item.querySelector('.daily-amount');
+        
+        if (amountElement) {
+            const amount = dailyTotals[date] || 0;
+            amountElement.textContent = formatKoreanWon(amount);
+            amountElement.dataset.amount = amount;
+            
+            // 금액에 따른 시각적 효과
+            if (amount > 0) {
+                item.style.borderColor = '#d1d5db';
+                item.style.background = '#fafbfc';
+                item.style.fontWeight = '600';
+            } else {
+                item.style.borderColor = '#e5e7eb';
+                item.style.background = '#ffffff';
+                item.style.fontWeight = 'normal';
+            }
+        }
+    });
+}
+
+/**
+ * 최근 지출 내역 업데이트
+ */
+function updateRecentExpenses(expenses) {
+    const recentExpensesList = document.getElementById('recentExpensesList');
+    if (!recentExpensesList) return;
+    
+    // 최신 순으로 정렬 (최대 10개)
+    const recentExpenses = expenses
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 10);
+    
+    if (recentExpenses.length === 0) {
+        recentExpensesList.innerHTML = `
+            <div class="no-expenses-message">
+                아직 지출 내역이 없습니다.<br>
+                <small>하단 💰 버튼을 눌러 지출을 기록해보세요!</small>
+            </div>
+        `;
+        return;
+    }
+    
+    const categoryIcons = {
+        transport: '🚗',
+        food: '🍽️',
+        snack: '🍿',
+        shopping: '🛍️',
+        souvenir: '🎁',
+        attraction: '🎡',
+        accommodation: '🏨',
+        other: '💳'
+    };
+    
+    const categoryNames = {
+        transport: '교통비',
+        food: '식비',
+        snack: '간식',
+        shopping: '쇼핑',
+        souvenir: '기념품',
+        attraction: '관광',
+        accommodation: '숙박비',
+        other: '기타'
+    };
+    
+    recentExpensesList.innerHTML = recentExpenses.map(expense => {
+        const expenseDate = new Date(expense.date);
+        const timeString = expenseDate.toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const categoryIcon = categoryIcons[expense.category] || '💳';
+        const categoryName = categoryNames[expense.category] || '기타';
+        
+        return `
+            <div class="recent-expense-item">
+                <div class="recent-expense-info">
+                    <div class="recent-expense-icon">${categoryIcon}</div>
+                    <div class="recent-expense-details">
+                        <div class="recent-expense-category">${categoryName}</div>
+                        <div class="recent-expense-time">${timeString}</div>
+                    </div>
+                </div>
+                <div class="recent-expense-amount">${formatKoreanWon(expense.amount)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * 금액을 한국 원화 형식으로 포맷
+ */
+function formatKoreanWon(amount) {
+    if (amount === 0) return '0원';
+    return amount.toLocaleString('ko-KR') + '원';
+}
+
+/**
+ * 현재 페이지 인덱스 가져오기
+ */
+function getCurrentPageIndex() {
+    const activeDot = document.querySelector('.indicator-dot.active');
+    return activeDot ? parseInt(activeDot.dataset.page) : 0;
+}
+
+// ========================================
+// 기존 시스템과의 연동
+// ========================================
+
+/**
+ * 지출 저장 함수 확장 (기존 saveExpenseToStorage 함수에 연동)
+ */
+function onExpenseSaved() {
+    // 지출이 저장될 때마다 현황 페이지 업데이트
+    setTimeout(() => {
+        updateExpenseStatusPage();
+    }, 100);
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 페이지 변경 시 지출 현황 업데이트
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && 
+                mutation.attributeName === 'class' && 
+                mutation.target.classList.contains('indicator-dot')) {
+                setTimeout(() => {
+                    updateExpenseStatusPage();
+                }, 200);
+            }
+        });
+    });
+    
+    // 페이지 인디케이터 관찰
+    document.querySelectorAll('.indicator-dot').forEach(dot => {
+        observer.observe(dot, { attributes: true });
+    });
+    
+    // 초기 로드 시 현황 업데이트
+    setTimeout(() => {
+        updateExpenseStatusPage();
+    }, 500);
+});
+
+console.log('Expense status page system initialized');

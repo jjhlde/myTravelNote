@@ -80,30 +80,7 @@
                     <h1>🇲🇴 마카오 가족여행</h1>
                     <p>37개월 딸과 함께하는 특별한 여행</p>
                 </div>
-                <div class="header-utils">
-                    <button class="util-btn" id="budgetBtn" title="예산 관리">💰</button>
-                    <div class="utility-hub">
-                        <button class="util-hub-btn" id="utilityHubBtn" title="여행 도구">🛠️</button>
-                        <div class="utility-menu" id="utilityMenu">
-                            <button class="utility-item" id="exchangeRateBtn" data-tool="exchange">
-                                <span class="utility-icon">💱</span>
-                                <span class="utility-label">환율</span>
-                            </button>
-                            <button class="utility-item" id="weatherBtn" data-tool="weather">
-                                <span class="utility-icon">🌦️</span>
-                                <span class="utility-label">날씨</span>
-                            </button>
-                            <button class="utility-item" id="timeBtn" data-tool="time">
-                                <span class="utility-icon">⏰</span>
-                                <span class="utility-label">시차</span>
-                            </button>
-                            <button class="utility-item" id="translateBtn" data-tool="translate">
-                                <span class="utility-icon">🗣️</span>
-                                <span class="utility-label">번역</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <!-- 헤더 유틸리티는 하단 FAB로 이동 예정 -->
             </div>
 
             <div class="day-tabs">
@@ -336,6 +313,147 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 새로운 지출 입력 팝업 -->
+    <div class="expense-popup-overlay" id="expensePopupOverlay">
+        <div class="expense-popup-content">
+            <div class="expense-popup-header">
+                <h3>💰 지출 추가</h3>
+                <button class="expense-popup-close" id="expensePopupClose">✕</button>
+            </div>
+            
+            <!-- 카테고리 탭 선택 -->
+            <div class="expense-categories-tabs">
+                <button class="category-tab active" data-category="transport" data-icon="🚗" data-color="#3B82F6">
+                    <span class="tab-icon">🚗</span>
+                    <span class="tab-label">교통비</span>
+                </button>
+                <button class="category-tab" data-category="food" data-icon="🍽️" data-color="#F59E0B">
+                    <span class="tab-icon">🍽️</span>
+                    <span class="tab-label">식비</span>
+                </button>
+                <button class="category-tab" data-category="snack" data-icon="🍿" data-color="#10B981">
+                    <span class="tab-icon">🍿</span>
+                    <span class="tab-label">간식</span>
+                </button>
+                <button class="category-tab" data-category="shopping" data-icon="🛍️" data-color="#8B5CF6">
+                    <span class="tab-icon">🛍️</span>
+                    <span class="tab-label">쇼핑</span>
+                </button>
+                <button class="category-tab" data-category="souvenir" data-icon="🎁" data-color="#EF4444">
+                    <span class="tab-icon">🎁</span>
+                    <span class="tab-label">기념품</span>
+                </button>
+                <button class="category-tab" data-category="attraction" data-icon="🎡" data-color="#F97316">
+                    <span class="tab-icon">🎡</span>
+                    <span class="tab-label">관광</span>
+                </button>
+                <button class="category-tab" data-category="accommodation" data-icon="🏨" data-color="#059669">
+                    <span class="tab-icon">🏨</span>
+                    <span class="tab-label">숙박비</span>
+                </button>
+                <button class="category-tab" data-category="other" data-icon="💳" data-color="#6B7280">
+                    <span class="tab-icon">💳</span>
+                    <span class="tab-label">기타</span>
+                </button>
+            </div>
+            
+            <!-- 금액 입력 섹션 -->
+            <div class="expense-amount-section">
+                <div class="amount-display">
+                    <span class="currency-symbol">₩</span>
+                    <span class="amount-value" id="amountDisplay">0</span>
+                </div>
+                
+                <!-- 빠른 금액 버튼 -->
+                <div class="quick-amount-buttons">
+                    <button class="quick-amount-btn" data-amount="1000">+1천</button>
+                    <button class="quick-amount-btn" data-amount="5000">+5천</button>
+                    <button class="quick-amount-btn" data-amount="10000">+1만</button>
+                    <button class="quick-amount-btn" data-amount="50000">+5만</button>
+                </div>
+                
+                <!-- 메모 입력 -->
+                <div class="expense-memo-section">
+                    <input type="text" id="expenseMemoInput" placeholder="메모 (선택사항)" maxlength="30">
+                </div>
+            </div>
+            
+            <!-- 커스텀 키패드 -->
+            <div class="custom-keypad" id="customKeypad">
+                <div class="keypad-row">
+                    <button class="key-btn number" data-value="1">1</button>
+                    <button class="key-btn number" data-value="2">2</button>
+                    <button class="key-btn number" data-value="3">3</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn number" data-value="4">4</button>
+                    <button class="key-btn number" data-value="5">5</button>
+                    <button class="key-btn number" data-value="6">6</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn number" data-value="7">7</button>
+                    <button class="key-btn number" data-value="8">8</button>
+                    <button class="key-btn number" data-value="9">9</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn clear" data-value="clear">전체삭제</button>
+                    <button class="key-btn number" data-value="0">0</button>
+                    <button class="key-btn backspace" data-value="backspace">⌫</button>
+                </div>
+            </div>
+            
+            <!-- 액션 버튼 -->
+            <div class="expense-actions">
+                <button class="btn-secondary" id="expenseCancelBtn">취소</button>
+                <button class="btn-primary" id="expenseAddBtn" disabled>추가하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 Floating Action Button 시스템 -->
+    <div class="fab-container">
+        <!-- 메인 FAB 버튼 -->
+        <button class="fab-main" id="fabMain" title="빠른 도구">
+            <span class="fab-icon">⚡</span>
+        </button>
+        
+        <!-- 확장 메뉴 -->
+        <div class="fab-menu" id="fabMenu">
+            <!-- 지출 추가 -->
+            <button class="fab-item fab-expense" id="fabExpense" data-action="expense">
+                <span class="fab-item-icon">💰</span>
+                <span class="fab-item-label">지출</span>
+            </button>
+            
+            <!-- 환율 계산기 -->
+            <button class="fab-item fab-exchange" id="fabExchange" data-action="exchange">
+                <span class="fab-item-icon">💱</span>
+                <span class="fab-item-label">환율</span>
+            </button>
+            
+            <!-- 날씨 정보 -->
+            <button class="fab-item fab-weather" id="fabWeather" data-action="weather">
+                <span class="fab-item-icon">🌦️</span>
+                <span class="fab-item-label">날씨</span>
+            </button>
+            
+            <!-- 시차 확인 -->
+            <button class="fab-item fab-time" id="fabTime" data-action="time">
+                <span class="fab-item-icon">⏰</span>
+                <span class="fab-item-label">시차</span>
+            </button>
+            
+            <!-- 번역 도구 -->
+            <button class="fab-item fab-translate" id="fabTranslate" data-action="translate">
+                <span class="fab-item-icon">🗣️</span>
+                <span class="fab-item-label">번역</span>
+            </button>
+        </div>
+        
+        <!-- FAB 배경 오버레이 -->
+        <div class="fab-overlay" id="fabOverlay"></div>
     </div>
 
     <!-- JavaScript 파일 -->
