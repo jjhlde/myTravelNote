@@ -19,8 +19,8 @@ export function initFABSystem() {
     
     // 메인 FAB 클릭 이벤트
     addEventListener(fabMain, 'click', () => {
-        toggleClass(fabMenu, 'show');
-        toggleClass(fabOverlay, 'show');
+        toggleClass(fabMenu, 'active');
+        toggleClass(fabOverlay, 'active');
         toggleClass(fabMain, 'active');
     });
     
@@ -50,8 +50,8 @@ function closeFABMenu() {
     const fabMenu = getElement('#fabMenu');
     const fabOverlay = getElement('#fabOverlay');
     
-    if (fabMenu) removeClass(fabMenu, 'show');
-    if (fabOverlay) removeClass(fabOverlay, 'show');
+    if (fabMenu) removeClass(fabMenu, 'active');
+    if (fabOverlay) removeClass(fabOverlay, 'active');
     if (fabMain) removeClass(fabMain, 'active');
 }
 
