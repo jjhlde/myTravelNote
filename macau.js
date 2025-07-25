@@ -1097,4 +1097,314 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     console.log('Exchange rate calculator initialized');
+    
+    // 예산 관리 초기화도 함께 실행
+    initBudgetManager();
 });
+
+// 예산 관리 기능
+function initBudgetManager() {
+    const budgetBtn = document.getElementById('budgetBtn');
+    const budgetPopupOverlay = document.getElementById('budgetPopupOverlay');
+    const budgetPopupClose = document.getElementById('budgetPopupClose');
+    const budgetSetup = document.getElementById('budgetSetup');
+    const expenseInput = document.getElementById('expenseInput');
+    
+    // 예산 관리 팝업 열기
+    budgetBtn?.addEventListener('click', () => {
+        budgetPopupOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        loadBudgetData();
+    });
+
+    // 예산 관리 팝업 닫기
+    function closeBudgetPopup() {
+        budgetPopupOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    budgetPopupClose?.addEventListener('click', closeBudgetPopup);
+
+    // 배경 클릭으로 닫기
+    budgetPopupOverlay?.addEventListener('click', (e) => {
+        if (e.target === budgetPopupOverlay) {
+            closeBudgetPopup();
+        }
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && budgetPopupOverlay.classList.contains('show')) {
+            closeBudgetPopup();
+        }
+    });
+
+    // 예산 설정
+    const setBudgetBtn = document.getElementById('setBudgetBtn');
+    setBudgetBtn?.addEventListener('click', setBudget);
+
+    // 지출 추가
+    const addExpenseBtn = document.getElementById('addExpenseBtn');
+    addExpenseBtn?.addEventListener('click', addExpense);
+
+    // Enter 키로 지출 추가
+    const expenseAmount = document.getElementById('expenseAmount');
+    expenseAmount?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addExpense();
+        }
+    });
+
+    // AI 카테고리 분류
+    const categorizeBtn = document.getElementById('categorizeBtn');
+    categorizeBtn?.addEventListener('click', categorizeExpenses);
+
+    console.log('Budget manager initialized');
+}
+
+// 예산 데이터 로드
+function loadBudgetData() {
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const budgetSetup = document.getElementById('budgetSetup');
+    const expenseInput = document.getElementById('expenseInput');
+    
+    if (budgetData.totalBudget) {
+        // 예산이 설정된 경우
+        budgetSetup.style.display = 'none';
+        expenseInput.style.display = 'block';
+        updateBudgetStatus(budgetData);
+        loadTodayExpenses();
+    } else {
+        // 예산이 설정되지 않은 경우
+        budgetSetup.style.display = 'block';
+        expenseInput.style.display = 'none';
+        // 기본 날짜 설정
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 3); // 3박 4일 기본
+        
+        document.getElementById('startDateInput').value = today.toISOString().split('T')[0];
+        document.getElementById('endDateInput').value = tomorrow.toISOString().split('T')[0];
+    }
+}
+
+// 예산 설정
+function setBudget() {
+    const totalBudget = parseInt(document.getElementById('budgetInput').value);
+    const startDate = document.getElementById('startDateInput').value;
+    const endDate = document.getElementById('endDateInput').value;
+
+    if (!totalBudget || !startDate || !endDate) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+    }
+
+    if (new Date(startDate) >= new Date(endDate)) {
+        alert('종료일은 시작일보다 늦어야 합니다.');
+        return;
+    }
+
+    const budgetData = {
+        totalBudget,
+        startDate,
+        endDate,
+        expenses: []
+    };
+
+    localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+    loadBudgetData();
+}
+
+// 예산 현황 업데이트
+function updateBudgetStatus(budgetData) {
+    const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const remainingBudget = budgetData.totalBudget - totalExpenses;
+    
+    const startDate = new Date(budgetData.startDate);
+    const endDate = new Date(budgetData.endDate);
+    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const dailyBudget = Math.floor(budgetData.totalBudget / totalDays);
+
+    document.getElementById('totalBudget').textContent = formatCurrency(budgetData.totalBudget);
+    document.getElementById('remainingBudget').textContent = formatCurrency(remainingBudget);
+    document.getElementById('dailyBudget').textContent = formatCurrency(dailyBudget);
+
+    // 예산 초과 시 색상 변경
+    const remainingElement = document.getElementById('remainingBudget');
+    if (remainingBudget < 0) {
+        remainingElement.style.color = '#dc2626';
+    } else {
+        remainingElement.style.color = 'white';
+    }
+}
+
+// 지출 추가
+function addExpense() {
+    const amountInput = document.getElementById('expenseAmount');
+    const amount = parseInt(amountInput.value);
+
+    if (!amount || amount <= 0) {
+        alert('올바른 금액을 입력해주세요.');
+        return;
+    }
+
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const expense = {
+        id: Date.now(),
+        amount,
+        timestamp: new Date().toISOString(),
+        category: null
+    };
+
+    budgetData.expenses.push(expense);
+    localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+
+    // UI 업데이트
+    updateBudgetStatus(budgetData);
+    loadTodayExpenses();
+    amountInput.value = '';
+    amountInput.focus();
+}
+
+// 오늘 지출 내역 로드
+function loadTodayExpenses() {
+    const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+    const today = new Date().toDateString();
+    const todayExpenses = budgetData.expenses.filter(expense => 
+        new Date(expense.timestamp).toDateString() === today
+    );
+
+    const expensesList = document.getElementById('expensesList');
+    
+    if (todayExpenses.length === 0) {
+        expensesList.innerHTML = '<div class="no-expenses">아직 지출 내역이 없습니다</div>';
+        return;
+    }
+
+    expensesList.innerHTML = todayExpenses.map(expense => `
+        <div class="expense-item">
+            <div>
+                <div class="expense-time">${new Date(expense.timestamp).toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})}</div>
+                ${expense.category ? `<div class="expense-category">${expense.category}</div>` : ''}
+            </div>
+            <div class="expense-amount">${formatCurrency(expense.amount)}</div>
+        </div>
+    `).join('');
+}
+
+// AI 카테고리 분류
+async function categorizeExpenses() {
+    const categorizeBtn = document.getElementById('categorizeBtn');
+    const originalText = categorizeBtn.textContent;
+    categorizeBtn.textContent = '분류 중...';
+    categorizeBtn.disabled = true;
+
+    try {
+        const budgetData = JSON.parse(localStorage.getItem('travelBudget') || '{}');
+        const today = new Date().toDateString();
+        const todayExpenses = budgetData.expenses.filter(expense => 
+            new Date(expense.timestamp).toDateString() === today && !expense.category
+        );
+
+        if (todayExpenses.length === 0) {
+            alert('분류할 지출 내역이 없습니다.');
+            return;
+        }
+
+        // Gemini API 호출
+        const response = await fetch(CONFIG.GEMINI_API_URL + '?key=' + CONFIG.GEMINI_API_KEY, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: `마카오 여행 중 다음 지출 내역들을 적절한 카테고리로 분류해주세요. 
+                        
+지출 내역:
+${todayExpenses.map(expense => `- ${expense.amount}원 (${new Date(expense.timestamp).toLocaleTimeString('ko-KR')})`).join('\n')}
+
+다음 카테고리 중에서 선택해주세요:
+- 식사/음료 (식당, 카페, 주류 등)
+- 교통비 (택시, 버스, 지하철 등)
+- 숙박비 (호텔, 리조트 등)
+- 관광/입장료 (명소, 박물관, 쇼 등)
+- 쇼핑 (기념품, 의류, 잡화 등)
+- 오락/게임 (카지노, 게임 등)
+- 기타
+
+응답 형식은 JSON 배열로 해주세요:
+[
+  {"amount": 금액, "category": "카테고리명"},
+  ...
+]
+
+금액은 정확히 입력된 값과 일치해야 합니다.`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.3,
+                    topK: 20,
+                    topP: 0.8,
+                    maxOutputTokens: 1000,
+                }
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const text = data.candidates[0].content.parts[0].text;
+            const jsonMatch = text.match(/\[[\s\S]*\]/);
+            
+            if (jsonMatch) {
+                const categories = JSON.parse(jsonMatch[0]);
+                
+                // 카테고리 업데이트
+                categories.forEach(cat => {
+                    const expense = todayExpenses.find(exp => exp.amount === cat.amount);
+                    if (expense) {
+                        expense.category = cat.category;
+                    }
+                });
+
+                localStorage.setItem('travelBudget', JSON.stringify(budgetData));
+                loadTodayExpenses();
+                showCategorizedExpenses(categories);
+            }
+        }
+    } catch (error) {
+        console.error('카테고리 분류 오류:', error);
+        alert('카테고리 분류 중 오류가 발생했습니다.');
+    } finally {
+        categorizeBtn.textContent = originalText;
+        categorizeBtn.disabled = false;
+    }
+}
+
+// 카테고리별 지출 표시
+function showCategorizedExpenses(categories) {
+    const expenseCategories = document.getElementById('expenseCategories');
+    const categoriesList = document.getElementById('categoriesList');
+
+    // 카테고리별 합계 계산
+    const categoryTotals = {};
+    categories.forEach(cat => {
+        categoryTotals[cat.category] = (categoryTotals[cat.category] || 0) + cat.amount;
+    });
+
+    categoriesList.innerHTML = Object.entries(categoryTotals).map(([category, total]) => `
+        <div class="category-item">
+            <div class="category-name">${category}</div>
+            <div class="category-amount">${formatCurrency(total)}</div>
+        </div>
+    `).join('');
+
+    expenseCategories.style.display = 'block';
+}
+
+// 통화 포맷팅
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('ko-KR').format(amount) + '원';
+}
