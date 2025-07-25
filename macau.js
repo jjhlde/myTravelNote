@@ -1408,3 +1408,38 @@ function showCategorizedExpenses(categories) {
 function formatCurrency(amount) {
     return new Intl.NumberFormat('ko-KR').format(amount) + '원';
 }
+
+// 비행기표 모달 팝업 기능
+function openFlightTicket() {
+    const ticketImagePath = './tickets/flight-ticket.jpg';
+    
+    // 기존 이미지 팝업 시스템 활용
+    const imagePopupOverlay = document.getElementById('imagePopupOverlay');
+    const popupImage = document.getElementById('popupImage');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupDescription = document.getElementById('popupDescription');
+    
+    if (imagePopupOverlay && popupImage && popupTitle && popupDescription) {
+        // 이미지 설정
+        popupImage.src = ticketImagePath;
+        popupImage.alt = '비행기표';
+        
+        // 제목과 설명 설정  
+        popupTitle.textContent = '✈️ 비행기표';
+        popupDescription.textContent = '확대하여 상세 정보를 확인하세요. ESC 키 또는 클릭으로 닫기';
+        
+        // 모달 열기
+        imagePopupOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        
+        // 이미지 로드 에러 처리
+        popupImage.onerror = function() {
+            popupTitle.textContent = '❌ 이미지 로드 실패';
+            popupDescription.textContent = 'tickets 폴더에 flight-ticket.jpg 파일을 확인해주세요.';
+            popupImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="16" fill="%23666">🎫 비행기표 이미지</text><text x="200" y="180" text-anchor="middle" font-family="Arial" font-size="12" fill="%23999">tickets/flight-ticket.jpg</text></svg>';
+        };
+    } else {
+        console.error('이미지 팝업 요소를 찾을 수 없습니다.');
+        alert('비행기표를 표시할 수 없습니다. 페이지를 새로고침해주세요.');
+    }
+}
