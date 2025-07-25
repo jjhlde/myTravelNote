@@ -1413,8 +1413,25 @@ function formatCurrency(amount) {
 }
 
 // 비행기표 모달 팝업 기능
-function openFlightTicket() {
-    const ticketImagePath = './tickets/flight-ticket.jpg';
+async function openFlightTicket() {
+    // 환경변수에서 비행기표 이미지 불러오기
+    let ticketImageSrc = null;
+    
+    try {
+        // Vercel 환경변수에서 Base64 이미지 불러오기 시도
+        const response = await fetch('/api/get-ticket-image');
+        if (response.ok) {
+            const data = await response.json();
+            ticketImageSrc = data.imageBase64 ? `data:image/jpeg;base64,${data.imageBase64}` : null;
+        }
+    } catch (error) {
+        console.log('환경변수에서 비행기표 로드 실패, 로컬 이미지 사용:', error);
+    }
+    
+    // 환경변수 실패 시 로컬 이미지 fallback
+    if (!ticketImageSrc) {
+        ticketImageSrc = './images/tickets/jangjungho.png';
+    }
     
     // 기존 이미지 팝업 시스템 활용
     const imagePopupOverlay = document.getElementById('imagePopupOverlay');
@@ -1424,11 +1441,11 @@ function openFlightTicket() {
     
     if (imagePopupOverlay && popupImage && popupTitle && popupDescription) {
         // 이미지 설정
-        popupImage.src = ticketImagePath;
+        popupImage.src = ticketImageSrc;
         popupImage.alt = '비행기표';
         
         // 제목과 설명 설정  
-        popupTitle.textContent = '✈️ 비행기표';
+        popupTitle.textContent = '✈️ 비행기표 - NX0821/NX0826';
         popupDescription.textContent = '확대하여 상세 정보를 확인하세요. ESC 키 또는 클릭으로 닫기';
         
         // 모달 열기
@@ -1437,9 +1454,9 @@ function openFlightTicket() {
         
         // 이미지 로드 에러 처리
         popupImage.onerror = function() {
-            popupTitle.textContent = '❌ 이미지 로드 실패';
-            popupDescription.textContent = 'tickets 폴더에 flight-ticket.jpg 파일을 확인해주세요.';
-            popupImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="16" fill="%23666">🎫 비행기표 이미지</text><text x="200" y="180" text-anchor="middle" font-family="Arial" font-size="12" fill="%23999">tickets/flight-ticket.jpg</text></svg>';
+            popupTitle.textContent = '❌ 비행기표 로드 실패';
+            popupDescription.textContent = '비행기표 이미지를 불러올 수 없습니다. 관리자에게 문의하세요.';
+            popupImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="200" y="130" text-anchor="middle" font-family="Arial" font-size="16" fill="%23666">🎫 비행기표</text><text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="14" fill="%23888">NX0821 ICN→MFM</text><text x="200" y="170" text-anchor="middle" font-family="Arial" font-size="14" fill="%23888">NX0826 MFM→ICN</text></svg>';
         };
     } else {
         console.error('이미지 팝업 요소를 찾을 수 없습니다.');

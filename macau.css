@@ -1601,6 +1601,39 @@ body {
     transform: translateY(0);
 }
 
+/* 항공편 라벨 */
+.flight-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 복항편 구분 */
+.return-flight {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 비행 시간 표시 */
+.flight-duration {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    color: #4F46E5;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* 모바일 최적화 */
 @media (max-width: 768px) {
     .flight-info-card {
