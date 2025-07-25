@@ -311,3 +311,93 @@ export const basicItemTexts = {
         removeStorageItem('macau_basic_item_texts');
     }
 };
+
+/**
+ * 지출 데이터 저장 (새로운 형식)
+ * @param {Object} expense - 지출 데이터
+ * @returns {boolean} 성공 여부
+ */
+export function saveExpenseData(expense) {
+    try {
+        // 현재 지출 데이터 가져오기
+        const allExpenses = getAllExpenses();
+        
+        // 새로운 지출 추가
+        allExpenses.push(expense);
+        
+        // 새로운 통합 데이터 구조에 저장
+        const macauExpenseData = {
+            expenses: allExpenses,
+            lastUpdated: Date.now()
+        };
+        
+        setStorageItem('macau_expense_data', macauExpenseData);
+        
+        // 기존 데이터 구조와도 동기화 (호환성 유지)
+        const legacyExpenses = getStorageItem('travelExpenses', []);
+        legacyExpenses.push({
+            id: expense.id,
+            amount: expense.amount,
+            date: expense.date,
+            category: {
+                id: expense.category,
+                name: getCategoryName(expense.category),
+                icon: getCategoryIcon(expense.category)
+            },
+            memo: expense.memo,
+            timestamp: expense.timestamp
+        });
+        setStorageItem('travelExpenses', legacyExpenses);
+        
+        return true;
+    } catch (error) {
+        console.error('Error saving expense data:', error);
+        return false;
+    }
+}
+
+/**
+ * 현재 지출 데이터 가져오기 (간소화 버전)
+ * @returns {Array} 지출 데이터 배열
+ */
+export function getCurrentExpenses() {
+    return getAllExpenses();
+}
+
+/**
+ * 카테고리명 가져오기
+ * @param {string} categoryId - 카테고리 ID
+ * @returns {string} 카테고리명
+ */
+function getCategoryName(categoryId) {
+    const categoryNames = {
+        transport: '교통비',
+        food: '식비',
+        snack: '간식',
+        shopping: '쇼핑',
+        souvenir: '기념품',
+        attraction: '관광',
+        accommodation: '숙박비',
+        other: '기타'
+    };
+    return categoryNames[categoryId] || '기타';
+}
+
+/**
+ * 카테고리 아이콘 가져오기
+ * @param {string} categoryId - 카테고리 ID
+ * @returns {string} 카테고리 아이콘
+ */
+function getCategoryIcon(categoryId) {
+    const categoryIcons = {
+        transport: '🚗',
+        food: '🍽️',
+        snack: '🍿',
+        shopping: '🛍️',
+        souvenir: '🎁',
+        attraction: '🎡',
+        accommodation: '🏨',
+        other: '💳'
+    };
+    return categoryIcons[categoryId] || '💳';
+}

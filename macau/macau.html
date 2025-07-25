@@ -374,33 +374,14 @@
                     <button class="quick-amount-btn" data-amount="50000">+5만</button>
                 </div>
                 
+                <!-- 금액 직접 입력 -->
+                <div class="expense-amount-input-section">
+                    <input type="number" id="expenseAmountInput" placeholder="금액을 입력하세요" min="0" step="100">
+                </div>
+                
                 <!-- 메모 입력 -->
                 <div class="expense-memo-section">
                     <input type="text" id="expenseMemoInput" placeholder="메모 (선택사항)" maxlength="30">
-                </div>
-            </div>
-            
-            <!-- 커스텀 키패드 -->
-            <div class="custom-keypad" id="customKeypad">
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="1">1</button>
-                    <button class="key-btn number" data-value="2">2</button>
-                    <button class="key-btn number" data-value="3">3</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="4">4</button>
-                    <button class="key-btn number" data-value="5">5</button>
-                    <button class="key-btn number" data-value="6">6</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="7">7</button>
-                    <button class="key-btn number" data-value="8">8</button>
-                    <button class="key-btn number" data-value="9">9</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn clear" data-value="clear">전체삭제</button>
-                    <button class="key-btn number" data-value="0">0</button>
-                    <button class="key-btn backspace" data-value="backspace">⌫</button>
                 </div>
             </div>
             
@@ -433,22 +414,10 @@
                 <span class="fab-item-label">환율</span>
             </button>
             
-            <!-- 날씨 정보 -->
-            <button class="fab-item fab-weather" id="fabWeather" data-action="weather">
-                <span class="fab-item-icon">🌦️</span>
-                <span class="fab-item-label">날씨</span>
-            </button>
-            
             <!-- 시차 확인 -->
             <button class="fab-item fab-time" id="fabTime" data-action="time">
                 <span class="fab-item-icon">⏰</span>
                 <span class="fab-item-label">시차</span>
-            </button>
-            
-            <!-- 번역 도구 -->
-            <button class="fab-item fab-translate" id="fabTranslate" data-action="translate">
-                <span class="fab-item-icon">🗣️</span>
-                <span class="fab-item-label">번역</span>
             </button>
         </div>
         

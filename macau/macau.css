@@ -1622,7 +1622,7 @@ body {
 /* 비행 시간 표시 */
 .flight-duration {
     position: absolute;
-    top: -8px;
+    top: -30px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.9);
@@ -2290,12 +2290,12 @@ body {
     position: absolute;
     bottom: 28px;
     right: 28px;
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: white;
     border: none;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -2311,30 +2311,20 @@ body {
     opacity: 1;
 }
 
-/* 개별 FAB 아이템 위치 (방사형 배치) */
+/* 개별 FAB 아이템 위치 (3개 버튼 재배치) */
 .fab-menu.active .fab-expense {
-    transform: scale(1) translate(-80px, -20px);
+    transform: scale(1) translate(-90px, -30px);
     transition-delay: 0.1s;
 }
 
 .fab-menu.active .fab-exchange {
-    transform: scale(1) translate(-110px, -60px);
+    transform: scale(1) translate(-130px, -90px);
     transition-delay: 0.15s;
 }
 
-.fab-menu.active .fab-weather {
-    transform: scale(1) translate(-110px, -110px);
-    transition-delay: 0.2s;
-}
-
 .fab-menu.active .fab-time {
-    transform: scale(1) translate(-70px, -140px);
-    transition-delay: 0.25s;
-}
-
-.fab-menu.active .fab-translate {
-    transform: scale(1) translate(-20px, -150px);
-    transition-delay: 0.3s;
+    transform: scale(1) translate(-50px, -150px);
+    transition-delay: 0.2s;
 }
 
 .fab-item:hover {
@@ -2343,12 +2333,12 @@ body {
 }
 
 .fab-item-icon {
-    font-size: 18px;
-    margin-bottom: 2px;
+    font-size: 20px;
+    margin-bottom: 3px;
 }
 
 .fab-item-label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     color: #374151;
     line-height: 1;
@@ -2433,37 +2423,29 @@ body {
     }
     
     .fab-item {
-        width: 44px;
-        height: 44px;
+        width: 50px;
+        height: 50px;
     }
     
     .fab-item-icon {
-        font-size: 16px;
+        font-size: 18px;
     }
     
     .fab-item-label {
-        font-size: 8px;
+        font-size: 9px;
     }
     
-    /* 모바일에서 더 컴팩트한 배치 */
+    /* 모바일에서 3개 버튼 배치 */
     .fab-menu.active .fab-expense {
-        transform: scale(1) translate(-70px, -15px);
+        transform: scale(1) translate(-75px, -25px);
     }
     
     .fab-menu.active .fab-exchange {
-        transform: scale(1) translate(-95px, -50px);
-    }
-    
-    .fab-menu.active .fab-weather {
-        transform: scale(1) translate(-95px, -95px);
+        transform: scale(1) translate(-110px, -75px);
     }
     
     .fab-menu.active .fab-time {
-        transform: scale(1) translate(-60px, -120px);
-    }
-    
-    .fab-menu.active .fab-translate {
-        transform: scale(1) translate(-15px, -130px);
+        transform: scale(1) translate(-40px, -125px);
     }
 }
 
@@ -2708,97 +2690,76 @@ body {
     color: #94a3b8;
 }
 
-/* 커스텀 키패드 */
-.custom-keypad {
-    padding: 20px;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+/* 금액 직접 입력 섹션 */
+.expense-amount-input-section {
+    margin-bottom: 20px;
 }
 
-.keypad-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.keypad-row:last-child {
-    margin-bottom: 0;
-}
-
-.key-btn {
-    height: 52px;
-    border: none;
+.expense-amount-input-section input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 3px solid #e2e8f0;
     border-radius: 16px;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    position: relative;
-    overflow: hidden;
-}
-
-.key-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.2s ease;
-}
-
-.key-btn:active::before {
-    width: 100px;
-    height: 100px;
-}
-
-.key-btn.number {
+    text-align: center;
     background: white;
+    transition: all 0.3s ease;
     color: #1f2937;
-    border: 2px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.key-btn.number:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.expense-amount-input-section input:focus {
+    outline: none;
+    border-color: #4F46E5;
+    background: #fefefe;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    transform: scale(1.02);
 }
 
-.key-btn.number:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.expense-amount-input-section input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
 }
 
-.key-btn.clear {
-    background: linear-gradient(135deg, #EF4444, #DC2626);
+/* 토스트 메시지 */
+.expense-toast {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #1f2937;
     color: white;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 3000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    text-align: center;
 }
 
-.key-btn.clear:hover {
-    background: linear-gradient(135deg, #DC2626, #B91C1C);
+.expense-toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
-.key-btn.backspace {
-    background: linear-gradient(135deg, #6B7280, #4B5563);
-    color: white;
-    font-size: 18px;
+.expense-toast-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-.key-btn.backspace:hover {
-    background: linear-gradient(135deg, #4B5563, #374151);
+.expense-toast-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
+
+.expense-toast-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
 
 /* 액션 버튼 */
 .expense-actions {
@@ -2925,15 +2886,6 @@ body {
     .quick-amount-btn {
         padding: 10px 6px;
         font-size: 12px;
-    }
-    
-    .key-btn {
-        height: 48px;
-        font-size: 18px;
-    }
-    
-    .key-btn.clear {
-        font-size: 11px;
     }
 }
 
@@ -3336,5 +3288,382 @@ body {
     
     .recent-expenses-list {
         padding: 16px;
+    }
+}
+
+/* ================================
+   새로운 컴팩트 항공편 정보 스타일
+   ================================ */
+
+/* 항공편 헤더 개선 */
+.flight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.flight-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.flight-summary {
+    font-size: 12px;
+    color: #666;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+/* 컴팩트 항공편 레이아웃 */
+.flight-route-compact {
+    background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+.flight-leg {
+    margin-bottom: 20px;
+}
+
+.flight-leg:last-child {
+    margin-bottom: 0;
+}
+
+.flight-direction {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4F46E5;
+    margin-bottom: 12px;
+}
+
+.flight-timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.flight-point {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.flight-point .airport-code {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.flight-point .flight-time {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4F46E5;
+    margin-bottom: 2px;
+}
+
+.flight-point .flight-date {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.flight-connection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin: 0 20px;
+}
+
+.connection-line {
+    height: 2px;
+    background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
+    width: 100%;
+    border-radius: 1px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.connection-line::after {
+    content: '✈️';
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    font-size: 12px;
+    background: white;
+    padding: 2px;
+    border-radius: 50%;
+}
+
+.flight-duration {
+    font-size: 12px;
+    color: #4F46E5;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.flight-number {
+    font-size: 11px;
+    color: #6b7280;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+/* 항공권 섹션 */
+.flight-tickets-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.tickets-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.ticket-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.ticket-btn {
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.ticket-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.ticket-btn:active {
+    transform: translateY(0);
+}
+
+.passenger-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.passenger-name {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ================================
+   숙소 정보 스타일
+   ================================ */
+
+.accommodation-section {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.accommodation-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+.accommodation-card {
+    background: linear-gradient(135deg, #fef7f0 0%, #fef3ec 100%);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.hotel-info {
+    margin-bottom: 16px;
+}
+
+.hotel-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+}
+
+.hotel-rating {
+    font-size: 14px;
+    color: #f59e0b;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.hotel-location {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.stay-details {
+    margin-bottom: 16px;
+}
+
+.check-info {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.check-item {
+    flex: 1;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.check-label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.check-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.room-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.room-type {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.guest-count {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.hotel-amenities {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.amenity-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.amenity-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.amenity-item {
+    background: #fef3ec;
+    color: #ea580c;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 16px;
+    border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .flight-route-compact {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .flight-point .airport-code {
+        font-size: 16px;
+    }
+    
+    .flight-point .flight-time {
+        font-size: 14px;
+    }
+    
+    .flight-connection {
+        margin: 0 16px;
+    }
+    
+    .ticket-buttons {
+        gap: 8px;
+    }
+    
+    .ticket-btn {
+        padding: 10px 12px;
+        min-width: 70px;
+    }
+    
+    .passenger-icon {
+        font-size: 16px;
+    }
+    
+    .passenger-name {
+        font-size: 11px;
+    }
+    
+    .accommodation-section {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+    
+    .check-info {
+        gap: 12px;
+    }
+    
+    .check-item {
+        padding: 10px;
+    }
+    
+    .amenity-list {
+        gap: 6px;
+    }
+    
+    .amenity-item {
+        font-size: 11px;
+        padding: 5px 8px;
     }
 }

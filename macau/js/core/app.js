@@ -3,7 +3,7 @@
  */
 
 import { initNavigation, onPageChange } from './navigation.js';
-import { initImageSystem, reinitializeSliders } from '../features/image-popup.js';
+import { initImageSystem, reinitializeSliders, openFlightTicket } from '../features/image-popup.js';
 import { initPWAInstall } from '../features/pwa-install.js';
 import { initExchange } from '../features/exchange.js';
 import { initFABSystem } from '../features/fab.js';
@@ -309,6 +309,9 @@ if (typeof window !== 'undefined') {
             debug: app.debug
         })
     };
+    
+    // 레거시 호환성을 위한 전역 함수들
+    window.openFlightTicket = openFlightTicket;
 }
 
 export default {

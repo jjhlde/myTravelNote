@@ -3,6 +3,7 @@
  */
 
 import { getElement, addEventListener, addClass, removeClass, toggleClass } from '../utils/dom-helpers.js';
+import { openExpensePopup } from './expense.js';
 
 /**
  * FAB 시스템 초기화
@@ -63,10 +64,7 @@ function handleFABAction(action) {
     switch (action) {
         case 'expense':
             // 지출 입력 팝업 열기
-            const expensePopup = getElement('#expensePopupOverlay');
-            if (expensePopup) {
-                addClass(expensePopup, 'show');
-            }
+            openExpensePopup();
             break;
         case 'exchange':
             // 환율 계산기 팝업 열기
@@ -75,18 +73,10 @@ function handleFABAction(action) {
                 addClass(exchangePopup, 'show');
             }
             break;
-        case 'weather':
-            // 날씨 정보 (임시)
-            alert('🌦️ 마카오 날씨: 26°C, 흐림');
-            break;
         case 'time':
             // 시차 정보 (임시)
             const macauTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Macau' });
             alert(`⏰ 마카오 현재 시간: ${macauTime}`);
-            break;
-        case 'translate':
-            // 번역 도구 (임시)
-            alert('🗣️ 번역 기능은 개발 중입니다.');
             break;
         default:
             console.warn(`Unknown FAB action: ${action}`);

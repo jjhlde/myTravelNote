@@ -189,11 +189,83 @@ export function initLocationButtons() {
 }
 
 /**
+ * 항공권 이미지 팝업 초기화
+ */
+export function initFlightTicketPopup() {
+    // 항공권 버튼 클릭 이벤트 (동적으로 추가되는 버튼들도 처리)
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.ticket-btn') || e.target.closest('.ticket-btn')) {
+            const btn = e.target.closest('.ticket-btn') || e.target;
+            const passenger = btn.dataset.passenger;
+            
+            if (passenger) {
+                openFlightTicketImage(passenger);
+            }
+        }
+    });
+    
+    console.log('Flight ticket popup initialized');
+}
+
+/**
+ * 항공권 이미지 팝업 열기
+ * @param {string} passenger - 탑승자명 (영어)
+ */
+export function openFlightTicketImage(passenger) {
+    const imagePopupOverlay = getElement('#imagePopupOverlay');
+    const popupImage = getElement('#popupImage');
+    const popupTitle = getElement('#popupTitle');
+    const popupDescription = getElement('#popupDescription');
+    
+    if (!imagePopupOverlay || !popupImage) return;
+    
+    // 탑승자명을 한국어로 변환
+    const passengerNames = {
+        'jangjungho': '장정호',
+        'ohnamgeum': '오남금', 
+        'jangsunwoo': '장선우'
+    };
+    
+    const koreanName = passengerNames[passenger] || passenger;
+    const imagePath = `../images/tickets/${passenger}.png`;
+    
+    // 이미지 로딩 처리
+    const img = new Image();
+    img.onload = () => {
+        if (popupImage) popupImage.src = imagePath;
+        if (popupTitle) popupTitle.textContent = `${koreanName} 항공권`;
+        if (popupDescription) popupDescription.textContent = '에어마카오 NX0821/NX0826 • 클릭하거나 ESC 키를 눌러 닫기';
+        
+        addClass(imagePopupOverlay, 'show');
+    };
+    
+    img.onerror = () => {
+        console.error(`항공권 이미지를 찾을 수 없습니다: ${imagePath}`);
+        if (popupTitle) popupTitle.textContent = `${koreanName} 항공권`;
+        if (popupDescription) popupDescription.textContent = '항공권 이미지를 불러올 수 없습니다.';
+        if (popupImage) popupImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuq1rOuggOuKpSDsnbTrr7jsp4Drpbwg7LC+7J2EIOyImCDsl4bsnYzrgqjri6QuPC90ZXh0Pjwvc3ZnPg==';
+        
+        addClass(imagePopupOverlay, 'show');
+    };
+    
+    img.src = imagePath;
+}
+
+/**
+ * 레거시 openFlightTicket 함수 (기존 호환성 유지)
+ */
+export function openFlightTicket() {
+    // 기본적으로 첫 번째 탑승자 항공권 표시
+    openFlightTicketImage('jangjungho');
+}
+
+/**
  * 이미지 및 슬라이더 시스템 초기화
  */
 export function initImageSystem() {
     initImagePopup();
     initLocationButtons();
+    initFlightTicketPopup();
     initAllSliders();
     
     console.log('Image system initialized');
