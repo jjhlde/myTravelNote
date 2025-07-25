@@ -456,19 +456,29 @@
         <div class="fab-overlay" id="fabOverlay"></div>
     </div>
 
-    <!-- 자동 리디렉션 -->
+    <!-- JavaScript 모듈 파일 -->
+    <script src="./config/config.js"></script>
+    <script src="./config/places-api.js"></script>
+    <script src="./config/enhance-places.js"></script>
+    
+    <!-- 메인 애플리케이션 (ES6 모듈) -->
+    <script type="module" src="./js/core/app.js"></script>
+    
+    <!-- 레거시 지원을 위한 기존 코드 (임시) -->
     <script>
-        // 모듈화된 마카오 앱으로 리디렉션
-        if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
-            window.location.href = './macau/macau.html';
+        // 전역 함수들을 임시로 유지 (모듈화 완료 후 제거 예정)
+        function showSlide(sliderId, slideIndex) {
+            console.log('Legacy showSlide called:', sliderId, slideIndex);
+        }
+        function nextSlide(sliderId) {
+            console.log('Legacy nextSlide called:', sliderId);
+        }
+        function prevSlide(sliderId) {
+            console.log('Legacy prevSlide called:', sliderId);
+        }
+        function openFlightTicket() {
+            console.log('Legacy openFlightTicket called');
         }
     </script>
-    
-    <!-- 리디렉션 중 표시할 메시지 -->
-    <div style="text-align: center; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
-        <h2>🇲🇴 마카오 여행앱으로 이동 중...</h2>
-        <p>모듈화된 새 버전으로 자동 이동합니다.</p>
-        <p><a href="./macau/macau.html">직접 이동하기</a></p>
-    </div>
 </body>
 </html>
