@@ -668,39 +668,107 @@ function executeTodoScript() {
         });
     }
 
-    // 새 준비물 추가
-    addTodoBtn?.addEventListener('click', () => {
-        if (newTodoInput.value.trim()) {
+    // 새 준비물 추가 함수
+    function addNewTodoItem() {
+        console.log('추가 버튼 클릭됨');
+        const inputValue = newTodoInput.value.trim();
+        console.log('입력값:', inputValue);
+        
+        if (inputValue) {
             if (!userCategories['기타']) {
                 userCategories['기타'] = [];
+                console.log('기타 카테고리 새로 생성');
             }
-            userCategories['기타'].push({
-                text: newTodoInput.value.trim(),
+            const newItem = {
+                text: inputValue,
                 done: false,
                 id: Date.now()
-            });
+            };
+            userCategories['기타'].push(newItem);
             localStorage.setItem('macao_todo_categories', JSON.stringify(userCategories));
+            console.log('저장된 카테고리:', userCategories);
+            console.log('기타 카테고리 항목들:', userCategories['기타']);
+            
+            // 렌더링 및 상태 복원
             renderUserCategories();
+            setTimeout(() => {
+                restoreCheckboxStates();
+                console.log('카테고리 렌더링 및 체크박스 상태 복원 완료');
+            }, 50);
+            
             newTodoInput.value = '';
+            
+            // 성공 피드백
+            showToast('준비물이 추가되었습니다! 🎉');
+        } else {
+            // 입력값이 없을 때 피드백
+            showToast('준비물 이름을 입력해주세요.');
+            newTodoInput.focus();
+        }
+    }
+
+    // 새 준비물 추가 (클릭)
+    addTodoBtn?.addEventListener('click', addNewTodoItem);
+    
+    // 새 준비물 추가 (Enter 키)
+    newTodoInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNewTodoItem();
         }
     });
 
-    // 새 카테고리 추가
-    addCategoryBtn?.addEventListener('click', () => {
-        if (newCategoryInput.value.trim()) {
-            const categoryName = newCategoryInput.value.trim();
+    // 새 카테고리 추가 함수
+    function addNewCategory() {
+        console.log('카테고리 추가 버튼 클릭됨');
+        const categoryName = newCategoryInput.value.trim();
+        console.log('카테고리명:', categoryName);
+        
+        if (categoryName) {
             if (!userCategories[categoryName]) {
                 userCategories[categoryName] = [];
                 localStorage.setItem('macao_todo_categories', JSON.stringify(userCategories));
+                console.log('새 카테고리 저장됨:', userCategories);
+                
+                // 렌더링 및 상태 복원
                 renderUserCategories();
+                setTimeout(() => {
+                    restoreCheckboxStates();
+                    console.log('카테고리 렌더링 완료');
+                }, 50);
+                
                 newCategoryInput.value = '';
+                showToast(`"${categoryName}" 카테고리가 추가되었습니다! 📁`);
+            } else {
+                showToast('이미 존재하는 카테고리입니다.');
+                newCategoryInput.focus();
             }
+        } else {
+            showToast('카테고리 이름을 입력해주세요.');
+            newCategoryInput.focus();
+        }
+    }
+
+    // 새 카테고리 추가 (클릭)
+    addCategoryBtn?.addEventListener('click', addNewCategory);
+    
+    // 새 카테고리 추가 (Enter 키)
+    newCategoryInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNewCategory();
         }
     });
 
     // 사용자 카테고리 렌더링
     function renderUserCategories() {
-        if (!userCategoriesContainer) return;
+        if (!userCategoriesContainer) {
+            console.error('userCategoriesContainer를 찾을 수 없습니다');
+            return;
+        }
+        
+        console.log('렌더링할 카테고리들:', userCategories);
+        console.log('카테고리 개수:', Object.keys(userCategories).length);
         
         userCategoriesContainer.innerHTML = Object.keys(userCategories).map(categoryName => `
             <div class="tips-section macau-user-category" data-category="${categoryName}">
@@ -733,6 +801,9 @@ function executeTodoScript() {
                 </div>
             </div>
         `).join('');
+        
+        console.log('렌더링 완료. HTML 길이:', userCategoriesContainer.innerHTML.length);
+        console.log('렌더링된 HTML 미리보기:', userCategoriesContainer.innerHTML.substring(0, 200) + '...');
     }
 
     // 메뉴 토글 함수
@@ -948,12 +1019,61 @@ function executeTodoScript() {
         }
     });
 
+    // 토스트 메시지 표시 함수
+    function showToast(message, type = 'info') {
+        // 기존 토스트 제거
+        const existingToast = document.querySelector('.todo-toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `todo-toast todo-toast-${type}`;
+        toast.textContent = message;
+        
+        // 토스트 스타일
+        Object.assign(toast.style, {
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#6B7280',
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            fontWeight: '600',
+            zIndex: '10000',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s ease',
+            opacity: '0',
+            transform: 'translateX(-50%) translateY(20px)'
+        });
+        
+        document.body.appendChild(toast);
+        
+        // 애니메이션
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        // 자동 제거
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
     // 초기 로드
+    console.log('초기 로드 시작');
+    console.log('초기 userCategories:', userCategories);
     renderUserCategories();
     restoreBasicItemTexts(); // 기본 준비물 텍스트 복원
     setTimeout(() => {
         restoreDeletedBasicItems(); // 삭제된 기본 준비물 복원
         restoreCheckboxStates();
+        console.log('초기 로드 완료');
     }, 100);
     
     console.log('Todo script execution completed');
