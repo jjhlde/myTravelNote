@@ -25,6 +25,45 @@ const pageFiles = [
 // 페이지 로드 상태 추적
 const loadedPages = new Set();
 
+/**
+ * 현재 날짜를 기반으로 초기 페이지 결정
+ * @returns {number} 페이지 인덱스 (0: 정보, 1: 1일차, 2: 2일차, 3: 3일차, 4: 4일차)
+ */
+function getInitialPageByDate() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth() + 1; // 0-based이므로 +1
+    
+    // 7월 기준 (여행 날짜: 7월 28일-31일)
+    if (currentMonth === 7) {
+        if (currentDay <= 27) {
+            // 27일 이전: 정보 탭
+            console.log('📅 여행 전 날짜 - 정보 탭으로 이동');
+            return 0;
+        } else if (currentDay === 28) {
+            // 28일: 1일차
+            console.log('📅 여행 1일차 - 1일차 탭으로 이동');
+            return 1;
+        } else if (currentDay === 29) {
+            // 29일: 2일차
+            console.log('📅 여행 2일차 - 2일차 탭으로 이동');
+            return 2;
+        } else if (currentDay === 30) {
+            // 30일: 3일차
+            console.log('📅 여행 3일차 - 3일차 탭으로 이동');
+            return 3;
+        } else if (currentDay === 31) {
+            // 31일: 4일차 (마지막 날)
+            console.log('📅 여행 4일차 - 4일차 탭으로 이동');
+            return 4;
+        }
+    }
+    
+    // 기본값: 정보 탭
+    console.log('📅 기본 설정 - 정보 탭으로 이동');
+    return 0;
+}
+
 // 외부에서 접근 가능한 함수들을 위한 이벤트 핸들러
 let onPageChangeCallbacks = [];
 let onTodoScriptExecute = null;
@@ -356,8 +395,9 @@ export function initNavigation() {
         return;
     }
     
-    // 초기 페이지 로드
-    updatePage(0);
+    // 날짜 기반 초기 페이지 설정
+    const initialPage = getInitialPageByDate();
+    updatePage(initialPage);
     
     // 탭 클릭 이벤트
     dayTabs.forEach((tab, index) => {
