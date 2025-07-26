@@ -1846,6 +1846,158 @@ body {
         top: 35px;
         right: -8px;
     }
+
+    .utility-item:nth-child(5) {
+        top: -10px;
+        right: -80px;
+    }
+}
+
+/* 5번째 유틸리티 아이템 (갤럭시 맵) */
+.utility-item:nth-child(5) {
+    top: -10px;
+    right: -80px;
+    transition-delay: 0.5s;
+}
+
+/* 갤럭시 맵 모달 스타일 */
+.galaxy-map-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.galaxy-map-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.galaxy-map-container {
+    max-width: 95%;
+    max-height: 95%;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.galaxy-map-header {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.galaxy-map-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.galaxy-map-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.galaxy-map-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.galaxy-map-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.galaxy-map-tab {
+    flex: 1;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6c757d;
+}
+
+.galaxy-map-tab.active {
+    background: white;
+    color: #4F46E5;
+    border-bottom: 2px solid #4F46E5;
+}
+
+.galaxy-map-tab:hover:not(.active) {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.galaxy-map-content {
+    position: relative;
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.galaxy-map-image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    transition: opacity 0.3s ease;
+}
+
+.galaxy-map-floor {
+    display: none;
+}
+
+.galaxy-map-floor.active {
+    display: block;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .galaxy-map-container {
+        max-width: 98%;
+        max-height: 90%;
+    }
+    
+    .galaxy-map-header {
+        padding: 12px 16px;
+    }
+    
+    .galaxy-map-title {
+        font-size: 16px;
+    }
+    
+    .galaxy-map-tab {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .galaxy-map-content {
+        max-height: 60vh;
+    }
 }
 
 /* 카테고리 선택 UI */
@@ -2322,6 +2474,11 @@ body {
     transition-delay: 0.15s;
 }
 
+.fab-menu.active .fab-galaxy-map {
+    transform: scale(1) translate(0, -240px);
+    transition-delay: 0.2s;
+}
+
 .fab-item:hover {
     transform: scale(1.1) translate(var(--hover-x, 0), var(--hover-y, 0));
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -2358,6 +2515,14 @@ body {
     color: white;
 }
 
+.fab-galaxy-map {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    color: white;
+}
+
+.fab-galaxy-map .fab-item-label {
+    color: white;
+}
 
 /* FAB 배경 오버레이 */
 .fab-overlay {
@@ -2411,6 +2576,10 @@ body {
     
     .fab-menu.active .fab-exchange {
         transform: scale(1) translate(0, -145px);
+    }
+    
+    .fab-menu.active .fab-galaxy-map {
+        transform: scale(1) translate(0, -215px);
     }
 }
 

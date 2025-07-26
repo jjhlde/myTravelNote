@@ -407,10 +407,46 @@
                 <span class="fab-item-icon">💱</span>
                 <span class="fab-item-label">환율</span>
             </button>
+            
+            <!-- 갤럭시 맵 -->
+            <button class="fab-item fab-galaxy-map" id="fabGalaxyMap" data-action="galaxy-map">
+                <span class="fab-item-icon">🗺️</span>
+                <span class="fab-item-label">갤럭시맵</span>
+            </button>
         </div>
         
         <!-- FAB 배경 오버레이 -->
         <div class="fab-overlay" id="fabOverlay"></div>
+    </div>
+
+    <!-- 갤럭시 맵 모달 -->
+    <div class="galaxy-map-modal" id="galaxyMapModal">
+        <div class="galaxy-map-container">
+            <div class="galaxy-map-header">
+                <h3 class="galaxy-map-title">갤럭시 마카오 리조트 맵</h3>
+                <button class="galaxy-map-close" id="galaxyMapClose">✕</button>
+            </div>
+            
+            <div class="galaxy-map-tabs">
+                <button class="galaxy-map-tab active" data-floor="gf">G/F (그랜드 플로어)</button>
+                <button class="galaxy-map-tab" data-floor="1f">1/F (1층)</button>
+            </div>
+            
+            <div class="galaxy-map-content">
+                <div class="galaxy-map-floor active" id="floor-gf">
+                    <img src="https://img.galaxymacau.com/media_library/GM1114-BDC-2506-004-Property-Map_Jul-Aug_KR-03.jpg?x-oss-process=image/format%2Cwebp/quality%2Cq_75" 
+                         alt="갤럭시 마카오 G/F 맵" 
+                         class="galaxy-map-image"
+                         loading="lazy">
+                </div>
+                <div class="galaxy-map-floor" id="floor-1f">
+                    <img src="https://img.galaxymacau.com/media_library/GM1114-BDC-2506-004-Property-Map_Jul-Aug_KR-04.jpg?x-oss-process=image/format%2Cwebp/quality%2Cq_75" 
+                         alt="갤럭시 마카오 1/F 맵" 
+                         class="galaxy-map-image"
+                         loading="lazy">
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript 모듈 파일 -->
@@ -590,6 +626,82 @@
         window.addEventListener('appinstalled', (evt) => {
             console.log('PWA was installed');
             deferredPrompt = null;
+        });
+        
+        // 갤럭시 맵 기능
+        function initGalaxyMap() {
+            const galaxyMapBtn = document.getElementById('fabGalaxyMap');
+            const galaxyMapModal = document.getElementById('galaxyMapModal');
+            const galaxyMapClose = document.getElementById('galaxyMapClose');
+            const galaxyMapTabs = document.querySelectorAll('.galaxy-map-tab');
+            const galaxyMapFloors = document.querySelectorAll('.galaxy-map-floor');
+            
+            // 갤럭시 맵 버튼 클릭
+            if (galaxyMapBtn) {
+                galaxyMapBtn.addEventListener('click', () => {
+                    galaxyMapModal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // FAB 메뉴 닫기
+                    const fabMenu = document.getElementById('fabMenu');
+                    const fabMain = document.getElementById('fabMain');
+                    const fabOverlay = document.getElementById('fabOverlay');
+                    if (fabMenu && fabMain && fabOverlay) {
+                        fabMenu.classList.remove('show');
+                        fabMain.classList.remove('active');
+                        fabOverlay.classList.remove('show');
+                    }
+                });
+            }
+            
+            // 모달 닫기 버튼
+            if (galaxyMapClose) {
+                galaxyMapClose.addEventListener('click', () => {
+                    galaxyMapModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                });
+            }
+            
+            // 모달 배경 클릭 시 닫기
+            galaxyMapModal.addEventListener('click', (e) => {
+                if (e.target === galaxyMapModal) {
+                    galaxyMapModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // 층별 탭 전환
+            galaxyMapTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetFloor = tab.dataset.floor;
+                    
+                    // 모든 탭 비활성화
+                    galaxyMapTabs.forEach(t => t.classList.remove('active'));
+                    // 현재 탭 활성화
+                    tab.classList.add('active');
+                    
+                    // 모든 층 숨기기
+                    galaxyMapFloors.forEach(floor => floor.classList.remove('active'));
+                    // 선택된 층 표시
+                    const targetFloorElement = document.getElementById(`floor-${targetFloor}`);
+                    if (targetFloorElement) {
+                        targetFloorElement.classList.add('active');
+                    }
+                });
+            });
+            
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && galaxyMapModal.classList.contains('show')) {
+                    galaxyMapModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+        
+        // 페이지 로드 시 갤럭시 맵 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            initGalaxyMap();
         });
     </script>
 </body>
