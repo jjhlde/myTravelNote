@@ -355,22 +355,44 @@
             
             <!-- 금액 입력 섹션 -->
             <div class="expense-amount-section">
+                <!-- 통화 선택 탭 -->
+                <div class="currency-tabs">
+                    <button class="currency-tab active" data-currency="MOP">
+                        <span class="currency-symbol">MOP</span>
+                        <span class="currency-name">마카오 파타카</span>
+                    </button>
+                    <button class="currency-tab" data-currency="KRW">
+                        <span class="currency-symbol">₩</span>
+                        <span class="currency-name">한국 원</span>
+                    </button>
+                </div>
+                
                 <div class="amount-display">
-                    <span class="currency-symbol">₩</span>
+                    <span class="currency-symbol" id="displayCurrencySymbol">MOP</span>
                     <span class="amount-value" id="amountDisplay">0</span>
                 </div>
                 
-                <!-- 빠른 금액 버튼 -->
-                <div class="quick-amount-buttons">
-                    <button class="quick-amount-btn" data-amount="1000">+1천</button>
-                    <button class="quick-amount-btn" data-amount="5000">+5천</button>
-                    <button class="quick-amount-btn" data-amount="10000">+1만</button>
-                    <button class="quick-amount-btn" data-amount="50000">+5만</button>
+                <!-- 환율 정보 표시 -->
+                <div class="exchange-info" id="exchangeInfo">
+                    <div class="exchange-rate-display">
+                        <span class="rate-text">1 MOP = 174원</span>
+                        <span class="converted-amount" id="convertedAmount"></span>
+                    </div>
+                </div>
+                
+                <!-- 빠른 금액 버튼 (통화별로 다르게) -->
+                <div class="quick-amount-buttons" id="quickAmountButtons">
+                    <!-- MOP 기본 버튼들 -->
+                    <button class="quick-amount-btn" data-amount="10" data-currency="MOP">+10</button>
+                    <button class="quick-amount-btn" data-amount="50" data-currency="MOP">+50</button>
+                    <button class="quick-amount-btn" data-amount="100" data-currency="MOP">+100</button>
+                    <button class="quick-amount-btn" data-amount="200" data-currency="MOP">+200</button>
                 </div>
                 
                 <!-- 금액 직접 입력 -->
                 <div class="expense-amount-input-section">
-                    <input type="number" id="expenseAmountInput" placeholder="금액을 입력하세요" min="0" step="100">
+                    <input type="number" id="expenseAmountInput" placeholder="금액을 입력하세요 (MOP)" min="0" step="1">
+                    <span class="input-currency-unit" id="inputCurrencyUnit">MOP</span>
                 </div>
                 
                 <!-- 메모 입력 -->

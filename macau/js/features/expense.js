@@ -10,7 +10,9 @@ let expenseState = {
     category: 'transport',
     amount: 0,
     memo: '',
-    isOpen: false
+    isOpen: false,
+    currency: 'MOP', // 기본 통화 MOP
+    exchangeRate: 174.25 // 기본 환율 (1 MOP = 174.25 KRW)
 };
 
 // 카테고리 정보
@@ -31,10 +33,12 @@ const categories = {
 export function initExpenseInput() {
     initExpensePopup();
     initCategoryTabs();
+    initCurrencyTabs();
     initAmountInput();
     initQuickAmountButtons();
     initMemoInput();
     initActionButtons();
+    loadExchangeRate();
     
     console.log('Expense input system initialized');
 }
@@ -100,6 +104,118 @@ function selectCategory(category) {
 }
 
 /**
+ * 통화 탭 초기화
+ */
+function initCurrencyTabs() {
+    const currencyTabs = document.querySelectorAll('.currency-tab');
+    
+    currencyTabs.forEach(tab => {
+        addEventListener(tab, 'click', () => {
+            const currency = tab.dataset.currency;
+            selectCurrency(currency);
+        });
+    });
+}
+
+/**
+ * 통화 선택
+ */
+function selectCurrency(currency) {
+    expenseState.currency = currency;
+    
+    // 탭 활성화 상태 업데이트
+    const currencyTabs = document.querySelectorAll('.currency-tab');
+    currencyTabs.forEach(tab => {
+        if (tab.dataset.currency === currency) {
+            addClass(tab, 'active');
+        } else {
+            removeClass(tab, 'active');
+        }
+    });
+    
+    // UI 업데이트
+    updateCurrencyDisplay();
+    updateQuickAmountButtons();
+    resetAmount();
+}
+
+/**
+ * 통화 표시 업데이트
+ */
+function updateCurrencyDisplay() {
+    const displaySymbol = getElement('#displayCurrencySymbol');
+    const inputUnit = getElement('#inputCurrencyUnit');
+    const amountInput = getElement('#expenseAmountInput');
+    
+    if (expenseState.currency === 'MOP') {
+        if (displaySymbol) displaySymbol.textContent = 'MOP';
+        if (inputUnit) inputUnit.textContent = 'MOP';
+        if (amountInput) {
+            amountInput.placeholder = '금액을 입력하세요 (MOP)';
+            amountInput.step = '1';
+        }
+    } else {
+        if (displaySymbol) displaySymbol.textContent = '₩';
+        if (inputUnit) inputUnit.textContent = '원';
+        if (amountInput) {
+            amountInput.placeholder = '금액을 입력하세요 (원)';
+            amountInput.step = '100';
+        }
+    }
+    
+    // 환율 정보 표시/숨김
+    const exchangeInfo = getElement('#exchangeInfo');
+    if (exchangeInfo) {
+        if (expenseState.currency === 'MOP') {
+            exchangeInfo.style.display = 'block';
+            updateExchangeDisplay();
+        } else {
+            exchangeInfo.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * 환율 정보 로드 (환율 계산기에서 가져오기)
+ */
+async function loadExchangeRate() {
+    try {
+        // 환율 계산기의 캐시된 데이터 확인
+        const { exchangeRateCache } = await import('../core/storage.js');
+        const cachedRate = exchangeRateCache.get();
+        
+        if (cachedRate && cachedRate.rate) {
+            expenseState.exchangeRate = cachedRate.rate;
+        }
+        
+        updateExchangeDisplay();
+    } catch (error) {
+        console.warn('환율 정보 로드 실패, 기본값 사용:', error);
+        expenseState.exchangeRate = 174.25;
+        updateExchangeDisplay();
+    }
+}
+
+/**
+ * 환율 표시 업데이트
+ */
+function updateExchangeDisplay() {
+    const rateText = getElement('.rate-text');
+    if (rateText) {
+        rateText.textContent = `1 MOP = ${Math.round(expenseState.exchangeRate)}원`;
+    }
+    
+    // 현재 금액이 있으면 변환된 금액 표시
+    if (expenseState.amount > 0 && expenseState.currency === 'MOP') {
+        const convertedAmount = getElement('#convertedAmount');
+        if (convertedAmount) {
+            const krwAmount = Math.round(expenseState.amount * expenseState.exchangeRate);
+            convertedAmount.textContent = `≈ ${krwAmount.toLocaleString()}원`;
+        }
+    }
+}
+
+/**
  * 금액 입력 초기화
  */
 function initAmountInput() {
@@ -146,6 +262,49 @@ function initQuickAmountButtons() {
 }
 
 /**
+ * 빠른 금액 버튼 업데이트 (통화별로)
+ */
+function updateQuickAmountButtons() {
+    const buttonsContainer = getElement('#quickAmountButtons');
+    if (!buttonsContainer) return;
+    
+    if (expenseState.currency === 'MOP') {
+        buttonsContainer.innerHTML = `
+            <button class="quick-amount-btn" data-amount="10" data-currency="MOP">+10</button>
+            <button class="quick-amount-btn" data-amount="50" data-currency="MOP">+50</button>
+            <button class="quick-amount-btn" data-amount="100" data-currency="MOP">+100</button>
+            <button class="quick-amount-btn" data-amount="200" data-currency="MOP">+200</button>
+        `;
+    } else {
+        buttonsContainer.innerHTML = `
+            <button class="quick-amount-btn" data-amount="1000" data-currency="KRW">+1천</button>
+            <button class="quick-amount-btn" data-amount="5000" data-currency="KRW">+5천</button>
+            <button class="quick-amount-btn" data-amount="10000" data-currency="KRW">+1만</button>
+            <button class="quick-amount-btn" data-amount="50000" data-currency="KRW">+5만</button>
+        `;
+    }
+    
+    // 새로운 버튼들에 이벤트 리스너 다시 등록
+    const newButtons = buttonsContainer.querySelectorAll('.quick-amount-btn');
+    newButtons.forEach(btn => {
+        addEventListener(btn, 'click', () => {
+            const amount = parseInt(btn.dataset.amount) || 0;
+            const currentAmount = expenseState.amount || 0;
+            const newAmount = currentAmount + amount;
+            
+            setAmount(newAmount);
+        });
+    });
+}
+
+/**
+ * 금액 초기화
+ */
+function resetAmount() {
+    setAmount(0);
+}
+
+/**
  * 금액 설정
  */
 function setAmount(amount) {
@@ -159,9 +318,15 @@ function setAmount(amount) {
     }
     
     if (amountDisplay) {
-        amountDisplay.textContent = amount.toLocaleString();
+        if (expenseState.currency === 'MOP') {
+            amountDisplay.textContent = amount.toLocaleString();
+        } else {
+            amountDisplay.textContent = amount.toLocaleString();
+        }
     }
     
+    // 환율 변환 표시 업데이트
+    updateExchangeDisplay();
     updateAddButton();
 }
 
@@ -272,6 +437,7 @@ function resetExpenseState() {
     expenseState.category = 'transport';
     expenseState.amount = 0;
     expenseState.memo = '';
+    expenseState.currency = 'MOP'; // 기본 통화 MOP
     
     // UI 초기화
     const amountInput = getElement('#expenseAmountInput');
@@ -284,6 +450,9 @@ function resetExpenseState() {
     
     // 첫 번째 카테고리 선택
     selectCategory('transport');
+    
+    // 기본 통화 선택
+    selectCurrency('MOP');
 }
 
 /**
@@ -303,10 +472,19 @@ function generateUniqueId() {
 function addExpense() {
     if (expenseState.amount <= 0) return;
     
+    // 원화로 변환하여 저장 (MOP인 경우 환율 적용)
+    let krwAmount = expenseState.amount;
+    if (expenseState.currency === 'MOP') {
+        krwAmount = Math.round(expenseState.amount * expenseState.exchangeRate);
+    }
+    
     const expense = {
         id: generateUniqueId(),
         category: expenseState.category,
-        amount: expenseState.amount,
+        amount: krwAmount, // 항상 원화로 저장
+        originalAmount: expenseState.amount, // 원래 입력 금액
+        originalCurrency: expenseState.currency, // 원래 입력 통화
+        exchangeRate: expenseState.currency === 'MOP' ? expenseState.exchangeRate : 1, // 적용된 환율
         memo: expenseState.memo,
         date: new Date().toISOString(),
         timestamp: Date.now()
@@ -338,7 +516,14 @@ function addExpense() {
  */
 function showSuccessMessage() {
     const categoryInfo = categories[expenseState.category];
-    const message = `${categoryInfo.icon} ${categoryInfo.name} ${expenseState.amount.toLocaleString()}원이 추가되었습니다.`;
+    let message;
+    
+    if (expenseState.currency === 'MOP') {
+        const krwAmount = Math.round(expenseState.amount * expenseState.exchangeRate);
+        message = `${categoryInfo.icon} ${categoryInfo.name} ${expenseState.amount.toLocaleString()} MOP (${krwAmount.toLocaleString()}원)이 추가되었습니다.`;
+    } else {
+        message = `${categoryInfo.icon} ${categoryInfo.name} ${expenseState.amount.toLocaleString()}원이 추가되었습니다.`;
+    }
     
     // 간단한 토스트 메시지
     showToast(message, 'success');
