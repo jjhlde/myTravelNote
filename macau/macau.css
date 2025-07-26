@@ -2228,8 +2228,8 @@ body {
 
 /* 메인 FAB 버튼 */
 .fab-main {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: linear-gradient(135deg, #4F46E5, #7C3AED);
     border: none;
@@ -2258,7 +2258,7 @@ body {
 }
 
 .fab-icon {
-    font-size: 20px;
+    font-size: 24px;
     color: white;
     transition: transform 0.3s ease;
 }
@@ -2288,10 +2288,10 @@ body {
 /* FAB 메뉴 아이템 */
 .fab-item {
     position: absolute;
-    bottom: 28px;
-    right: 28px;
-    width: 56px;
-    height: 56px;
+    bottom: 32px;
+    right: 32px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: white;
     border: none;
@@ -2311,20 +2311,15 @@ body {
     opacity: 1;
 }
 
-/* 개별 FAB 아이템 위치 (3개 버튼 재배치) */
+/* 개별 FAB 아이템 위치 (수직 위쪽 배치) */
 .fab-menu.active .fab-expense {
-    transform: scale(1) translate(-90px, -30px);
+    transform: scale(1) translate(0, -80px);
     transition-delay: 0.1s;
 }
 
 .fab-menu.active .fab-exchange {
-    transform: scale(1) translate(-130px, -90px);
+    transform: scale(1) translate(0, -160px);
     transition-delay: 0.15s;
-}
-
-.fab-menu.active .fab-time {
-    transform: scale(1) translate(-50px, -150px);
-    transition-delay: 0.2s;
 }
 
 .fab-item:hover {
@@ -2333,12 +2328,12 @@ body {
 }
 
 .fab-item-icon {
-    font-size: 20px;
-    margin-bottom: 3px;
+    font-size: 24px;
+    margin-bottom: 4px;
 }
 
 .fab-item-label {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     color: #374151;
     line-height: 1;
@@ -2363,32 +2358,6 @@ body {
     color: white;
 }
 
-.fab-weather {
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
-    color: white;
-}
-
-.fab-weather .fab-item-label {
-    color: white;
-}
-
-.fab-time {
-    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-    color: white;
-}
-
-.fab-time .fab-item-label {
-    color: white;
-}
-
-.fab-translate {
-    background: linear-gradient(135deg, #EF4444, #DC2626);
-    color: white;
-}
-
-.fab-translate .fab-item-label {
-    color: white;
-}
 
 /* FAB 배경 오버레이 */
 .fab-overlay {
@@ -2418,34 +2387,30 @@ body {
     }
     
     .fab-main {
-        width: 52px;
-        height: 52px;
+        width: 60px;
+        height: 60px;
     }
     
     .fab-item {
-        width: 50px;
-        height: 50px;
+        width: 58px;
+        height: 58px;
     }
     
     .fab-item-icon {
-        font-size: 18px;
+        font-size: 22px;
     }
     
     .fab-item-label {
-        font-size: 9px;
+        font-size: 11px;
     }
     
-    /* 모바일에서 3개 버튼 배치 */
+    /* 모바일에서 수직 위쪽 배치 */
     .fab-menu.active .fab-expense {
-        transform: scale(1) translate(-75px, -25px);
+        transform: scale(1) translate(0, -75px);
     }
     
     .fab-menu.active .fab-exchange {
-        transform: scale(1) translate(-110px, -75px);
-    }
-    
-    .fab-menu.active .fab-time {
-        transform: scale(1) translate(-40px, -125px);
+        transform: scale(1) translate(0, -145px);
     }
 }
 
