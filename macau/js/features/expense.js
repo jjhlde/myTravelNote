@@ -226,14 +226,7 @@ function initAmountInput() {
     
     addEventListener(amountInput, 'input', (e) => {
         const value = parseInt(e.target.value) || 0;
-        expenseState.amount = value;
-        
-        // 금액 디스플레이 업데이트
-        if (amountDisplay) {
-            amountDisplay.textContent = value.toLocaleString();
-        }
-        
-        updateAddButton();
+        setAmount(value);
     });
     
     // Enter 키로 추가
