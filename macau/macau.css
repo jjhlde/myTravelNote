@@ -3275,6 +3275,14 @@ body {
     letter-spacing: -0.02em;
 }
 
+/* 원화 변환 금액 스타일 */
+.krw-amount {
+    font-size: 18px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-left: 8px;
+}
+
 /* 빠른 금액 버튼 */
 .quick-amount-buttons {
     display: grid;
@@ -3516,6 +3524,11 @@ body {
     
     .amount-value {
         font-size: 40px;
+    }
+    
+    .krw-amount {
+        font-size: 14px;
+        margin-left: 6px;
     }
     
     .currency-symbol {
