@@ -3033,12 +3033,12 @@ body {
 
 .expense-popup-content {
     background: white;
-    border-radius: 24px;
+    border-radius: 20px;
     width: 90%;
-    max-width: 420px;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    max-width: 380px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     transform: scale(0.9) translateY(20px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -3052,14 +3052,14 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 24px 20px;
+    padding: 18px 20px 16px;
     background: linear-gradient(135deg, #4F46E5, #7C3AED);
     color: white;
 }
 
 .expense-popup-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -3087,8 +3087,8 @@ body {
 .expense-categories-tabs {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 20px;
+    gap: 6px;
+    padding: 16px 20px;
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
 }
@@ -3096,15 +3096,15 @@ body {
 .category-tab {
     background: white;
     border: 2px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 12px 8px;
+    border-radius: 12px;
+    padding: 10px 6px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    min-height: 70px;
+    gap: 4px;
+    min-height: 60px;
     position: relative;
     overflow: hidden;
 }
@@ -3140,7 +3140,7 @@ body {
 }
 
 .tab-icon {
-    font-size: 20px;
+    font-size: 18px;
     transition: transform 0.2s ease;
     z-index: 1;
     position: relative;
@@ -3151,7 +3151,7 @@ body {
 }
 
 .tab-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-align: center;
     line-height: 1.2;
@@ -3165,7 +3165,7 @@ body {
 
 /* 금액 입력 섹션 */
 .expense-amount-section {
-    padding: 20px 24px;
+    padding: 0 20px 16px;
     text-align: center;
     background: white;
 }
@@ -3174,24 +3174,24 @@ body {
 .currency-tabs {
     display: flex;
     background: #f1f5f9;
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 20px;
-    gap: 4px;
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 16px;
+    gap: 3px;
 }
 
 .currency-tab {
     flex: 1;
     background: transparent;
     border: none;
-    border-radius: 8px;
-    padding: 12px 8px;
+    border-radius: 7px;
+    padding: 8px 6px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
 }
 
 .currency-tab:hover {
@@ -3205,22 +3205,22 @@ body {
 }
 
 .currency-tab .currency-symbol {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
 }
 
 .currency-tab .currency-name {
-    font-size: 12px;
+    font-size: 10px;
     opacity: 0.8;
 }
 
 /* 환율 정보 표시 */
 .exchange-info {
-    margin-bottom: 16px;
-    padding: 8px 12px;
+    margin-bottom: 12px;
+    padding: 6px 10px;
     background: #f8faff;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .exchange-rate-display {
@@ -3257,7 +3257,7 @@ body {
 }
 
 .amount-display {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .currency-symbol {
@@ -3279,16 +3279,16 @@ body {
 .quick-amount-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 6px;
+    margin-bottom: 14px;
 }
 
 .quick-amount-btn {
     background: #f1f5f9;
     border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 8px;
-    font-size: 13px;
+    border-radius: 10px;
+    padding: 8px 6px;
+    font-size: 12px;
     font-weight: 600;
     color: #475569;
     cursor: pointer;
@@ -3308,15 +3308,15 @@ body {
 
 /* 메모 입력 */
 .expense-memo-section {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .expense-memo-section input {
     width: 100%;
-    padding: 14px 16px;
+    padding: 10px 12px;
     border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 15px;
+    border-radius: 10px;
+    font-size: 14px;
     background: #f8fafc;
     transition: all 0.2s ease;
     text-align: center;
@@ -3335,15 +3335,15 @@ body {
 
 /* 금액 직접 입력 섹션 */
 .expense-amount-input-section {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .expense-amount-input-section input {
     width: 100%;
-    padding: 16px 20px;
+    padding: 12px 16px;
     border: 3px solid #e2e8f0;
-    border-radius: 16px;
-    font-size: 24px;
+    border-radius: 12px;
+    font-size: 20px;
     font-weight: 600;
     text-align: center;
     background: white;
@@ -3408,8 +3408,8 @@ body {
 .expense-actions {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 12px;
-    padding: 20px 24px 24px;
+    gap: 10px;
+    padding: 0 20px 16px;
     background: white;
 }
 
@@ -3417,8 +3417,8 @@ body {
     background: #f1f5f9;
     color: #64748b;
     border: 2px solid #e2e8f0;
-    padding: 14px 20px;
-    border-radius: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -3433,12 +3433,12 @@ body {
     background: linear-gradient(135deg, #4F46E5, #7C3AED);
     color: white;
     border: none;
-    padding: 14px 20px;
-    border-radius: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 3px 12px rgba(79, 70, 229, 0.4);
 }
 
 .expense-actions .btn-primary:hover:not(:disabled) {
