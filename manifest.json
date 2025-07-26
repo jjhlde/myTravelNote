@@ -2,7 +2,7 @@
   "name": "마카오 가족여행",
   "short_name": "마카오여행",
   "description": "37개월 딸과 함께하는 마카오 3박 4일 여행 일정",
-  "start_url": "./index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4F46E5",

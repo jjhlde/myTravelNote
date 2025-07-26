@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
     
     <!-- 매니페스트 -->
-    <link rel="manifest" href="./macau/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- CSS 파일 -->
     <link rel="stylesheet" href="./macau/macau.css">
@@ -552,6 +552,57 @@
         function openFlightTicket() {
             console.log('Legacy openFlightTicket called');
         }
+    </script>
+    
+    <!-- Service Worker 등록 -->
+    <script>
+        // Service Worker 등록 (PWA 404 에러 해결)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                        
+                        // 업데이트 확인
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // 새 버전이 설치됨, 사용자에게 새로고침 안내
+                                    if (confirm('새 버전이 사용 가능합니다. 페이지를 새로고침하시겠습니까?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // PWA 설치 버튼 처리
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 기본 설치 프롬프트 방지
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 사용자 정의 설치 안내 표시
+            const installGuide = document.getElementById('installGuideOverlay');
+            if (installGuide && !localStorage.getItem('installGuideShown')) {
+                installGuide.style.display = 'flex';
+                localStorage.setItem('installGuideShown', 'true');
+            }
+        });
+        
+        // 앱 설치됨 감지
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA was installed');
+            deferredPrompt = null;
+        });
     </script>
 </body>
 </html>
