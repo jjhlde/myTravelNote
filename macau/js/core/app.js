@@ -27,8 +27,10 @@ class BackButtonHandler {
         // popstate 이벤트 리스너 등록 (뒤로가기 버튼 감지)
         window.addEventListener('popstate', this.handlePopState.bind(this));
         
-        // 초기 히스토리 상태 푸시
+        // 초기 히스토리 상태 설정 (뒤로가기 감지를 위해 엔트리 추가)
         history.replaceState({ page: 'main' }, '', window.location.href);
+        // PWA 앱 종료 감지를 위한 추가 히스토리 엔트리
+        history.pushState({ page: 'main', canExit: true }, '', window.location.href);
         
         this.isInitialized = true;
         console.log('🔙 안드로이드 뒤로가기 버튼 핸들러 초기화 완료');
@@ -100,8 +102,8 @@ class BackButtonHandler {
                 window.close();
             }
         } else {
-            // 취소 시 히스토리 상태 복원
-            history.pushState({ page: 'main' }, '', window.location.href);
+            // 취소 시 히스토리 상태 복원 (뒤로가기 감지를 위해)
+            history.pushState({ page: 'main', canExit: true }, '', window.location.href);
         }
     }
 
