@@ -27,8 +27,15 @@ class BackButtonHandler {
         // popstate 이벤트 리스너 등록 (뒤로가기 버튼 감지)
         window.addEventListener('popstate', this.handlePopState.bind(this));
         
+        // beforeunload 이벤트로 추가 보호 (브라우저 새로고침/닫기 방지)
+        window.addEventListener('beforeunload', (e) => {
+            e.preventDefault();
+            e.returnValue = '마카오 여행 앱을 종료하시겠습니까?';
+            return '마카오 여행 앱을 종료하시겠습니까?';
+        });
+        
         // 초기 히스토리 상태 설정 (뒤로가기 감지를 위해 엔트리 추가)
-        history.replaceState({ page: 'main' }, '', window.location.href);
+        history.replaceState({ page: 'main', appInit: true }, '', window.location.href);
         // PWA 앱 종료 감지를 위한 추가 히스토리 엔트리
         history.pushState({ page: 'main', canExit: true }, '', window.location.href);
         
@@ -65,6 +72,11 @@ class BackButtonHandler {
     // 뒤로가기 버튼 처리
     handlePopState(event) {
         console.log('🔙 뒤로가기 버튼 감지:', event.state);
+        console.log('🔙 현재 팝업 스택 크기:', this.popupStack.length);
+        console.log('🔙 팝업 스택:', this.popupStack);
+        
+        // 이벤트 기본 동작 방지
+        event.preventDefault && event.preventDefault();
         
         if (this.popupStack.length > 0) {
             // 가장 최근에 열린 팝업 닫기
