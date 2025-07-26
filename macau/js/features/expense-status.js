@@ -328,12 +328,46 @@ function deleteExpense(expenseId) {
     const menu = document.getElementById(`expenseMenu_${expenseId}`);
     if (menu) menu.style.display = 'none';
     
-    if (!confirm('이 지출 내역을 삭제하시겠습니까?')) {
+    console.log('🗑️ 지출 삭제 요청 - ID:', expenseId, 'Type:', typeof expenseId);
+    
+    // 삭제 전 확인
+    const expenses = getAllExpenses();
+    const targetExpense = expenses.find(e => e.id === expenseId);
+    
+    if (!targetExpense) {
+        console.error('❌ 삭제하려는 지출을 찾을 수 없습니다:', expenseId);
+        alert('삭제하려는 지출 내역을 찾을 수 없습니다.');
         return;
     }
     
+    console.log('🎯 삭제 대상 확인:', targetExpense);
+    
+    if (!confirm(`이 지출 내역을 삭제하시겠습니까?\n\n${targetExpense.memo || '메모 없음'}: ${targetExpense.amount.toLocaleString()}원`)) {
+        return;
+    }
+    
+    // 삭제 전 개수 확인
+    const beforeCount = expenses.length;
+    console.log('삭제 전 총 지출 개수:', beforeCount);
+    
     // 저장소에서 삭제
-    removeExpenseFromStorage(expenseId);
+    const deleteResult = removeExpenseFromStorage(expenseId);
+    
+    if (!deleteResult) {
+        alert('지출 삭제에 실패했습니다.');
+        return;
+    }
+    
+    // 삭제 후 확인
+    const afterExpenses = getAllExpenses();
+    const afterCount = afterExpenses.length;
+    console.log('삭제 후 총 지출 개수:', afterCount, '(변화:', beforeCount - afterCount, ')');
+    
+    if (beforeCount === afterCount) {
+        console.error('❌ 지출이 삭제되지 않았습니다!');
+        alert('지출 삭제에 실패했습니다. 페이지를 새로고침해주세요.');
+        return;
+    }
     
     // UI 업데이트
     updateExpenseStatus();
@@ -341,6 +375,7 @@ function deleteExpense(expenseId) {
     // 커스텀 이벤트 발생
     document.dispatchEvent(new CustomEvent('expenseDeleted', { detail: { id: expenseId } }));
     
+    console.log('✅ 지출 삭제 완료');
     alert('지출 내역이 삭제되었습니다.');
 }
 

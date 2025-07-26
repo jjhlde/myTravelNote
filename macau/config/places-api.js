@@ -146,6 +146,23 @@ class PlacesService {
         return `https://maps.google.com/maps/search/${encodedName}/@${location.lat},${location.lng},15z`;
     }
 
+    // 모바일 친화적 맵 링크 생성 (앱 우선)
+    generateMobileMapLink(placeName, location, placeId = null) {
+        // Place ID가 있으면 가장 정확한 방법 사용
+        if (placeId) {
+            return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+        }
+        
+        // 좌표 기반 네비게이션 링크 (모바일 앱에서 바로 열림)
+        if (location && location.lat && location.lng) {
+            return `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}&destination_place_id=${placeId || ''}`;
+        }
+        
+        // 폴백: 장소명 검색
+        const encodedName = encodeURIComponent(placeName);
+        return `https://www.google.com/maps/search/${encodedName}`;
+    }
+
     // API 실패 시 기본 데이터 생성
     createFallbackData(placeName, coordinates) {
         return {
@@ -282,7 +299,205 @@ function improveMapLinks() {
     });
 }
 
-// 페이지 로드 시 맵 링크 자동 개선
+// 동적 이미지 로딩 시스템
+class DynamicImageLoader {
+    constructor(placesService) {
+        this.placesService = placesService;
+        this.loadingPlaces = new Set(); // 중복 요청 방지
+    }
+
+    // 장소별 이미지 자동 로딩
+    async loadPlaceImages(placeName, containerId, fallbackImages = []) {
+        if (this.loadingPlaces.has(placeName)) {
+            console.log(`⏳ 이미 로딩 중: ${placeName}`);
+            return;
+        }
+
+        this.loadingPlaces.add(placeName);
+        const container = document.getElementById(containerId);
+        
+        if (!container) {
+            console.warn(`⚠️ 컨테이너를 찾을 수 없음: ${containerId}`);
+            this.loadingPlaces.delete(placeName);
+            return;
+        }
+
+        try {
+            // 로딩 상태 표시
+            this.showLoadingState(container);
+            
+            // Places API로 최신 이미지 정보 가져오기
+            const placeData = await this.placesService.findPlaceByName(placeName);
+            
+            if (placeData.photos && placeData.photos.length > 0) {
+                console.log(`✅ ${placeName} 이미지 로딩 성공:`, placeData.photos.length, '개');
+                this.updateImageSlider(container, placeData.photos, placeName);
+            } else {
+                console.warn(`⚠️ ${placeName} API 이미지 없음, 폴백 이미지 사용`);
+                this.showFallbackImages(container, fallbackImages, placeName);
+            }
+        } catch (error) {
+            console.error(`❌ ${placeName} 이미지 로딩 실패:`, error);
+            this.showFallbackImages(container, fallbackImages, placeName);
+        } finally {
+            this.loadingPlaces.delete(placeName);
+        }
+    }
+
+    // 로딩 상태 표시
+    showLoadingState(container) {
+        const slider = container.querySelector('.place-images-slider');
+        if (slider) {
+            slider.innerHTML = `
+                <div class="image-loading-state">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">최신 이미지 로딩 중...</div>
+                </div>
+            `;
+        }
+    }
+
+    // 이미지 슬라이더 업데이트
+    updateImageSlider(container, photos, placeName) {
+        const slider = container.querySelector('.place-images-slider');
+        const nav = container.querySelector('.place-images-nav');
+        const counter = container.querySelector('.place-images-counter');
+        
+        if (!slider) return;
+
+        // 슬라이더 이미지 업데이트
+        slider.innerHTML = photos.map((photo, index) => `
+            <img src="${photo.url}" 
+                 alt="${placeName} 이미지 ${index + 1}" 
+                 onclick="openImageModal(this.src, this.alt)"
+                 onerror="this.style.display='none'">
+        `).join('');
+
+        // 네비게이션 점 업데이트
+        if (nav) {
+            nav.innerHTML = photos.map((_, index) => `
+                <div class="place-images-dot ${index === 0 ? 'active' : ''}" 
+                     onclick="showSlide('${container.id}', ${index})"></div>
+            `).join('');
+        }
+
+        // 카운터 업데이트
+        if (counter) {
+            counter.textContent = `1/${photos.length}`;
+        }
+
+        console.log(`🖼️ ${placeName} 이미지 슬라이더 업데이트 완료`);
+    }
+
+    // 폴백 이미지 시스템
+    showFallbackImages(container, fallbackImages, placeName) {
+        const slider = container.querySelector('.place-images-slider');
+        if (!slider) return;
+
+        if (fallbackImages.length > 0) {
+            // 사용자 제공 폴백 이미지 사용
+            this.updateImageSlider(container, fallbackImages.map((url, index) => ({
+                url: url,
+                reference: null
+            })), placeName);
+        } else {
+            // 기본 폴백 이미지
+            slider.innerHTML = `
+                <div class="fallback-image-placeholder">
+                    <div class="placeholder-icon">📍</div>
+                    <div class="placeholder-text">${placeName}</div>
+                    <div class="placeholder-subtitle">이미지를 불러올 수 없습니다</div>
+                </div>
+            `;
+        }
+    }
+
+    // 페이지의 모든 장소 이미지 자동 갱신
+    async refreshAllPlaceImages() {
+        const imageContainers = document.querySelectorAll('.place-images[id*="slider"]');
+        console.log(`🔄 총 ${imageContainers.length}개 장소 이미지 갱신 시작`);
+
+        for (const container of imageContainers) {
+            const containerId = container.id;
+            // ID에서 장소명 추출 (예: "slider-1-airport" -> "airport")
+            const placeKey = containerId.split('-').pop();
+            
+            // 장소 매핑 테이블
+            const placeMapping = {
+                'airport': 'Macau International Airport',
+                'andaz': 'Andaz Macau',
+                'galaxy': 'Galaxy Macau',
+                'broadway': 'Broadway Macau',
+                'venetian': 'The Venetian Macao',
+                'grand-resort-deck': 'Grand Resort Deck'
+            };
+
+            const placeName = placeMapping[placeKey];
+            if (placeName) {
+                await this.loadPlaceImages(placeName, containerId);
+                // API 요청 제한을 위한 딜레이
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        console.log('✅ 모든 장소 이미지 갱신 완료');
+    }
+}
+
+// 전역 이미지 로더 인스턴스
+let imageLoader;
+
+// 전역 함수: 모바일 친화적 맵 열기
+function openMobileMap(placeName, lat, lng, placeId = null) {
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    let mapUrl;
+    
+    if (isMobile) {
+        // 모바일: 앱 우선 URL 사용
+        if (placeId) {
+            mapUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+        } else if (lat && lng) {
+            mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        } else {
+            mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(placeName)}`;
+        }
+    } else {
+        // 데스크톱: 웹 버전
+        if (lat && lng) {
+            mapUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
+        } else {
+            mapUrl = `https://maps.google.com/maps/search/${encodeURIComponent(placeName)}`;
+        }
+    }
+    
+    // 모바일에서는 현재 창에서, 데스크톱에서는 새 탭에서 열기
+    if (isMobile) {
+        window.location.href = mapUrl;
+    } else {
+        window.open(mapUrl, '_blank');
+    }
+    
+    console.log(`🗺️ 맵 열기: ${placeName} (${isMobile ? '모바일 앱' : '데스크톱 웹'})`);
+}
+
+// 페이지 로드 시 맵 링크 자동 개선 및 이미지 로더 초기화
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(improveMapLinks, 1000);
+    
+    // 이미지 로더 초기화
+    if (typeof placesService !== 'undefined') {
+        imageLoader = new DynamicImageLoader(placesService);
+        window.imageLoader = imageLoader; // 전역으로 노출
+        console.log('🖼️ Dynamic Image Loader 초기화 완료');
+        
+        // 자동 이미지 갱신 실행 (3초 후)
+        setTimeout(() => {
+            imageLoader.refreshAllPlaceImages();
+        }, 3000);
+    }
+    
+    // 전역 함수 등록
+    window.openMobileMap = openMobileMap;
+    console.log('📱 모바일 맵 함수 등록 완료');
 });

@@ -454,9 +454,39 @@ export function updateExpenseInStorage(expenseId, updatedExpense) {
  */
 export function removeExpenseFromStorage(expenseId) {
     try {
+        console.log('🗑️ 지출 삭제 시작 - ID:', expenseId, 'Type:', typeof expenseId);
+        
         // 메인 데이터에서 삭제
         const macauExpenseData = getStorageItem('macau_expense_data', { expenses: [] });
-        macauExpenseData.expenses = macauExpenseData.expenses.filter(e => e.id !== expenseId);
+        console.log('삭제 전 지출 개수:', macauExpenseData.expenses.length);
+        console.log('삭제 전 ID 목록:', macauExpenseData.expenses.map(e => `${e.id}(${typeof e.id})`));
+        
+        const beforeCount = macauExpenseData.expenses.length;
+        macauExpenseData.expenses = macauExpenseData.expenses.filter(e => {
+            const shouldKeep = e.id !== expenseId;
+            if (!shouldKeep) {
+                console.log('✅ 삭제 대상 발견:', e.id, '===', expenseId, '?', e.id === expenseId);
+            }
+            return shouldKeep;
+        });
+        const afterCount = macauExpenseData.expenses.length;
+        
+        console.log('삭제 후 지출 개수:', afterCount, '(변화:', beforeCount - afterCount, ')');
+        console.log('삭제 후 ID 목록:', macauExpenseData.expenses.map(e => e.id));
+        
+        if (beforeCount === afterCount) {
+            console.warn('⚠️ 삭제되지 않음! ID 불일치 가능성');
+            // ID 타입 변환 시도
+            const numericId = parseInt(expenseId);
+            if (!isNaN(numericId)) {
+                console.log('숫자 ID로 재시도:', numericId);
+                macauExpenseData.expenses = macauExpenseData.expenses.filter(e => {
+                    return e.id !== expenseId && e.id !== numericId && parseInt(e.id) !== numericId;
+                });
+                console.log('숫자 변환 후 지출 개수:', macauExpenseData.expenses.length);
+            }
+        }
+        
         macauExpenseData.lastUpdated = Date.now();
         setStorageItem('macau_expense_data', macauExpenseData);
         
@@ -472,9 +502,10 @@ export function removeExpenseFromStorage(expenseId) {
             setStorageItem('travelBudget', budgetData);
         }
         
+        console.log('✅ 지출 삭제 완료');
         return true;
     } catch (error) {
-        console.error('Error removing expense:', error);
+        console.error('❌ Error removing expense:', error);
         return false;
     }
 }

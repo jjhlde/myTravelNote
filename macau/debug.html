@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macau App Debug Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status-good { color: #22c55e; font-weight: bold; }
+        .status-error { color: #ef4444; font-weight: bold; }
+        .status-warning { color: #f59e0b; font-weight: bold; }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-result.pass {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+        }
+        .test-result.fail {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        .test-result.warn {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Macau Travel App Debug Information</h1>
+    
+    <div class="debug-section">
+        <h2>1. 기본 파일 로드 테스트</h2>
+        <div id="file-tests"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. JavaScript 모듈 로드 테스트</h2>
+        <div id="module-tests"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. API 키 설정 확인</h2>
+        <div id="api-tests"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. PWA 기능 테스트</h2>
+        <div id="pwa-tests"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>5. 콘솔 에러 로그</h2>
+        <div id="console-errors">
+            <pre id="error-log">에러 수집 중...</pre>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>6. 빠른 액세스 링크</h2>
+        <p>
+            <a href="./index.html" target="_blank">→ index.html</a> |
+            <a href="./macau.html" target="_blank">→ macau.html (메인앱)</a> |
+            <a href="./macau.html?debug=true" target="_blank">→ macau.html (디버그모드)</a>
+        </p>
+    </div>
+
+    <script>
+        // 에러 로그 수집
+        const errors = [];
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            errors.push({
+                type: 'error',
+                message: args.join(' '),
+                timestamp: new Date().toISOString()
+            });
+            originalConsoleError.apply(console, args);
+            updateErrorLog();
+        };
+
+        const originalConsoleWarn = console.warn;
+        console.warn = function(...args) {
+            errors.push({
+                type: 'warning',
+                message: args.join(' '),
+                timestamp: new Date().toISOString()
+            });
+            originalConsoleWarn.apply(console, args);
+            updateErrorLog();
+        };
+
+        function updateErrorLog() {
+            const errorLog = document.getElementById('error-log');
+            if (errors.length === 0) {
+                errorLog.textContent = '✅ 에러 없음';
+            } else {
+                errorLog.textContent = errors.map(err => 
+                    `[${err.timestamp}] ${err.type.toUpperCase()}: ${err.message}`
+                ).join('\n');
+            }
+        }
+
+        // 테스트 결과 표시 함수
+        function showResult(containerId, title, status, message) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            
+            const statusIcon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+            div.innerHTML = `<strong>${statusIcon} ${title}</strong><br>${message}`;
+            container.appendChild(div);
+        }
+
+        // 파일 로드 테스트
+        async function testFileLoads() {
+            const files = [
+                { name: 'CSS', url: './macau.css' },
+                { name: 'Manifest', url: './manifest.json' },
+                { name: 'Service Worker', url: './sw.js' },
+                { name: 'Config', url: './config/config.js' }
+            ];
+
+            for (const file of files) {
+                try {
+                    const response = await fetch(file.url);
+                    if (response.ok) {
+                        showResult('file-tests', `${file.name} 파일`, 'pass', `${response.status} OK`);
+                    } else {
+                        showResult('file-tests', `${file.name} 파일`, 'fail', `${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    showResult('file-tests', `${file.name} 파일`, 'fail', `로드 실패: ${error.message}`);
+                }
+            }
+        }
+
+        // 모듈 테스트
+        async function testModules() {
+            try {
+                // ES 모듈 지원 확인
+                if (typeof(Worker) !== "undefined") {
+                    showResult('module-tests', 'ES6 모듈 지원', 'pass', 'ES6 모듈을 지원하는 브라우저');
+                } else {
+                    showResult('module-tests', 'ES6 모듈 지원', 'warn', '일부 기능이 제한될 수 있음');
+                }
+
+                // 설정 파일 로드 시도
+                const script = document.createElement('script');
+                script.src = './config/config.js';
+                script.onload = () => {
+                    if (typeof API_KEY !== 'undefined') {
+                        showResult('module-tests', 'Config 모듈', 'pass', 'API_KEY 로드됨');
+                    } else {
+                        showResult('module-tests', 'Config 모듈', 'fail', 'API_KEY 로드 실패');
+                    }
+                };
+                script.onerror = () => {
+                    showResult('module-tests', 'Config 모듈', 'fail', '설정 파일 로드 실패');
+                };
+                document.head.appendChild(script);
+
+            } catch (error) {
+                showResult('module-tests', '모듈 시스템', 'fail', error.message);
+            }
+        }
+
+        // API 키 테스트
+        function testAPIKeys() {
+            setTimeout(() => {
+                if (typeof API_KEY !== 'undefined' && API_KEY) {
+                    showResult('api-tests', 'Gemini API 키', 'pass', 'API 키가 설정되어 있음');
+                } else {
+                    showResult('api-tests', 'Gemini API 키', 'fail', 'API 키가 설정되지 않음');
+                }
+
+                if (typeof CONFIG !== 'undefined') {
+                    showResult('api-tests', 'Google Maps API', CONFIG.GOOGLE_MAPS_API_KEY ? 'pass' : 'fail', 
+                              CONFIG.GOOGLE_MAPS_API_KEY ? '설정됨' : '미설정');
+                    showResult('api-tests', 'Google Places API', CONFIG.GOOGLE_PLACES_API_KEY ? 'pass' : 'fail', 
+                              CONFIG.GOOGLE_PLACES_API_KEY ? '설정됨' : '미설정');
+                }
+            }, 1000);
+        }
+
+        // PWA 기능 테스트
+        function testPWAFeatures() {
+            // Service Worker 지원
+            if ('serviceWorker' in navigator) {
+                showResult('pwa-tests', 'Service Worker 지원', 'pass', '브라우저에서 지원됨');
+            } else {
+                showResult('pwa-tests', 'Service Worker 지원', 'fail', '브라우저에서 지원되지 않음');
+            }
+
+            // Manifest 지원
+            if ('getInstalledRelatedApps' in navigator) {
+                showResult('pwa-tests', 'PWA 매니페스트', 'pass', '설치 가능한 앱으로 인식됨');
+            } else {
+                showResult('pwa-tests', 'PWA 매니페스트', 'warn', '일부 PWA 기능이 제한될 수 있음');
+            }
+
+            // 로컬 스토리지
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                showResult('pwa-tests', '로컬 스토리지', 'pass', '정상 작동');
+            } catch (error) {
+                showResult('pwa-tests', '로컬 스토리지', 'fail', '접근 불가');
+            }
+        }
+
+        // 테스트 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔧 Macau Travel App Debug 페이지 시작');
+            
+            testFileLoads();
+            testModules();
+            testAPIKeys();
+            testPWAFeatures();
+            
+            // 5초 후 에러 로그 업데이트
+            setTimeout(updateErrorLog, 5000);
+        });
+    </script>
+</body>
+</html>

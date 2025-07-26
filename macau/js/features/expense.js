@@ -275,13 +275,24 @@ function resetExpenseState() {
 }
 
 /**
+ * 고유 ID 생성 (중복 방지)
+ * @returns {string} 고유 ID
+ */
+function generateUniqueId() {
+    // 현재 시간 + 랜덤 숫자 조합으로 중복 방지
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `${timestamp}_${random}`;
+}
+
+/**
  * 지출 추가
  */
 function addExpense() {
     if (expenseState.amount <= 0) return;
     
     const expense = {
-        id: Date.now().toString(),
+        id: generateUniqueId(),
         category: expenseState.category,
         amount: expenseState.amount,
         memo: expenseState.memo,

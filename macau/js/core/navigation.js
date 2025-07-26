@@ -14,12 +14,12 @@ let isHorizontalSwipe = false;
 
 // 페이지 파일 매핑
 const pageFiles = [
-    'pages/info.html',
-    'pages/day1.html',
-    'pages/day2.html',
-    'pages/day3.html',
-    'pages/day4.html',
-    'macau_todo.html'
+    './macau/pages/info.html',
+    './macau/pages/day1.html',
+    './macau/pages/day2.html',
+    './macau/pages/day3.html',
+    './macau/pages/day4.html',
+    './macau/pages/budget.html'
 ];
 
 // 페이지 로드 상태 추적
@@ -76,8 +76,8 @@ async function loadPageContent(pageIndex) {
             pageElement.innerHTML = content;
             loadedPages.add(pageIndex);
             
-            // 준비물 페이지(macau_todo.html)가 로드된 경우 스크립트 실행
-            if (pageFiles[pageIndex] === 'macau_todo.html' && onTodoScriptExecute) {
+            // 예산 페이지(budget.html)가 로드된 경우 스크립트 실행
+            if (pageFiles[pageIndex] === './macau/pages/budget.html' && onTodoScriptExecute) {
                 onTodoScriptExecute();
             }
         } else {
