@@ -722,6 +722,7 @@
             // 뒤로가기 버튼 처리 (popstate 이벤트)
             window.addEventListener('popstate', (e) => {
                 if (galaxyMapModal.classList.contains('show')) {
+                    e.stopImmediatePropagation(); // 다른 popstate 이벤트 차단
                     closeGalaxyMap();
                 }
             });
@@ -744,42 +745,45 @@
                 modalObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
             });
             
-            // 뒤로가기 버튼 감지
-            window.addEventListener('popstate', (e) => {
-                // 갤럭시 맵 모달이 열린경우는 이미 다른 곳에서 처리
-                if (history.state && history.state.modal === 'galaxy-map') {
-                    return;
-                }
-                
-                // 다른 모달이 열린 경우도 종료 확인하지 않음
-                if (isModalOpen) {
-                    return;
-                }
-                
-                // 첫 번째 뒤로가기: 히스토리 엔트리 추가하고 경고
-                if (!isExitAttempt) {
-                    e.preventDefault();
-                    isExitAttempt = true;
-                    
-                    // 종료 확인 다이얼로그
-                    const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
-                    
-                    if (confirmExit) {
-                        // 앱 종료
-                        if (window.navigator.standalone) {
-                            // iOS PWA에서는 다른 페이지로 이동
-                            window.location.href = 'about:blank';
-                        } else {
-                            // 일반 브라우저에서는 창 닫기 시도
-                            window.close();
-                        }
-                    } else {
-                        // 취소 시 현재 상태 유지
-                        history.pushState({ exitAttempt: true }, '', '');
-                        isExitAttempt = false;
+            // 뒤로가기 버튼 감지 (낮은 우선순위로 등록)
+            setTimeout(() => {
+                window.addEventListener('popstate', (e) => {
+                    // 갤럭시 맵 모달이 열린 경우 종료 확인하지 않음
+                    const galaxyMapModal = document.getElementById('galaxyMapModal');
+                    if (galaxyMapModal && galaxyMapModal.classList.contains('show')) {
+                        return;
                     }
-                }
-            });
+                    
+                    // 다른 모달이 열린 경우도 종료 확인하지 않음
+                    if (isModalOpen) {
+                        return;
+                    }
+                    
+                    // 첫 번째 뒤로가기: 히스토리 엔트리 추가하고 경고
+                    if (!isExitAttempt) {
+                        e.preventDefault();
+                        isExitAttempt = true;
+                        
+                        // 종료 확인 다이얼로그
+                        const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
+                        
+                        if (confirmExit) {
+                            // 앱 종료
+                            if (window.navigator.standalone) {
+                                // iOS PWA에서는 다른 페이지로 이동
+                                window.location.href = 'about:blank';
+                            } else {
+                                // 일반 브라우저에서는 창 닫기 시도
+                                window.close();
+                            }
+                        } else {
+                            // 취소 시 현재 상태 유지
+                            history.pushState({ exitAttempt: true }, '', '');
+                            isExitAttempt = false;
+                        }
+                    }
+                });
+            }, 100);
             
             // 초기 히스토리 상태 설정 (종료 감지용)
             history.pushState({ initial: true }, '', '');
