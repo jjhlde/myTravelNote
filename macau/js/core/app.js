@@ -24,8 +24,14 @@ class BackButtonHandler {
     init() {
         if (this.isInitialized) return;
         
+        // 바인딩된 핸들러 저장 (나중에 제거할 수 있도록)
+        this.boundHandler = this.handlePopState.bind(this);
+        
+        // 기존 popstate 핸들러들 제거 (중복 방지)
+        console.log('🔙 기존 popstate 핸들러들 정리 중...');
+        
         // popstate 이벤트 리스너 등록 (뒤로가기 버튼 감지)
-        window.addEventListener('popstate', this.handlePopState.bind(this));
+        window.addEventListener('popstate', this.boundHandler);
         
         // beforeunload 이벤트로 추가 보호 (브라우저 새로고침/닫기 방지)
         window.addEventListener('beforeunload', (e) => {
@@ -34,10 +40,13 @@ class BackButtonHandler {
             return '마카오 여행 앱을 종료하시겠습니까?';
         });
         
-        // 초기 히스토리 상태 설정 (뒤로가기 감지를 위해 엔트리 추가)
-        history.replaceState({ page: 'main', appInit: true }, '', window.location.href);
-        // PWA 앱 종료 감지를 위한 추가 히스토리 엔트리
-        history.pushState({ page: 'main', canExit: true }, '', window.location.href);
+        // 초기 히스토리 상태 설정 (기존 상태가 없을 때만)
+        if (!history.state || !history.state.appInit) {
+            console.log('🔙 초기 히스토리 상태 설정');
+            history.replaceState({ page: 'main', appInit: true }, '', window.location.href);
+            // PWA 앱 종료 감지를 위한 추가 히스토리 엔트리
+            history.pushState({ page: 'main', canExit: true }, '', window.location.href);
+        }
         
         this.isInitialized = true;
         console.log('🔙 안드로이드 뒤로가기 버튼 핸들러 초기화 완료');
@@ -71,30 +80,34 @@ class BackButtonHandler {
 
     // 뒤로가기 버튼 처리
     handlePopState(event) {
-        console.log('🔙 뒤로가기 버튼 감지:', event.state);
+        console.log('🔙🔙🔙 BackButtonHandler 뒤로가기 감지 🔙🔙🔙');
+        console.log('🔙 이벤트 상태:', event.state);
         console.log('🔙 현재 팝업 스택 크기:', this.popupStack.length);
-        console.log('🔙 팝업 스택:', this.popupStack);
-        
-        // 이벤트 기본 동작 방지
-        event.preventDefault && event.preventDefault();
+        console.log('🔙 팝업 스택 내용:', this.popupStack.map(p => p.popupId));
         
         if (this.popupStack.length > 0) {
             // 가장 최근에 열린 팝업 닫기
             const latestPopup = this.popupStack.pop();
-            console.log(`🔙 팝업 닫기: ${latestPopup.popupId}`);
+            console.log(`🔙 팝업 닫는 중: ${latestPopup.popupId}`);
             
             // 팝업 닫기 함수 실행
             if (typeof latestPopup.closeFunction === 'function') {
-                latestPopup.closeFunction();
+                try {
+                    latestPopup.closeFunction();
+                    console.log(`✅ 팝업 "${latestPopup.popupId}" 닫기 완료`);
+                } catch (error) {
+                    console.error(`❌ 팝업 "${latestPopup.popupId}" 닫기 실패:`, error);
+                }
             }
             
             // 추가 팝업이 있다면 히스토리 유지
             if (this.popupStack.length > 0) {
                 history.pushState({ page: 'popup' }, '', window.location.href);
+                console.log(`🔙 추가 팝업 있음. 스택 크기: ${this.popupStack.length}`);
             }
         } else {
             // 팝업이 없으면 PWA 앱 종료 확인
-            console.log('🔙 메인 페이지에서 뒤로가기 - 앱 종료 확인');
+            console.log('🔙 팝업 없음 - 앱 종료 확인 실행');
             this.handleAppExit();
         }
     }

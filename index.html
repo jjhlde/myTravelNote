@@ -713,45 +713,10 @@
             });
         }
         
-        // PWA 앱 종료 확인 (즉시 적용)
-        function initPWAExitConfirmation() {
-            console.log('즉시 PWA 종료 확인 핸들러 등록');
-            
-            // 즉시 히스토리 상태 설정
-            if (!history.state || !history.state.appInit) {
-                history.replaceState({ page: 'main', appInit: true }, '', window.location.href);
-                history.pushState({ page: 'main', canExit: true }, '', window.location.href);
-            }
-            
-            // 즉시 popstate 이벤트 핸들러 등록
-            window.addEventListener('popstate', (event) => {
-                console.log('🔙 즉시 핸들러 - 뒤로가기 감지:', event.state);
-                
-                // 모듈화된 시스템이 준비되었는지 확인
-                if (typeof window.hasOpenPopups === 'function' && window.hasOpenPopups()) {
-                    console.log('🔙 팝업이 열려있음 - 모듈화된 시스템에서 처리');
-                    return;
-                }
-                
-                // 팝업이 없으면 앱 종료 확인
-                console.log('🔙 즉시 핸들러 - 앱 종료 확인');
-                const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
-                
-                if (confirmExit) {
-                    if (window.navigator.standalone) {
-                        window.location.href = 'about:blank';
-                    } else {
-                        window.close();
-                    }
-                } else {
-                    // 취소 시 히스토리 복원
-                    history.pushState({ page: 'main', canExit: true }, '', window.location.href);
-                }
-            });
+        // 모듈화된 시스템 로딩 대기
+        function waitForModularSystem() {
+            console.log('모듈화된 시스템 로딩 대기 중...');
         }
-        
-        // 즉시 PWA 종료 확인 초기화 (모듈 로딩 전에)
-        initPWAExitConfirmation();
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', () => {
