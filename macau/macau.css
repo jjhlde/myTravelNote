@@ -3755,6 +3755,51 @@ body {
     border-color: #007bff;
 }
 
+/* Restaurant Activity Styling */
+.restaurant-activity {
+    background: linear-gradient(135deg, #fff8f0 0%, #ffe6e1 100%);
+    border-left: 4px solid #ff6b35;
+    margin: 10px 0;
+}
+
+.restaurant-activity .activity-time {
+    color: #ff6b35;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.restaurant-activity .location-title {
+    color: #d63384;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+/* Restaurant activity specific styling for activity-basic */
+.restaurant-activity .activity-basic {
+    background: linear-gradient(135deg, #ffe6e1 0%, #ffcccb 100%);
+    border: 1px solid #ffb3b3;
+}
+
+.restaurant-activity .activity-basic::before {
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+}
+
+.restaurant-activity .expand-btn {
+    border-color: #ff8a65;
+    color: #d63384;
+}
+
+.restaurant-activity .expand-btn:hover {
+    background: #fff8f0;
+    border-color: #ff6b35;
+}
+
+.restaurant-activity .expand-btn.expanded {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: white;
+}
+
 /* 모바일 최적화 */
 @media (max-width: 768px) {
     .flight-route-compact {
