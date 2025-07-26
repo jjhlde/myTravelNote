@@ -636,37 +636,55 @@
             const galaxyMapTabs = document.querySelectorAll('.galaxy-map-tab');
             const galaxyMapFloors = document.querySelectorAll('.galaxy-map-floor');
             
+            // 갤럭시 맵 모달 열기 함수
+            function openGalaxyMap() {
+                galaxyMapModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // 히스토리에 상태 추가 (뒤로가기 지원)
+                history.pushState({ modal: 'galaxy-map' }, '', '');
+                
+                // FAB 메뉴 닫기
+                const fabMenu = document.getElementById('fabMenu');
+                const fabMain = document.getElementById('fabMain');
+                const fabOverlay = document.getElementById('fabOverlay');
+                if (fabMenu && fabMain && fabOverlay) {
+                    fabMenu.classList.remove('show');
+                    fabMain.classList.remove('active');
+                    fabOverlay.classList.remove('show');
+                }
+            }
+            
+            // 갤럭시 맵 모달 닫기 함수
+            function closeGalaxyMap() {
+                galaxyMapModal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            
             // 갤럭시 맵 버튼 클릭
             if (galaxyMapBtn) {
-                galaxyMapBtn.addEventListener('click', () => {
-                    galaxyMapModal.classList.add('show');
-                    document.body.style.overflow = 'hidden';
-                    
-                    // FAB 메뉴 닫기
-                    const fabMenu = document.getElementById('fabMenu');
-                    const fabMain = document.getElementById('fabMain');
-                    const fabOverlay = document.getElementById('fabOverlay');
-                    if (fabMenu && fabMain && fabOverlay) {
-                        fabMenu.classList.remove('show');
-                        fabMain.classList.remove('active');
-                        fabOverlay.classList.remove('show');
-                    }
-                });
+                galaxyMapBtn.addEventListener('click', openGalaxyMap);
             }
             
             // 모달 닫기 버튼
             if (galaxyMapClose) {
                 galaxyMapClose.addEventListener('click', () => {
-                    galaxyMapModal.classList.remove('show');
-                    document.body.style.overflow = '';
+                    closeGalaxyMap();
+                    // 히스토리 상태 제거
+                    if (history.state && history.state.modal === 'galaxy-map') {
+                        history.back();
+                    }
                 });
             }
             
             // 모달 배경 클릭 시 닫기
             galaxyMapModal.addEventListener('click', (e) => {
                 if (e.target === galaxyMapModal) {
-                    galaxyMapModal.classList.remove('show');
-                    document.body.style.overflow = '';
+                    closeGalaxyMap();
+                    // 히스토리 상태 제거
+                    if (history.state && history.state.modal === 'galaxy-map') {
+                        history.back();
+                    }
                 }
             });
             
@@ -693,15 +711,73 @@
             // ESC 키로 모달 닫기
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && galaxyMapModal.classList.contains('show')) {
-                    galaxyMapModal.classList.remove('show');
-                    document.body.style.overflow = '';
+                    closeGalaxyMap();
+                    // 히스토리 상태 제거
+                    if (history.state && history.state.modal === 'galaxy-map') {
+                        history.back();
+                    }
+                }
+            });
+            
+            // 뒤로가기 버튼 처리 (popstate 이벤트)
+            window.addEventListener('popstate', (e) => {
+                if (galaxyMapModal.classList.contains('show')) {
+                    closeGalaxyMap();
                 }
             });
         }
         
-        // 페이지 로드 시 갤럭시 맵 초기화
+        // PWA 앱 종료 확인 팝업
+        function initPWAExitConfirmation() {
+            let isModalOpen = false;
+            
+            // 모달 상태 추적
+            const modalObserver = new MutationObserver(() => {
+                const modals = document.querySelectorAll('.exchange-popup-overlay.show, .budget-popup-overlay.show, .expense-popup-overlay.show, .galaxy-map-modal.show, .image-popup-overlay.show');
+                isModalOpen = modals.length > 0;
+            });
+            
+            // 모든 모달들 관찰
+            const modalsToObserve = document.querySelectorAll('.exchange-popup-overlay, .budget-popup-overlay, .expense-popup-overlay, .galaxy-map-modal, .image-popup-overlay');
+            modalsToObserve.forEach(modal => {
+                modalObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
+            });
+            
+            // PWA 종료 확인
+            window.addEventListener('popstate', (e) => {
+                // 모달이 열려있지 않은 메인 화면에서만 종료 확인
+                if (!isModalOpen && !history.state) {
+                    e.preventDefault();
+                    
+                    // 종료 확인 다이얼로그
+                    const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
+                    
+                    if (confirmExit) {
+                        // 앱 종료 (PWA에서는 창 닫기)
+                        if (window.navigator.standalone) {
+                            // iOS PWA에서는 다른 페이지로 이동
+                            window.location.href = 'about:blank';
+                        } else {
+                            // 일반 브라우저에서는 창 닫기 시도
+                            window.close();
+                        }
+                    } else {
+                        // 취소 시 히스토리 상태 복원
+                        history.pushState(null, '', '');
+                    }
+                }
+            });
+            
+            // 초기 히스토리 상태 설정
+            if (!history.state) {
+                history.pushState(null, '', '');
+            }
+        }
+        
+        // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', () => {
             initGalaxyMap();
+            initPWAExitConfirmation();
         });
     </script>
 </body>

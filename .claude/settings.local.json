@@ -70,7 +70,8 @@
       "Bash(figma-mcp:*)",
       "Bash(claude agents status 정소림)",
       "WebFetch(domain:macau-k27vgcogn-todo-master.vercel.app)",
-      "WebFetch(domain:travel-note-dh2fj51ot-todo-master.vercel.app)"
+      "WebFetch(domain:travel-note-dh2fj51ot-todo-master.vercel.app)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   },
