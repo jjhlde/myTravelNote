@@ -1,0 +1,39 @@
+# 챗봇 관련 파일들 (개발용)
+chatbot*
+config.js
+prompts/
+test-*
+mock_*
+sample*
+debug*
+manual-*
+browser-test.html
+clear-cache.html
+disable-sw.html
+
+# 백업 및 임시 파일들
+*backup*
+macau_backup/
+public/
+*.log
+python3
+*.md
+*.txt
+
+# 개발 도구
+server.js
+package.json
+package-lock.json
+node_modules/
+
+# Rails 프로젝트
+Travel-Master/
+
+# 불필요한 파일들
+enhance-places.js
+places-api.js
+*.backup
+sw-problematic.js
+화면 캡처*
+templates/
+images/
