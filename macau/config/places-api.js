@@ -540,10 +540,11 @@ document.addEventListener('DOMContentLoaded', () => {
         window.imageLoader = imageLoader; // 전역으로 노출
         console.log('🖼️ Dynamic Image Loader 초기화 완료');
         
-        // 자동 이미지 갱신 실행 (3초 후)
-        setTimeout(() => {
-            imageLoader.refreshAllPlaceImages();
-        }, 3000);
+        // 자동 이미지 갱신 실행 (정적 호스팅에서는 비활성화)
+        // setTimeout(() => {
+        //     imageLoader.refreshAllPlaceImages();
+        // }, 3000);
+        console.log('📸 정적 호스팅 모드: API 이미지 로딩 비활성화됨');
     }
     
     // 전역 함수 등록
