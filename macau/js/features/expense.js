@@ -318,8 +318,10 @@ function setAmount(amount) {
     }
     
     if (amountDisplay) {
-        if (expenseState.currency === 'MOP') {
-            amountDisplay.textContent = amount.toLocaleString();
+        if (expenseState.currency === 'MOP' && amount > 0) {
+            // MOP인 경우 원화 변환 금액도 함께 표시
+            const krwAmount = Math.round(amount * expenseState.exchangeRate);
+            amountDisplay.textContent = `${amount.toLocaleString()} (${krwAmount.toLocaleString()}원)`;
         } else {
             amountDisplay.textContent = amount.toLocaleString();
         }
