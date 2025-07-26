@@ -71,16 +71,111 @@ function handleFABAction(action) {
             const exchangePopup = getElement('#exchangePopupOverlay');
             if (exchangePopup) {
                 addClass(exchangePopup, 'show');
+                // 뒤로가기 버튼으로 닫기 등록
+                if (typeof window.registerPopup === 'function') {
+                    window.registerPopup('exchange', () => {
+                        removeClass(exchangePopup, 'show');
+                        if (typeof window.unregisterPopup === 'function') {
+                            window.unregisterPopup('exchange');
+                        }
+                    });
+                }
             }
             break;
         case 'time':
-            // 시차 정보 (임시)
-            const macauTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Macau' });
-            alert(`⏰ 마카오 현재 시간: ${macauTime}`);
+            // 시차 정보 팝업 (개선된 형태)
+            showTimePopup();
             break;
         default:
             console.warn(`Unknown FAB action: ${action}`);
     }
+}
+
+/**
+ * 시차 정보 팝업 표시
+ */
+function showTimePopup() {
+    // 시차 정보 팝업이 없으면 동적으로 생성
+    let timePopup = getElement('#timePopupOverlay');
+    if (!timePopup) {
+        timePopup = createTimePopup();
+    }
+    
+    if (timePopup) {
+        addClass(timePopup, 'show');
+        
+        // 뒤로가기 버튼으로 닫기 등록
+        if (typeof window.registerPopup === 'function') {
+            window.registerPopup('time', () => {
+                removeClass(timePopup, 'show');
+                if (typeof window.unregisterPopup === 'function') {
+                    window.unregisterPopup('time');
+                }
+            });
+        }
+    }
+}
+
+/**
+ * 시차 정보 팝업 생성
+ */
+function createTimePopup() {
+    const popup = document.createElement('div');
+    popup.id = 'timePopupOverlay';
+    popup.className = 'exchange-popup-overlay';
+    
+    const seoulTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+    const macauTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Macau' });
+    
+    popup.innerHTML = `
+        <div class="exchange-popup-content">
+            <div class="exchange-popup-header">
+                <h3>⏰ 시차 정보</h3>
+                <button class="exchange-popup-close" id="timePopupClose">✕</button>
+            </div>
+            
+            <div class="time-info">
+                <div class="time-zone">
+                    <div class="time-label">🇰🇷 한국 시간</div>
+                    <div class="time-value">${seoulTime}</div>
+                </div>
+                
+                <div class="time-zone">
+                    <div class="time-label">🇲🇴 마카오 시간</div>
+                    <div class="time-value">${macauTime}</div>
+                </div>
+                
+                <div class="time-note">
+                    💡 마카오와 한국은 시차가 동일합니다 (UTC+8)
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // 닫기 버튼 이벤트
+    const closeBtn = popup.querySelector('#timePopupClose');
+    if (closeBtn) {
+        addEventListener(closeBtn, 'click', () => {
+            removeClass(popup, 'show');
+            if (typeof window.unregisterPopup === 'function') {
+                window.unregisterPopup('time');
+            }
+        });
+    }
+    
+    // 오버레이 클릭으로 닫기
+    addEventListener(popup, 'click', (e) => {
+        if (e.target === popup) {
+            removeClass(popup, 'show');
+            if (typeof window.unregisterPopup === 'function') {
+                window.unregisterPopup('time');
+            }
+        }
+    });
+    
+    return popup;
 }
 
 /**

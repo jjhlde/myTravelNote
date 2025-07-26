@@ -9,7 +9,14 @@
         <div class="location-info">
             <div class="location-title">🛬 마카오국제공항 도착</div>
         </div>
-        <div class="activity-desc">
+        <div class="activity-basic">
+            <div class="activity-summary">입국심사, 수하물 수취, 환전 및 WiFi 연결</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>마카오 국제공항 정보 (실제 데이터)</strong><br><br>
             <strong>⏰ 운영시간:</strong> 24시간 운영<br>
             <strong>📞 문의전화:</strong> +853 2886 1111<br>
@@ -73,7 +80,14 @@
         <div class="location-info">
             <div class="location-title">🚌 공항 → 안다즈 마카오 이동</div>
         </div>
-        <div class="activity-desc">
+        <div class="activity-basic">
+            <div class="activity-summary">갤럭시 무료 셔틀버스 이용 (15-20분)</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>이동 옵션 (거리: 3.9km)</strong><br><br>
             
             <strong>옵션 1: 갤럭시 무료 셔틀버스 ⭐추천</strong><br>
@@ -97,7 +111,14 @@
         <div class="location-info">
             <div class="location-title">🏨 안다즈 마카오 체크인</div>
         </div>
-        <div class="activity-desc">
+        <div class="activity-basic">
+            <div class="activity-summary">North Tower Level 6, 아이용 어메니티 요청, 라운지 이용권 수령</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>안다즈 마카오 호텔 정보 (실제 데이터)</strong><br><br>
             <strong>⭐ Google 평점:</strong> 4.5/5 (2,100+ 리뷰)<br>
             <strong>📞 문의전화:</strong> +853 8791 1234<br>
@@ -162,27 +183,37 @@
         <div class="location-info">
             <div class="location-title">🚶 안다즈 → 브로드웨이 푸드스트리트</div>
         </div>
-        <div class="activity-desc">
-            <div class="transport-summary" onclick="toggleTransportDetails(this)">
-                <span class="summary-text">🚌 갤럭시 무료 셔틀버스 5분</span>
-                <span class="toggle-icon">▼</span>
-            </div>
-            <div class="transport-details">
-                <strong>상세 이동 방법:</strong><br>
-                • 안다즈 호텔 로비 → 갤럭시 셔틀버스 정류장<br>
-                • "브로드웨이" 방향 셔틀버스 탑승<br>
-                • 운행간격: 10-15분마다 운행<br>
-                • 소요시간: 약 5분<br><br>
-                
-                💡 <strong>이동 팁:</strong> 37개월 아이와 함께라면 유모차 이용 가능, 저녁 시간대 셔틀버스 혼잡할 수 있으니 여유 있게 이동
-            </div>
+        <div class="activity-basic">
+            <div class="activity-summary">🚌 갤럭시 무료 셔틀버스 5분</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
+            <strong>상세 이동 방법:</strong><br>
+            • 안다즈 호텔 로비 → 갤럭시 셔틀버스 정류장<br>
+            • "브로드웨이" 방향 셔틀버스 탑승<br>
+            • 운행간격: 10-15분마다 운행<br>
+            • 소요시간: 약 5분<br><br>
+            
+            💡 <strong>이동 팁:</strong> 37개월 아이와 함께라면 유모차 이용 가능, 저녁 시간대 셔틀버스 혼잡할 수 있으니 여유 있게 이동
         </div>
     </div>
     
     <div class="activity">
         <div class="activity-time">19:00 - 20:30</div>
-        <div class="activity-title">🍽️ 저녁 식사 (추천 3곳)</div>
-        <div class="activity-desc">
+        <div class="location-info">
+            <div class="location-title">🍽️ 저녁 식사 (추천 3곳)</div>
+        </div>
+        <div class="activity-basic">
+            <div class="activity-summary">브로드웨이 푸드스트리트 - 신다우지, 드래곤 포르투게스, 팀호완</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>1. 브로드웨이 푸드스트리트 - 신다우지 (新斗記) ⭐아이 동반 추천</strong><br>
             <strong>⭐ Google 평점:</strong> 4.4/5 (800+ 리뷰)<br>
             <strong>📞 문의전화:</strong> +853 8883 3338<br>
@@ -263,27 +294,37 @@
         <div class="location-info">
             <div class="location-title">🚶 브로드웨이 푸드스트리트 → 갤럭시 호텔</div>
         </div>
-        <div class="activity-desc">
-            <div class="transport-summary" onclick="toggleTransportDetails(this)">
-                <span class="summary-text">🚶 실내 연결통로 도보 3분</span>
-                <span class="toggle-icon">▼</span>
-            </div>
-            <div class="transport-details">
-                <strong>상세 이동 방법:</strong><br>
-                • 브로드웨이 푸드스트리트 → 브로드웨이 호텔 로비<br>
-                • 실내 연결통로를 통해 갤럭시 호텔로 이동<br>
-                • 갤럭시 호텔 다이아몬드 로비 도착<br>
-                • 소요시간: 약 3분 (에어컨 완비 실내 통로)<br><br>
-                
-                💡 <strong>이동 팁:</strong> 식사 후 소화를 위한 가벼운 산책 겸 이동, 아이 손 잡고 천천히 걸어도 충분한 거리
-            </div>
+        <div class="activity-basic">
+            <div class="activity-summary">🚶 실내 연결통로 도보 3분</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
+            <strong>상세 이동 방법:</strong><br>
+            • 브로드웨이 푸드스트리트 → 브로드웨이 호텔 로비<br>
+            • 실내 연결통로를 통해 갤럭시 호텔로 이동<br>
+            • 갤럭시 호텔 다이아몬드 로비 도착<br>
+            • 소요시간: 약 3분 (에어컨 완비 실내 통로)<br><br>
+            
+            💡 <strong>이동 팁:</strong> 식사 후 소화를 위한 가벼운 산책 겸 이동, 아이 손 잡고 천천히 걸어도 충분한 거리
         </div>
     </div>
 
     <div class="activity">
         <div class="activity-time">20:30 - 21:30</div>
-        <div class="activity-title">🌃 갤럭시 단지 주요 명소 탐방</div>
-        <div class="activity-desc">
+        <div class="location-info">
+            <div class="location-title">🌃 갤럭시 단지 주요 명소 탐방</div>
+        </div>
+        <div class="activity-basic">
+            <div class="activity-summary">다이아몬드 로비 쇼, 프로메나드 쇼핑몰, 키즈존, 크리스탈 로비</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>1. 갤럭시 호텔 다이아몬드 로비 쇼 ⭐필수 관람</strong><br>
             <strong>⭐ Google 평점:</strong> 4.6/5 (Galaxy Hotel 전체 평점)<br>
             <strong>📞 문의전화:</strong> +853 2888 0888<br>
@@ -399,27 +440,37 @@
         <div class="location-info">
             <div class="location-title">🚶 갤럭시 호텔 → 안다즈 마카오</div>
         </div>
-        <div class="activity-desc">
-            <div class="transport-summary" onclick="toggleTransportDetails(this)">
-                <span class="summary-text">🚶 실내 연결통로 도보 5분</span>
-                <span class="toggle-icon">▼</span>
-            </div>
-            <div class="transport-details">
-                <strong>상세 이동 방법:</strong><br>
-                • 갤럭시 호텔 다이아몬드 로비 → 갤럭시 프로메나드<br>
-                • 실내 연결통로를 통해 안다즈 호텔로 이동<br>
-                • 안다즈 마카오 North Tower Level 6 로비 도착<br>
-                • 소요시간: 약 5분 (에어컨 완비 실내 통로)<br><br>
-                
-                💡 <strong>이동 팁:</strong> 아이가 피곤할 수 있으니 유모차 이용 권장, 늦은 시간이므로 조용히 이동
-            </div>
+        <div class="activity-basic">
+            <div class="activity-summary">🚶 실내 연결통로 도보 5분</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
+            <strong>상세 이동 방법:</strong><br>
+            • 갤럭시 호텔 다이아몬드 로비 → 갤럭시 프로메나드<br>
+            • 실내 연결통로를 통해 안다즈 호텔로 이동<br>
+            • 안다즈 마카오 North Tower Level 6 로비 도착<br>
+            • 소요시간: 약 5분 (에어컨 완비 실내 통로)<br><br>
+            
+            💡 <strong>이동 팁:</strong> 아이가 피곤할 수 있으니 유모차 이용 권장, 늦은 시간이므로 조용히 이동
         </div>
     </div>
     
     <div class="activity">
         <div class="activity-time">21:30 - 22:00</div>
-        <div class="activity-title">🛏️ 호텔 복귀 &amp; 휴식</div>
-        <div class="activity-desc">
+        <div class="location-info">
+            <div class="location-title">🛏️ 호텔 복귀 &amp; 휴식</div>
+        </div>
+        <div class="activity-basic">
+            <div class="activity-summary">아이 목욕 및 취침 준비, 내일 수영 준비, 시차 적응</div>
+            <button class="expand-btn" onclick="toggleActivityDetails(this)">
+                <span class="expand-text">자세히 보기</span>
+                <span class="expand-icon">▼</span>
+            </button>
+        </div>
+        <div class="activity-details" style="display: none;">
             <strong>내일을 위한 준비</strong><br><br>
             • 아이 목욕 및 취침 준비<br>
             • 무료 미니바 간식 확인<br>

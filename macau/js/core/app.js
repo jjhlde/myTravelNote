@@ -14,6 +14,91 @@ import { setTodoExecutor } from '../features/todo.js';
 import { setTodoScriptExecutor } from './navigation.js';
 import { isInStandaloneMode, getElement } from '../utils/dom-helpers.js';
 
+// 안드로이드 뒤로가기 버튼 처리 시스템
+class BackButtonHandler {
+    constructor() {
+        this.popupStack = [];
+        this.isInitialized = false;
+    }
+
+    init() {
+        if (this.isInitialized) return;
+        
+        // popstate 이벤트 리스너 등록 (뒤로가기 버튼 감지)
+        window.addEventListener('popstate', this.handlePopState.bind(this));
+        
+        // 초기 히스토리 상태 푸시
+        history.replaceState({ page: 'main' }, '', window.location.href);
+        
+        this.isInitialized = true;
+        console.log('🔙 안드로이드 뒤로가기 버튼 핸들러 초기화 완료');
+    }
+
+    // 팝업이 열릴 때 히스토리 스택에 추가
+    pushPopupState(popupId, closeFunction) {
+        const state = {
+            page: 'popup',
+            popupId: popupId,
+            timestamp: Date.now()
+        };
+        
+        history.pushState(state, '', window.location.href);
+        this.popupStack.push({
+            popupId: popupId,
+            closeFunction: closeFunction
+        });
+        
+        console.log(`📱 팝업 열림: ${popupId}, 스택 크기: ${this.popupStack.length}`);
+    }
+
+    // 팝업이 닫힐 때 히스토리 스택에서 제거
+    popPopupState(popupId) {
+        const index = this.popupStack.findIndex(popup => popup.popupId === popupId);
+        if (index !== -1) {
+            this.popupStack.splice(index, 1);
+            console.log(`📱 팝업 닫힘: ${popupId}, 스택 크기: ${this.popupStack.length}`);
+        }
+    }
+
+    // 뒤로가기 버튼 처리
+    handlePopState(event) {
+        console.log('🔙 뒤로가기 버튼 감지:', event.state);
+        
+        if (this.popupStack.length > 0) {
+            // 가장 최근에 열린 팝업 닫기
+            const latestPopup = this.popupStack.pop();
+            console.log(`🔙 팝업 닫기: ${latestPopup.popupId}`);
+            
+            // 팝업 닫기 함수 실행
+            if (typeof latestPopup.closeFunction === 'function') {
+                latestPopup.closeFunction();
+            }
+            
+            // 추가 팝업이 있다면 히스토리 유지
+            if (this.popupStack.length > 0) {
+                history.pushState({ page: 'popup' }, '', window.location.href);
+            }
+        } else {
+            // 팝업이 없으면 기본 뒤로가기 동작 (앱 종료)
+            console.log('🔙 메인 페이지에서 뒤로가기 - 앱 종료');
+        }
+    }
+
+    // 팝업 상태 확인
+    hasOpenPopups() {
+        return this.popupStack.length > 0;
+    }
+
+    // 스택 초기화 (강제 모든 팝업 닫기)
+    clearStack() {
+        this.popupStack = [];
+        console.log('🔙 팝업 스택 초기화');
+    }
+}
+
+// 전역 뒤로가기 핸들러 인스턴스
+const backButtonHandler = new BackButtonHandler();
+
 // 애플리케이션 상태
 const app = {
     initialized: false,
@@ -64,6 +149,10 @@ async function initCoreSystem() {
     debugLog('Initializing core system...');
     
     try {
+        // 안드로이드 뒤로가기 버튼 핸들러 초기화
+        backButtonHandler.init();
+        trackModule('back-button-handler', true);
+        
         // 네비게이션 시스템 초기화
         initNavigation();
         trackModule('navigation', true);
@@ -297,6 +386,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 안드로이드 뒤로가기 버튼 핸들러 export 함수들
+export function registerPopup(popupId, closeFunction) {
+    backButtonHandler.pushPopupState(popupId, closeFunction);
+}
+
+export function unregisterPopup(popupId) {
+    backButtonHandler.popPopupState(popupId);
+}
+
+export function hasOpenPopups() {
+    return backButtonHandler.hasOpenPopups();
+}
+
+export function clearAllPopups() {
+    backButtonHandler.clearStack();
+}
+
+// 활동 상세 정보 토글 함수
+function toggleActivityDetails(button) {
+    const activity = button.closest('.activity');
+    const details = activity.querySelector('.activity-details');
+    const expandIcon = button.querySelector('.expand-icon');
+    const expandText = button.querySelector('.expand-text');
+    
+    if (!details) return;
+    
+    const isVisible = details.style.display !== 'none';
+    
+    if (isVisible) {
+        // 숨기기
+        details.style.display = 'none';
+        expandIcon.textContent = '▼';
+        expandText.textContent = '자세히 보기';
+        button.classList.remove('expanded');
+    } else {
+        // 보이기
+        details.style.display = 'block';
+        expandIcon.textContent = '▲';
+        expandText.textContent = '간단히 보기';
+        button.classList.add('expanded');
+    }
+}
+
 // 개발자 도구에서 접근 가능한 함수들
 if (typeof window !== 'undefined') {
     window.MacauAppControls = {
@@ -307,11 +439,19 @@ if (typeof window !== 'undefined') {
             initialized: app.initialized,
             modules: Array.from(app.modules),
             debug: app.debug
-        })
+        }),
+        // 뒤로가기 버튼 관련 함수들
+        registerPopup: registerPopup,
+        unregisterPopup: unregisterPopup,
+        hasOpenPopups: hasOpenPopups,
+        clearAllPopups: clearAllPopups
     };
     
     // 레거시 호환성을 위한 전역 함수들
     window.openFlightTicket = openFlightTicket;
+    window.registerPopup = registerPopup;
+    window.unregisterPopup = unregisterPopup;
+    window.toggleActivityDetails = toggleActivityDetails;
 }
 
 export default {

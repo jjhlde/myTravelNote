@@ -3748,7 +3748,7 @@ body {
 }
 
 .transport-info {
-    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, #f0f7ff 0%, #e6f3ff 100%);
     border-left: 4px solid #007bff;
     margin: 10px 0;
 }
@@ -3765,9 +3765,29 @@ body {
     font-weight: normal;
 }
 
-.transport-info .activity-desc {
-    font-size: 0.85em;
-    padding: 10px 15px;
+/* Transport info specific styling for activity-basic */
+.transport-info .activity-basic {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%);
+    border: 1px solid #b3d9ff;
+}
+
+.transport-info .activity-basic::before {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.transport-info .expand-btn {
+    border-color: #80bfff;
+    color: #0056b3;
+}
+
+.transport-info .expand-btn:hover {
+    background: #f0f7ff;
+    border-color: #007bff;
+}
+
+.transport-info .expand-btn.expanded {
+    background: #007bff;
+    border-color: #007bff;
 }
 
 /* 모바일 최적화 */
@@ -3932,5 +3952,189 @@ body {
     
     .placeholder-subtitle {
         color: #64748b;
+    }
+}
+
+/* ===== COLLAPSIBLE ACTIVITY UI STYLES ===== */
+
+/* Activity Basic Section (Always Visible) */
+.activity-basic {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.activity-summary {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+/* Expand Button */
+.expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4f46e5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+    background: #fafbff;
+    border-color: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+}
+
+.expand-btn.expanded {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
+}
+
+.expand-btn.expanded:hover {
+    background: #4338ca;
+    border-color: #4338ca;
+}
+
+.expand-text {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.expand-icon {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    margin-left: 8px;
+}
+
+.expand-btn.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Activity Details Section (Collapsible) */
+.activity-details {
+    margin-top: 12px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 15px;
+    color: #6b7280;
+    line-height: 1.6;
+    animation: slideDown 0.3s ease;
+}
+
+.activity-details[style*="display: none"] {
+    animation: slideUp 0.3s ease;
+}
+
+/* Slide animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 2000px;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 2000px;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+}
+
+/* Responsive Design for Collapsible UI */
+@media (max-width: 480px) {
+    .activity-basic {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .activity-summary {
+        font-size: 13px;
+    }
+    
+    .expand-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .activity-details {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* Enhanced visual hierarchy */
+.activity-basic {
+    position: relative;
+}
+
+.activity-basic::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 0 2px 2px 0;
+}
+
+/* Dark mode support for collapsible UI */
+@media (prefers-color-scheme: dark) {
+    .activity-basic {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-color: #475569;
+    }
+    
+    .activity-summary {
+        color: #cbd5e1;
+    }
+    
+    .expand-btn {
+        background: #374151;
+        border-color: #6b7280;
+        color: #a5b4fc;
+    }
+    
+    .expand-btn:hover {
+        background: #4b5563;
+        border-color: #a5b4fc;
+    }
+    
+    .expand-btn.expanded {
+        background: #6366f1;
+        border-color: #6366f1;
+    }
+    
+    .activity-details {
+        background: #1f2937;
+        border-color: #374151;
+        color: #d1d5db;
     }
 }

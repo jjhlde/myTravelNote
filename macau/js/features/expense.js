@@ -227,6 +227,13 @@ export function openExpensePopup() {
     addClass(overlay, 'show');
     expenseState.isOpen = true;
     
+    // 뒤로가기 버튼으로 닫기 등록
+    if (typeof window.registerPopup === 'function') {
+        window.registerPopup('expense', () => {
+            closeExpensePopup();
+        });
+    }
+    
     // 금액 입력 필드에 포커스
     setTimeout(() => {
         const amountInput = getElement('#expenseAmountInput');
@@ -246,6 +253,11 @@ export function closeExpensePopup() {
     
     removeClass(overlay, 'show');
     expenseState.isOpen = false;
+    
+    // 뒤로가기 버튼 등록 해제
+    if (typeof window.unregisterPopup === 'function') {
+        window.unregisterPopup('expense');
+    }
     
     // 상태 초기화
     setTimeout(() => {
