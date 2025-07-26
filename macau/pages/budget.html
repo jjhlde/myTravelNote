@@ -571,8 +571,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 새 준비물 추가
-    addTodoBtn?.addEventListener('click', () => {
+    // 새 준비물 추가 함수
+    function addNewTodoItem() {
         console.log('추가 버튼 클릭됨');
         const inputValue = newTodoInput.value.trim();
         console.log('입력값:', inputValue);
@@ -580,6 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (inputValue) {
             if (!userCategories['기타']) {
                 userCategories['기타'] = [];
+                console.log('기타 카테고리 새로 생성');
             }
             const newItem = {
                 text: inputValue,
@@ -589,7 +590,15 @@ document.addEventListener('DOMContentLoaded', function() {
             userCategories['기타'].push(newItem);
             localStorage.setItem('macao_todo_categories', JSON.stringify(userCategories));
             console.log('저장된 카테고리:', userCategories);
+            console.log('기타 카테고리 항목들:', userCategories['기타']);
+            
+            // 렌더링 및 상태 복원
             renderUserCategories();
+            setTimeout(() => {
+                restoreCheckboxStates();
+                console.log('카테고리 렌더링 및 체크박스 상태 복원 완료');
+            }, 50);
+            
             newTodoInput.value = '';
             
             // 성공 피드백
@@ -599,17 +608,38 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('준비물 이름을 입력해주세요.');
             newTodoInput.focus();
         }
+    }
+
+    // 새 준비물 추가 (클릭)
+    addTodoBtn?.addEventListener('click', addNewTodoItem);
+    
+    // 새 준비물 추가 (Enter 키)
+    newTodoInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNewTodoItem();
+        }
     });
 
-    // 새 카테고리 추가
-    addCategoryBtn?.addEventListener('click', () => {
+    // 새 카테고리 추가 함수
+    function addNewCategory() {
+        console.log('카테고리 추가 버튼 클릭됨');
         const categoryName = newCategoryInput.value.trim();
+        console.log('카테고리명:', categoryName);
         
         if (categoryName) {
             if (!userCategories[categoryName]) {
                 userCategories[categoryName] = [];
                 localStorage.setItem('macao_todo_categories', JSON.stringify(userCategories));
+                console.log('새 카테고리 저장됨:', userCategories);
+                
+                // 렌더링 및 상태 복원
                 renderUserCategories();
+                setTimeout(() => {
+                    restoreCheckboxStates();
+                    console.log('카테고리 렌더링 완료');
+                }, 50);
+                
                 newCategoryInput.value = '';
                 showToast(`"${categoryName}" 카테고리가 추가되었습니다! 📁`);
             } else {
@@ -620,11 +650,28 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('카테고리 이름을 입력해주세요.');
             newCategoryInput.focus();
         }
+    }
+
+    // 새 카테고리 추가 (클릭)
+    addCategoryBtn?.addEventListener('click', addNewCategory);
+    
+    // 새 카테고리 추가 (Enter 키)
+    newCategoryInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNewCategory();
+        }
     });
 
     // 사용자 카테고리 렌더링
     function renderUserCategories() {
-        if (!userCategoriesContainer) return;
+        if (!userCategoriesContainer) {
+            console.error('userCategoriesContainer를 찾을 수 없습니다');
+            return;
+        }
+        
+        console.log('렌더링할 카테고리들:', userCategories);
+        console.log('카테고리 개수:', Object.keys(userCategories).length);
         
         userCategoriesContainer.innerHTML = Object.keys(userCategories).map(categoryName => `
             <div class="tips-section macau-user-category" data-category="${categoryName}">
@@ -657,6 +704,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `).join('');
+        
+        console.log('렌더링 완료. HTML 길이:', userCategoriesContainer.innerHTML.length);
+        console.log('렌더링된 HTML 미리보기:', userCategoriesContainer.innerHTML.substring(0, 200) + '...');
     }
 
     // 메뉴 토글 함수
@@ -698,15 +748,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const input = document.querySelector(`.category-item-input[data-category="${categoryName}"]`);
             const inputValue = input.value.trim();
             
+            console.log('카테고리별 항목 추가 클릭:', categoryName, inputValue);
+            
             if (inputValue) {
-                userCategories[categoryName].push({
+                const newItem = {
                     text: inputValue,
                     done: false,
                     id: Date.now()
-                });
+                };
+                userCategories[categoryName].push(newItem);
                 localStorage.setItem('macao_todo_categories', JSON.stringify(userCategories));
+                console.log('카테고리에 항목 추가됨:', categoryName, newItem);
+                
                 renderUserCategories();
-                restoreCheckboxStates();
+                setTimeout(() => {
+                    restoreCheckboxStates();
+                    console.log('카테고리별 항목 추가 후 렌더링 완료');
+                }, 50);
+                
                 showToast(`"${categoryName}"에 항목이 추가되었습니다! ✅`);
             } else {
                 showToast('항목 이름을 입력해주세요.');
@@ -899,9 +958,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 초기 로드
+    console.log('초기 로드 시작');
+    console.log('초기 userCategories:', userCategories);
     renderUserCategories();
     setTimeout(() => {
         restoreCheckboxStates();
+        console.log('초기 로드 완료');
     }, 100);
 });
 </script>
