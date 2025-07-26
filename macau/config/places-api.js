@@ -447,87 +447,27 @@ class DynamicImageLoader {
 // 전역 이미지 로더 인스턴스
 let imageLoader;
 
-// 전역 함수: 모바일 친화적 맵 열기 (개선된 딥링크)
+// 전역 함수: 2025년 표준 Google Maps 딥링크 (api=1 필수)
 function openMobileMap(placeName, lat, lng, placeId = null) {
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    console.log(`🗺️ 구글맵 열기 요청: ${placeName}`);
     
-    let mapUrl;
+    // 장소명만 사용하는 간단한 검색 URL (2025년 표준)
+    // 모든 Google Maps URL에는 api=1 파라미터가 필수
+    const searchQuery = encodeURIComponent(placeName);
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
     
-    if (isMobile) {
-        // 모바일: 네이티브 앱 우선 딥링크
-        if (isAndroid) {
-            // 안드로이드: Google Maps 앱 직접 열기
-            if (placeId) {
-                mapUrl = `geo:0,0?q=place_id:${placeId}`;
-            } else if (lat && lng) {
-                mapUrl = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(placeName)})`;
-            } else {
-                mapUrl = `geo:0,0?q=${encodeURIComponent(placeName)}`;
-            }
-        } else if (isIOS) {
-            // iOS: Apple Maps 또는 Google Maps 앱
-            if (lat && lng) {
-                mapUrl = `maps://?q=${encodeURIComponent(placeName)}&ll=${lat},${lng}`;
-            } else {
-                mapUrl = `maps://?q=${encodeURIComponent(placeName)}`;
-            }
-        } else {
-            // 기타 모바일: 웹 버전
-            if (placeId) {
-                mapUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
-            } else if (lat && lng) {
-                mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-            } else {
-                mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(placeName)}`;
-            }
-        }
-    } else {
-        // 데스크톱: 웹 버전
-        if (placeId) {
-            mapUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
-        } else if (lat && lng) {
-            mapUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
-        } else {
-            mapUrl = `https://maps.google.com/maps/search/${encodeURIComponent(placeName)}`;
-        }
-    }
-    
-    // PWA에서 외부 앱으로 안전하게 이동
+    // PWA에서 새 탭으로 구글맵 열기
     try {
-        if (isMobile && (isAndroid || isIOS)) {
-            // 네이티브 앱 딥링크 시도
-            const link = document.createElement('a');
-            link.href = mapUrl;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            
-            // 사용자 제스처로 트리거
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // 딥링크 실패 시 웹 버전으로 폴백
-            setTimeout(() => {
-                const webUrl = placeId 
-                    ? `https://www.google.com/maps/place/?q=place_id:${placeId}`
-                    : `https://www.google.com/maps/search/${encodeURIComponent(placeName)}`;
-                window.open(webUrl, '_blank', 'noopener,noreferrer');
-            }, 1000);
-        } else {
-            // 데스크톱 또는 웹 모바일: 새 탭에서 열기
-            window.open(mapUrl, '_blank', 'noopener,noreferrer');
-        }
+        window.open(mapUrl, '_blank', 'noopener,noreferrer');
+        console.log(`✅ 구글맵 URL 생성 성공: ${mapUrl}`);
     } catch (error) {
-        console.error('맵 열기 오류:', error);
-        // 폴백: 기본 웹 버전
-        const fallbackUrl = `https://www.google.com/maps/search/${encodeURIComponent(placeName)}`;
+        console.error('❌ 구글맵 열기 실패:', error);
+        
+        // 폴백: 단순 구글 검색
+        const fallbackUrl = `https://www.google.com/search?q=${searchQuery}+map`;
         window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+        console.log(`🔄 폴백 URL 사용: ${fallbackUrl}`);
     }
-    
-    console.log(`🗺️ 맵 열기: ${placeName} (${isAndroid ? '안드로이드 앱' : isIOS ? 'iOS 앱' : '웹 버전'})`);
-    console.log(`🔗 사용된 URL: ${mapUrl}`);
 }
 
 // 페이지 로드 시 맵 링크 자동 개선 및 이미지 로더 초기화
