@@ -94,15 +94,25 @@
                     </div>
                 </div>
 
-                <!-- Welcome Message -->
+                <!-- Welcome Message - Enhanced -->
                 <div class="message-enter">
                     <div class="flex gap-3">
-                        <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                            <i class="fas fa-magic text-white text-sm"></i>
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white">
+                            <i class="fas fa-magic text-white text-sm sparkle-rotate"></i>
                         </div>
-                        <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%]">
-                            <p class="text-sm text-gray-800">안녕하세요! 여행의 모든 것을 도와드리는 <span class="text-red-500 font-semibold">TripGenie</span>입니다 🧞‍♂️</p>
-                            <p class="text-sm mt-2 text-gray-600">아래 인기 여행지를 선택하거나, 원하는 여행을 자유롭게 말씀해주세요!</p>
+                        <div class="message-bubble ai-message max-w-[85%]">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-lg font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">TripGenie</span>
+                                <div class="px-2 py-1 bg-gradient-to-r from-red-100 to-pink-100 rounded-full">
+                                    <span class="text-xs font-medium text-red-600">AI 어시스턴트</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-800 leading-relaxed">안녕하세요! 여행의 모든 것을 도와드리는 <span class="font-semibold text-red-500">TripGenie</span>입니다 🧞‍♂️</p>
+                            <p class="text-sm mt-3 text-gray-600 leading-relaxed">아래 인기 여행지를 선택하거나, 원하는 여행을 자유롭게 말씀해주세요!</p>
+                            <div class="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-gray-500">실시간 AI 상담 중</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -200,18 +210,19 @@
             <!-- Chat Messages Container -->
             <div id="messagesContainer" class="p-4 space-y-4"></div>
 
-            <!-- Typing Indicator -->
+            <!-- Enhanced Typing Indicator -->
             <div id="typingIndicator" class="hidden p-4">
                 <div class="flex gap-3">
-                    <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-magic text-white text-sm"></i>
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white">
+                        <i class="fas fa-magic text-white text-sm modern-glow"></i>
                     </div>
-                    <div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
-                        <div class="flex gap-1">
+                    <div class="typing-indicator">
+                        <div class="flex items-center">
                             <span class="typing-dot"></span>
                             <span class="typing-dot"></span>
                             <span class="typing-dot"></span>
                         </div>
+                        <span class="typing-text">TripGenie가 답변을 준비하고 있어요</span>
                     </div>
                 </div>
             </div>
@@ -1074,18 +1085,43 @@
             </div>
         </div>
 
-        <!-- Chat Input -->
-        <div class="p-4 border-t border-gray-200 bg-white" id="chatInputContainer">
-            <div class="flex gap-2">
-                <input 
-                    type="text" 
-                    id="chatInput" 
-                    placeholder="여행에 대해 자유롭게 이야기해주세요..."
-                    class="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
-                    onkeypress="handleKeyPress(event)"
-                >
-                <button onclick="sendMessage()" class="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-xl px-4 py-3 hover:shadow-lg transition-all">
-                    <i class="fas fa-paper-plane"></i>
+        <!-- Enhanced Chat Input -->
+        <div class="p-4 border-t border-gray-200 bg-gradient-to-r from-white to-gray-50" id="chatInputContainer">
+            <div class="flex gap-3 items-end">
+                <div class="flex-1 relative">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="여행에 대해 자유롭게 이야기해주세요... ✈️"
+                        class="w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="text-xs">Enter</span>
+                            <i class="fas fa-level-down-alt text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="sendMessage()" class="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl px-5 py-4 hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 group-hover:animate-shimmer"></div>
+                    <i class="fas fa-paper-plane relative z-10"></i>
+                </button>
+            </div>
+            
+            <!-- Quick Suggestions -->
+            <div class="flex gap-2 mt-3 overflow-x-auto">
+                <button onclick="selectSample('제주도 2박 3일')" class="flex-shrink-0 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200">
+                    🏝️ 제주도
+                </button>
+                <button onclick="selectSample('도쿄 3박 4일')" class="flex-shrink-0 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200">
+                    🗾 도쿄
+                </button>
+                <button onclick="selectSample('유럽 2주 배낭여행')" class="flex-shrink-0 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200">
+                    🌍 유럽
+                </button>
+                <button onclick="selectSample('부산 맛집 투어')" class="flex-shrink-0 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200">
+                    🍜 부산
                 </button>
             </div>
         </div>

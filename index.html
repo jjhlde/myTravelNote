@@ -16,10 +16,10 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
     
     <!-- 매니페스트 -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="./macau/manifest.json">
     
     <!-- CSS 파일 -->
-    <link rel="stylesheet" href="./macau.css">
+    <link rel="stylesheet" href="./macau/macau.css">
 </head>
 <body>
     <div class="container">
@@ -89,7 +89,7 @@
                 <div class="day-tab" data-page="2">2일차</div>
                 <div class="day-tab" data-page="3">3일차</div>
                 <div class="day-tab" data-page="4">4일차</div>
-                <div class="day-tab" data-page="5">📝 준비물</div>
+                <div class="day-tab" data-page="5">💰 준비물</div>
             </div>
         </div>
 
@@ -374,33 +374,14 @@
                     <button class="quick-amount-btn" data-amount="50000">+5만</button>
                 </div>
                 
+                <!-- 금액 직접 입력 -->
+                <div class="expense-amount-input-section">
+                    <input type="number" id="expenseAmountInput" placeholder="금액을 입력하세요" min="0" step="100">
+                </div>
+                
                 <!-- 메모 입력 -->
                 <div class="expense-memo-section">
                     <input type="text" id="expenseMemoInput" placeholder="메모 (선택사항)" maxlength="30">
-                </div>
-            </div>
-            
-            <!-- 커스텀 키패드 -->
-            <div class="custom-keypad" id="customKeypad">
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="1">1</button>
-                    <button class="key-btn number" data-value="2">2</button>
-                    <button class="key-btn number" data-value="3">3</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="4">4</button>
-                    <button class="key-btn number" data-value="5">5</button>
-                    <button class="key-btn number" data-value="6">6</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn number" data-value="7">7</button>
-                    <button class="key-btn number" data-value="8">8</button>
-                    <button class="key-btn number" data-value="9">9</button>
-                </div>
-                <div class="keypad-row">
-                    <button class="key-btn clear" data-value="clear">전체삭제</button>
-                    <button class="key-btn number" data-value="0">0</button>
-                    <button class="key-btn backspace" data-value="backspace">⌫</button>
                 </div>
             </div>
             
@@ -433,22 +414,10 @@
                 <span class="fab-item-label">환율</span>
             </button>
             
-            <!-- 날씨 정보 -->
-            <button class="fab-item fab-weather" id="fabWeather" data-action="weather">
-                <span class="fab-item-icon">🌦️</span>
-                <span class="fab-item-label">날씨</span>
-            </button>
-            
             <!-- 시차 확인 -->
             <button class="fab-item fab-time" id="fabTime" data-action="time">
                 <span class="fab-item-icon">⏰</span>
                 <span class="fab-item-label">시차</span>
-            </button>
-            
-            <!-- 번역 도구 -->
-            <button class="fab-item fab-translate" id="fabTranslate" data-action="translate">
-                <span class="fab-item-icon">🗣️</span>
-                <span class="fab-item-label">번역</span>
             </button>
         </div>
         
@@ -456,19 +425,133 @@
         <div class="fab-overlay" id="fabOverlay"></div>
     </div>
 
-    <!-- 자동 리디렉션 -->
+    <!-- JavaScript 모듈 파일 -->
+    <script src="./macau/config/config.js"></script>
+    <script src="./macau/config/places-api.js"></script>
+    <script src="./macau/config/enhance-places.js"></script>
+    
+    <!-- 메인 애플리케이션 (ES6 모듈) -->
+    <script type="module" src="./macau/js/core/app.js"></script>
+    
+    <!-- 레거시 지원을 위한 기존 코드 (임시) -->
     <script>
-        // 모듈화된 마카오 앱으로 리디렉션
-        if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
-            window.location.href = './macau/macau.html';
+        // 전역 함수들을 임시로 유지 (모듈화 완료 후 제거 예정)
+        // 슬라이더 상태 관리
+        const sliderState = {};
+
+        function initSlider(sliderId) {
+            if (!sliderState[sliderId]) {
+                const slider = document.getElementById(sliderId);
+                if (slider) {
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    sliderState[sliderId] = {
+                        currentIndex: 0,
+                        totalSlides: images.length
+                    };
+                }
+            }
+        }
+
+        function showSlide(sliderId, slideIndex) {
+            initSlider(sliderId);
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+
+            const sliderContainer = slider.querySelector('.place-images-slider');
+            const dots = slider.querySelectorAll('.place-images-dot');
+            const counter = slider.querySelector('.place-images-counter');
+            
+            if (!sliderContainer || !sliderState[sliderId]) return;
+
+            const totalSlides = sliderState[sliderId].totalSlides;
+            
+            // 인덱스 범위 체크
+            if (slideIndex < 0) slideIndex = totalSlides - 1;
+            if (slideIndex >= totalSlides) slideIndex = 0;
+            
+            sliderState[sliderId].currentIndex = slideIndex;
+            
+            // 슬라이더 이동
+            sliderContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+            
+            // 도트 활성화 상태 업데이트
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex);
+            });
+            
+            // 카운터 업데이트
+            if (counter) {
+                counter.textContent = `${slideIndex + 1}/${totalSlides}`;
+            }
+        }
+
+        function nextSlide(sliderId) {
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const nextIndex = sliderState[sliderId].currentIndex + 1;
+                showSlide(sliderId, nextIndex);
+            }
+        }
+
+        function prevSlide(sliderId) {
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const prevIndex = sliderState[sliderId].currentIndex - 1;
+                showSlide(sliderId, prevIndex);
+            }
+        }
+
+        // 이미지 확대 기능
+        function openImageModal(imageSrc, altText) {
+            // 모달 생성
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="image-modal-overlay" onclick="closeImageModal()">
+                    <div class="image-modal-content">
+                        <img src="${imageSrc}" alt="${altText}" onclick="event.stopPropagation()">
+                        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 애니메이션을 위한 지연
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeImageModal() {
+            const modal = document.querySelector('.image-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // 페이지 로드 시 모든 슬라이더 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            // 모든 슬라이더 찾기
+            const sliders = document.querySelectorAll('.place-images');
+            sliders.forEach(slider => {
+                const sliderId = slider.id;
+                if (sliderId) {
+                    initSlider(sliderId);
+                    showSlide(sliderId, 0); // 첫 번째 슬라이드 표시
+                    
+                    // 이미지 클릭 이벤트 추가 (확대)
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    images.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', () => {
+                            openImageModal(img.src, img.alt);
+                        });
+                    });
+                }
+            });
+        });
+        function openFlightTicket() {
+            console.log('Legacy openFlightTicket called');
         }
     </script>
-    
-    <!-- 리디렉션 중 표시할 메시지 -->
-    <div style="text-align: center; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
-        <h2>🇲🇴 마카오 여행앱으로 이동 중...</h2>
-        <p>모듈화된 새 버전으로 자동 이동합니다.</p>
-        <p><a href="./macau/macau.html">직접 이동하기</a></p>
-    </div>
 </body>
 </html>

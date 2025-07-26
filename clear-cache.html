@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker 캐시 클리어</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Service Worker 캐시 관리</h1>
+        <p>Service Worker "Failed to fetch" 오류를 해결하기 위한 도구입니다.</p>
+        
+        <button onclick="clearAllCaches()">🗑️ 모든 캐시 삭제</button>
+        <button onclick="unregisterServiceWorker()">❌ Service Worker 등록 해제</button>
+        <button onclick="reloadWithoutCache()">🔄 캐시 없이 새로고침</button>
+        <button onclick="checkServiceWorkerStatus()">ℹ️ Service Worker 상태 확인</button>
+        
+        <div id="result"></div>
+        
+        <h3>해결 단계</h3>
+        <ol>
+            <li>위의 "모든 캐시 삭제" 버튼 클릭</li>
+            <li>"Service Worker 등록 해제" 버튼 클릭</li>
+            <li>브라우저 개발자 도구 열기 (F12)</li>
+            <li>Application 탭 → Storage → Clear storage 클릭</li>
+            <li>페이지 새로고침 (Ctrl+F5 또는 Cmd+Shift+R)</li>
+            <li><a href="./index.html">index.html</a>로 다시 접속</li>
+        </ol>
+    </div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+
+        function showResult(message, type = 'info') {
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function clearAllCaches() {
+            try {
+                const cacheNames = await caches.keys();
+                console.log('발견된 캐시:', cacheNames);
+                
+                await Promise.all(
+                    cacheNames.map(cacheName => {
+                        console.log('캐시 삭제 중:', cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+                
+                showResult(`✅ ${cacheNames.length}개의 캐시가 성공적으로 삭제되었습니다.`, 'result');
+            } catch (error) {
+                console.error('캐시 삭제 오류:', error);
+                showResult(`❌ 캐시 삭제 중 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        async function unregisterServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    console.log('발견된 Service Worker:', registrations);
+                    
+                    await Promise.all(
+                        registrations.map(registration => {
+                            console.log('Service Worker 등록 해제 중:', registration);
+                            return registration.unregister();
+                        })
+                    );
+                    
+                    showResult(`✅ ${registrations.length}개의 Service Worker가 등록 해제되었습니다.`, 'result');
+                } else {
+                    showResult('⚠️ 브라우저가 Service Worker를 지원하지 않습니다.', 'info');
+                }
+            } catch (error) {
+                console.error('Service Worker 등록 해제 오류:', error);
+                showResult(`❌ Service Worker 등록 해제 중 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        function reloadWithoutCache() {
+            showResult('🔄 캐시 없이 페이지를 새로고침합니다...', 'info');
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
+        }
+
+        async function checkServiceWorkerStatus() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    const cacheNames = await caches.keys();
+                    
+                    let status = `📊 Service Worker 상태:\n`;
+                    status += `• 등록된 Service Worker: ${registrations.length}개\n`;
+                    status += `• 캐시: ${cacheNames.length}개\n`;
+                    
+                    if (registrations.length > 0) {
+                        registrations.forEach((reg, index) => {
+                            status += `  - SW${index + 1}: ${reg.scope}\n`;
+                        });
+                    }
+                    
+                    if (cacheNames.length > 0) {
+                        status += `• 캐시 목록:\n`;
+                        cacheNames.forEach(name => {
+                            status += `  - ${name}\n`;
+                        });
+                    }
+                    
+                    showResult(status.replace(/\n/g, '<br>'), 'info');
+                } else {
+                    showResult('⚠️ 브라우저가 Service Worker를 지원하지 않습니다.', 'info');
+                }
+            } catch (error) {
+                console.error('상태 확인 오류:', error);
+                showResult(`❌ 상태 확인 중 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        // 페이지 로드 시 자동으로 상태 확인
+        document.addEventListener('DOMContentLoaded', checkServiceWorkerStatus);
+    </script>
+</body>
+</html>

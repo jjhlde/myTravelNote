@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마카오 가족여행 🇲🇴</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="마카오 가족여행">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇲🇴</text></svg>">
+    
+    <!-- 매니페스트 -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- CSS 파일 -->
+    <link rel="stylesheet" href="./macau.css">
+</head>
+<body>
+    <div class="container">
+        <!-- PWA 설치 가이드 팝업 -->
+        <div class="install-guide-overlay" id="installGuideOverlay">
+            <div class="install-guide-popup">
+                <button class="close-btn" id="closeGuideBtn">✕</button>
+                
+                <div class="install-guide-header">
+                    <div class="install-guide-icon">📱</div>
+                    <div class="install-guide-title">앱으로 설치하세요!</div>
+                    <div class="install-guide-subtitle">
+                        마카오 여행계획을 언제든<br>
+                        빠르게 확인할 수 있어요
+                    </div>
+                </div>
+
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-text">하단 공유 버튼 터치 <span class="step-icon">⬆️</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-text">"홈 화면에 추가" 선택 <span class="step-icon">➕</span></div>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-text">오른쪽 상단 "추가" 터치 <span class="step-icon">✅</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="install-benefit">
+                    <div class="benefit-title">🌟 앱 설치 혜택</div>
+                    <div class="benefit-list">
+                        ✓ 마카오에서 오프라인 사용<br>
+                        ✓ 빠른 접속 (3초 → 1초)<br>
+                        ✓ 홈 화면에서 바로 실행
+                    </div>
+                </div>
+
+                <div class="install-buttons">
+                    <button class="btn-primary" id="installNowBtn">지금 설치하기</button>
+                    <button class="btn-secondary" id="skipInstallBtn">나중에</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header">
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>🇲🇴 마카오 가족여행</h1>
+                    <p>37개월 딸과 함께하는 특별한 여행</p>
+                </div>
+                <!-- 헤더 유틸리티는 하단 FAB로 이동 예정 -->
+            </div>
+
+            <div class="day-tabs">
+                <div class="day-tab active" data-page="0">📋 정보</div>
+                <div class="day-tab" data-page="1">1일차</div>
+                <div class="day-tab" data-page="2">2일차</div>
+                <div class="day-tab" data-page="3">3일차</div>
+                <div class="day-tab" data-page="4">4일차</div>
+                <div class="day-tab" data-page="5">📝 준비물</div>
+            </div>
+        </div>
+
+        <div class="pages-container">
+            <div class="pages-wrapper" id="pagesWrapper">
+                <!-- 페이지 콘텐츠는 동적으로 로드됩니다 -->
+                <div class="page" id="page-0">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-1">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-2">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-3">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-4">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+                <div class="page" id="page-5">
+                    <div class="loading">페이지 로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지 인디케이터 -->
+        <div class="page-indicator">
+            <div class="indicator-dot active" data-page="0"></div>
+            <div class="indicator-dot" data-page="1"></div>
+            <div class="indicator-dot" data-page="2"></div>
+            <div class="indicator-dot" data-page="3"></div>
+            <div class="indicator-dot" data-page="4"></div>
+            <div class="indicator-dot" data-page="5"></div>
+        </div>
+
+        <!-- 스와이프 가이드 -->
+        <div class="swipe-hint" id="swipeHint">👈 좌우로 스와이프해서 날짜 이동 👉</div>
+    </div>
+
+    <!-- 이미지 팝업 모달 -->
+    <div class="image-popup-overlay" id="imagePopupOverlay">
+        <div class="image-popup-content">
+            <img id="popupImage" class="image-popup-img" src="" alt="">
+            <button class="image-popup-close" id="popupClose">✕</button>
+            <div class="image-popup-info">
+                <div class="image-popup-title" id="popupTitle">여행 사진</div>
+                <div class="image-popup-description" id="popupDescription">클릭하거나 ESC 키를 눌러 닫기</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 환율 계산기 팝업 -->
+    <div class="exchange-popup-overlay" id="exchangePopupOverlay">
+        <div class="exchange-popup-content">
+            <div class="exchange-popup-header">
+                <h3>💱 환율 계산기</h3>
+                <button class="exchange-popup-close" id="exchangePopupClose">✕</button>
+            </div>
+            
+            <div class="exchange-rate-info">
+                <div class="rate-display">
+                    <span class="rate-text" id="currentRate">환율 로딩 중...</span>
+                    <span class="rate-date" id="rateDate">한국수출입은행 제공</span>
+                </div>
+            </div>
+
+            <div class="exchange-calculator">
+                <div class="exchange-input-group">
+                    <label for="mopInput">마카오 파타카 (MOP)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="mopInput" placeholder="0" step="0.01" min="0">
+                        <span class="currency-label">MOP</span>
+                    </div>
+                </div>
+
+                <div class="exchange-arrow">⇩</div>
+
+                <div class="exchange-input-group">
+                    <label for="krwOutput">한국 원 (KRW)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="krwOutput" placeholder="0" readonly>
+                        <span class="currency-label">원</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exchange-shortcuts">
+                <button class="shortcut-btn" data-amount="100">100 MOP</button>
+                <button class="shortcut-btn" data-amount="500">500 MOP</button>
+                <button class="shortcut-btn" data-amount="1000">1,000 MOP</button>
+                <button class="shortcut-btn" data-amount="5000">5,000 MOP</button>
+            </div>
+
+            <div class="exchange-tips">
+                <div class="tips-title">💡 환율 팁</div>
+                <div class="tips-content">
+                    • 마카오 대부분 상점에서 홍콩달러(HKD)도 사용 가능<br>
+                    • 카지노에서는 HKD가 더 선호됨<br>
+                    • 현금 환전보다 카드 결제가 환율상 유리
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 예산 관리 팝업 -->
+    <div class="budget-popup-overlay" id="budgetPopupOverlay">
+        <div class="budget-popup-content">
+            <div class="budget-popup-header">
+                <h3>💰 예산 관리</h3>
+                <button class="budget-popup-close" id="budgetPopupClose">✕</button>
+            </div>
+
+            <!-- 예산 현황 -->
+            <div class="budget-status" id="budgetStatus">
+                <div class="budget-total">
+                    <span class="budget-label">총 예산</span>
+                    <span class="budget-amount" id="totalBudget">설정되지 않음</span>
+                </div>
+                <div class="budget-remaining">
+                    <span class="budget-label">남은 예산</span>
+                    <span class="budget-amount" id="remainingBudget">-</span>
+                </div>
+                <div class="budget-daily">
+                    <span class="budget-label">일일 권장</span>
+                    <span class="budget-amount" id="dailyBudget">-</span>
+                </div>
+            </div>
+
+            <!-- 예산 설정 -->
+            <div class="budget-setup" id="budgetSetup">
+                <div class="budget-input-group">
+                    <label>총 여행 예산 (원)</label>
+                    <input type="number" id="budgetInput" placeholder="1000000" min="0">
+                </div>
+                <div class="budget-dates">
+                    <div class="date-input-group">
+                        <label>여행 시작일</label>
+                        <input type="date" id="startDateInput">
+                    </div>
+                    <div class="date-input-group">
+                        <label>여행 종료일</label>
+                        <input type="date" id="endDateInput">
+                    </div>
+                </div>
+                <button class="btn-primary" id="setBudgetBtn">예산 설정</button>
+            </div>
+
+            <!-- 지출 입력 -->
+            <div class="expense-input" id="expenseInput" style="display: none;">
+                <!-- 카테고리 선택 -->
+                <div class="category-selection">
+                    <label>지출 카테고리</label>
+                    <div class="category-grid" id="categoryGrid">
+                        <button class="category-btn" data-category="food" data-icon="🍽️">
+                            <span class="category-icon">🍽️</span>
+                            <span class="category-text">식사</span>
+                        </button>
+                        <button class="category-btn" data-category="transport" data-icon="🚗">
+                            <span class="category-icon">🚗</span>
+                            <span class="category-text">교통</span>
+                        </button>
+                        <button class="category-btn" data-category="shopping" data-icon="🛍️">
+                            <span class="category-icon">🛍️</span>
+                            <span class="category-text">쇼핑</span>
+                        </button>
+                        <button class="category-btn" data-category="attraction" data-icon="🎡">
+                            <span class="category-icon">🎡</span>
+                            <span class="category-text">관광</span>
+                        </button>
+                        <button class="category-btn" data-category="accommodation" data-icon="🏨">
+                            <span class="category-icon">🏨</span>
+                            <span class="category-text">숙박</span>
+                        </button>
+                        <button class="category-btn" data-category="other" data-icon="💳">
+                            <span class="category-icon">💳</span>
+                            <span class="category-text">기타</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 지출 입력 폼 -->
+                <div class="expense-form" id="expenseForm" style="display: none;">
+                    <div class="selected-category" id="selectedCategory">
+                        <span class="selected-icon" id="selectedIcon">🍽️</span>
+                        <span class="selected-text" id="selectedText">식사</span>
+                    </div>
+                    
+                    <div class="expense-inputs">
+                        <div class="expense-amount-input">
+                            <input type="number" id="expenseAmount" placeholder="지출 금액" min="0" step="1000">
+                            <span class="currency-unit">원</span>
+                        </div>
+                        <div class="expense-memo-input">
+                            <input type="text" id="expenseMemo" placeholder="메모 (선택사항)" maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="expense-buttons">
+                        <button class="btn-secondary" id="cancelExpenseBtn">취소</button>
+                        <button class="btn-primary" id="addExpenseBtn">추가</button>
+                    </div>
+                </div>
+
+                <!-- 오늘 지출 내역 -->
+                <div class="today-expenses">
+                    <div class="expenses-header">
+                        <h4>오늘 지출 내역</h4>
+                        <div class="today-total" id="todayTotal">0원</div>
+                    </div>
+                    <div class="expenses-list" id="expensesList">
+                        <div class="no-expenses">아직 지출 내역이 없습니다</div>
+                    </div>
+                </div>
+
+                <!-- 카테고리별 통계 -->
+                <div class="expense-summary" id="expenseSummary" style="display: none;">
+                    <h4>카테고리별 지출</h4>
+                    <div class="summary-chart" id="summaryChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 새로운 지출 입력 팝업 -->
+    <div class="expense-popup-overlay" id="expensePopupOverlay">
+        <div class="expense-popup-content">
+            <div class="expense-popup-header">
+                <h3>💰 지출 추가</h3>
+                <button class="expense-popup-close" id="expensePopupClose">✕</button>
+            </div>
+            
+            <!-- 카테고리 탭 선택 -->
+            <div class="expense-categories-tabs">
+                <button class="category-tab active" data-category="transport" data-icon="🚗" data-color="#3B82F6">
+                    <span class="tab-icon">🚗</span>
+                    <span class="tab-label">교통비</span>
+                </button>
+                <button class="category-tab" data-category="food" data-icon="🍽️" data-color="#F59E0B">
+                    <span class="tab-icon">🍽️</span>
+                    <span class="tab-label">식비</span>
+                </button>
+                <button class="category-tab" data-category="snack" data-icon="🍿" data-color="#10B981">
+                    <span class="tab-icon">🍿</span>
+                    <span class="tab-label">간식</span>
+                </button>
+                <button class="category-tab" data-category="shopping" data-icon="🛍️" data-color="#8B5CF6">
+                    <span class="tab-icon">🛍️</span>
+                    <span class="tab-label">쇼핑</span>
+                </button>
+                <button class="category-tab" data-category="souvenir" data-icon="🎁" data-color="#EF4444">
+                    <span class="tab-icon">🎁</span>
+                    <span class="tab-label">기념품</span>
+                </button>
+                <button class="category-tab" data-category="attraction" data-icon="🎡" data-color="#F97316">
+                    <span class="tab-icon">🎡</span>
+                    <span class="tab-label">관광</span>
+                </button>
+                <button class="category-tab" data-category="accommodation" data-icon="🏨" data-color="#059669">
+                    <span class="tab-icon">🏨</span>
+                    <span class="tab-label">숙박비</span>
+                </button>
+                <button class="category-tab" data-category="other" data-icon="💳" data-color="#6B7280">
+                    <span class="tab-icon">💳</span>
+                    <span class="tab-label">기타</span>
+                </button>
+            </div>
+            
+            <!-- 금액 입력 섹션 -->
+            <div class="expense-amount-section">
+                <div class="amount-display">
+                    <span class="currency-symbol">₩</span>
+                    <span class="amount-value" id="amountDisplay">0</span>
+                </div>
+                
+                <!-- 빠른 금액 버튼 -->
+                <div class="quick-amount-buttons">
+                    <button class="quick-amount-btn" data-amount="1000">+1천</button>
+                    <button class="quick-amount-btn" data-amount="5000">+5천</button>
+                    <button class="quick-amount-btn" data-amount="10000">+1만</button>
+                    <button class="quick-amount-btn" data-amount="50000">+5만</button>
+                </div>
+                
+                <!-- 금액 직접 입력 -->
+                <div class="expense-amount-input-section">
+                    <input type="number" id="expenseAmountInput" placeholder="금액을 입력하세요" min="0" step="100">
+                </div>
+                
+                <!-- 메모 입력 -->
+                <div class="expense-memo-section">
+                    <input type="text" id="expenseMemoInput" placeholder="메모 (선택사항)" maxlength="30">
+                </div>
+            </div>
+            
+            <!-- 액션 버튼 -->
+            <div class="expense-actions">
+                <button class="btn-secondary" id="expenseCancelBtn">취소</button>
+                <button class="btn-primary" id="expenseAddBtn" disabled>추가하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 Floating Action Button 시스템 -->
+    <div class="fab-container">
+        <!-- 메인 FAB 버튼 -->
+        <button class="fab-main" id="fabMain" title="빠른 도구">
+            <span class="fab-icon">⚡</span>
+        </button>
+        
+        <!-- 확장 메뉴 -->
+        <div class="fab-menu" id="fabMenu">
+            <!-- 지출 추가 -->
+            <button class="fab-item fab-expense" id="fabExpense" data-action="expense">
+                <span class="fab-item-icon">💰</span>
+                <span class="fab-item-label">지출</span>
+            </button>
+            
+            <!-- 환율 계산기 -->
+            <button class="fab-item fab-exchange" id="fabExchange" data-action="exchange">
+                <span class="fab-item-icon">💱</span>
+                <span class="fab-item-label">환율</span>
+            </button>
+            
+            <!-- 시차 확인 -->
+            <button class="fab-item fab-time" id="fabTime" data-action="time">
+                <span class="fab-item-icon">⏰</span>
+                <span class="fab-item-label">시차</span>
+            </button>
+        </div>
+        
+        <!-- FAB 배경 오버레이 -->
+        <div class="fab-overlay" id="fabOverlay"></div>
+    </div>
+
+    <!-- JavaScript 모듈 파일 -->
+    <script src="./config/config.js"></script>
+    <script src="./config/places-api.js"></script>
+    <script src="./config/enhance-places.js"></script>
+    
+    <!-- 메인 애플리케이션 (ES6 모듈) -->
+    <script type="module" src="./js/core/app.js"></script>
+    
+    <!-- 레거시 지원을 위한 기존 코드 (임시) -->
+    <script>
+        // 전역 함수들을 임시로 유지 (모듈화 완료 후 제거 예정)
+        // 슬라이더 상태 관리
+        const sliderState = {};
+
+        function initSlider(sliderId) {
+            if (!sliderState[sliderId]) {
+                const slider = document.getElementById(sliderId);
+                if (slider) {
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    sliderState[sliderId] = {
+                        currentIndex: 0,
+                        totalSlides: images.length
+                    };
+                }
+            }
+        }
+
+        function showSlide(sliderId, slideIndex) {
+            initSlider(sliderId);
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+
+            const sliderContainer = slider.querySelector('.place-images-slider');
+            const dots = slider.querySelectorAll('.place-images-dot');
+            const counter = slider.querySelector('.place-images-counter');
+            
+            if (!sliderContainer || !sliderState[sliderId]) return;
+
+            const totalSlides = sliderState[sliderId].totalSlides;
+            
+            // 인덱스 범위 체크
+            if (slideIndex < 0) slideIndex = totalSlides - 1;
+            if (slideIndex >= totalSlides) slideIndex = 0;
+            
+            sliderState[sliderId].currentIndex = slideIndex;
+            
+            // 슬라이더 이동
+            sliderContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+            
+            // 도트 활성화 상태 업데이트
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex);
+            });
+            
+            // 카운터 업데이트
+            if (counter) {
+                counter.textContent = `${slideIndex + 1}/${totalSlides}`;
+            }
+        }
+
+        function nextSlide(sliderId) {
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const nextIndex = sliderState[sliderId].currentIndex + 1;
+                showSlide(sliderId, nextIndex);
+            }
+        }
+
+        function prevSlide(sliderId) {
+            initSlider(sliderId);
+            if (sliderState[sliderId]) {
+                const prevIndex = sliderState[sliderId].currentIndex - 1;
+                showSlide(sliderId, prevIndex);
+            }
+        }
+
+        // 이미지 확대 기능
+        function openImageModal(imageSrc, altText) {
+            // 모달 생성
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="image-modal-overlay" onclick="closeImageModal()">
+                    <div class="image-modal-content">
+                        <img src="${imageSrc}" alt="${altText}" onclick="event.stopPropagation()">
+                        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 애니메이션을 위한 지연
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeImageModal() {
+            const modal = document.querySelector('.image-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // 페이지 로드 시 모든 슬라이더 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            // 모든 슬라이더 찾기
+            const sliders = document.querySelectorAll('.place-images');
+            sliders.forEach(slider => {
+                const sliderId = slider.id;
+                if (sliderId) {
+                    initSlider(sliderId);
+                    showSlide(sliderId, 0); // 첫 번째 슬라이드 표시
+                    
+                    // 이미지 클릭 이벤트 추가 (확대)
+                    const images = slider.querySelectorAll('.place-images-slider img');
+                    images.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', () => {
+                            openImageModal(img.src, img.alt);
+                        });
+                    });
+                }
+            });
+        });
+        function openFlightTicket() {
+            console.log('Legacy openFlightTicket called');
+        }
+    </script>
+</body>
+</html>

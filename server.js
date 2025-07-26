@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = 8008;
+const PORT = 8009;
 
 const mimeTypes = {
   '.html': 'text/html',

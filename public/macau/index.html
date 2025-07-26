@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마카오 가족여행 - 리다이렉트</title>
+    <meta http-equiv="refresh" content="0; url=./macau.html">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            padding: 2rem;
+        }
+        .loading {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .fallback {
+            margin-top: 1rem;
+        }
+        .fallback a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="loading">🇲🇴 마카오 가족여행 로딩 중...</div>
+        <div class="fallback">
+            자동 이동이 안 되면 <a href="./macau.html">여기를 클릭하세요</a>
+        </div>
+    </div>
+    
+    <script>
+        // 즉시 리다이렉트 (meta refresh의 백업)
+        setTimeout(() => {
+            window.location.href = './macau.html';
+        }, 1000);
+    </script>
+</body>
+</html>
