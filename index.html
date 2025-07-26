@@ -641,8 +641,10 @@
                 galaxyMapModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
                 
-                // 히스토리에 상태 추가 (뒤로가기 지원)
-                history.pushState({ modal: 'galaxy-map' }, '', '');
+                // 모듈화된 뒤로가기 시스템에 등록
+                if (typeof window.registerPopup === 'function') {
+                    window.registerPopup('galaxy-map', closeGalaxyMap);
+                }
                 
                 // FAB 메뉴 닫기
                 const fabMenu = document.getElementById('fabMenu');
@@ -659,6 +661,11 @@
             function closeGalaxyMap() {
                 galaxyMapModal.classList.remove('show');
                 document.body.style.overflow = '';
+                
+                // 모듈화된 뒤로가기 시스템에서 제거
+                if (typeof window.unregisterPopup === 'function') {
+                    window.unregisterPopup('galaxy-map');
+                }
             }
             
             // 갤럭시 맵 버튼 클릭
@@ -668,23 +675,13 @@
             
             // 모달 닫기 버튼
             if (galaxyMapClose) {
-                galaxyMapClose.addEventListener('click', () => {
-                    closeGalaxyMap();
-                    // 히스토리 상태 제거
-                    if (history.state && history.state.modal === 'galaxy-map') {
-                        history.back();
-                    }
-                });
+                galaxyMapClose.addEventListener('click', closeGalaxyMap);
             }
             
             // 모달 배경 클릭 시 닫기
             galaxyMapModal.addEventListener('click', (e) => {
                 if (e.target === galaxyMapModal) {
                     closeGalaxyMap();
-                    // 히스토리 상태 제거
-                    if (history.state && history.state.modal === 'galaxy-map') {
-                        history.back();
-                    }
                 }
             });
             
@@ -712,81 +709,14 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && galaxyMapModal.classList.contains('show')) {
                     closeGalaxyMap();
-                    // 히스토리 상태 제거
-                    if (history.state && history.state.modal === 'galaxy-map') {
-                        history.back();
-                    }
-                }
-            });
-            
-            // 뒤로가기 버튼 처리 (popstate 이벤트)
-            window.addEventListener('popstate', (e) => {
-                if (galaxyMapModal.classList.contains('show')) {
-                    e.stopImmediatePropagation(); // 다른 popstate 이벤트 차단
-                    closeGalaxyMap();
                 }
             });
         }
         
-        // PWA 앱 종료 확인 팝업
+        // PWA 앱 종료 확인 (모듈화된 BackButtonHandler 사용)
         function initPWAExitConfirmation() {
-            let isModalOpen = false;
-            let isExitAttempt = false;
-            
-            // 모달 상태 추적
-            const modalObserver = new MutationObserver(() => {
-                const modals = document.querySelectorAll('.exchange-popup-overlay.show, .budget-popup-overlay.show, .expense-popup-overlay.show, .galaxy-map-modal.show, .image-popup-overlay.show');
-                isModalOpen = modals.length > 0;
-            });
-            
-            // 모든 모달들 관찰
-            const modalsToObserve = document.querySelectorAll('.exchange-popup-overlay, .budget-popup-overlay, .expense-popup-overlay, .galaxy-map-modal, .image-popup-overlay');
-            modalsToObserve.forEach(modal => {
-                modalObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
-            });
-            
-            // 뒤로가기 버튼 감지 (낮은 우선순위로 등록)
-            setTimeout(() => {
-                window.addEventListener('popstate', (e) => {
-                    // 갤럭시 맵 모달이 열린 경우 종료 확인하지 않음
-                    const galaxyMapModal = document.getElementById('galaxyMapModal');
-                    if (galaxyMapModal && galaxyMapModal.classList.contains('show')) {
-                        return;
-                    }
-                    
-                    // 다른 모달이 열린 경우도 종료 확인하지 않음
-                    if (isModalOpen) {
-                        return;
-                    }
-                    
-                    // 첫 번째 뒤로가기: 히스토리 엔트리 추가하고 경고
-                    if (!isExitAttempt) {
-                        e.preventDefault();
-                        isExitAttempt = true;
-                        
-                        // 종료 확인 다이얼로그
-                        const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
-                        
-                        if (confirmExit) {
-                            // 앱 종료
-                            if (window.navigator.standalone) {
-                                // iOS PWA에서는 다른 페이지로 이동
-                                window.location.href = 'about:blank';
-                            } else {
-                                // 일반 브라우저에서는 창 닫기 시도
-                                window.close();
-                            }
-                        } else {
-                            // 취소 시 현재 상태 유지
-                            history.pushState({ exitAttempt: true }, '', '');
-                            isExitAttempt = false;
-                        }
-                    }
-                });
-            }, 100);
-            
-            // 초기 히스토리 상태 설정 (종료 감지용)
-            history.pushState({ initial: true }, '', '');
+            // 모듈화된 시스템에서 처리하므로 여기서는 갤럭시 맵만 별도 처리
+            console.log('PWA exit confirmation integrated with modular system');
         }
         
         // 페이지 로드 시 초기화

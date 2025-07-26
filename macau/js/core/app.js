@@ -79,8 +79,29 @@ class BackButtonHandler {
                 history.pushState({ page: 'popup' }, '', window.location.href);
             }
         } else {
-            // 팝업이 없으면 기본 뒤로가기 동작 (앱 종료)
-            console.log('🔙 메인 페이지에서 뒤로가기 - 앱 종료');
+            // 팝업이 없으면 PWA 앱 종료 확인
+            console.log('🔙 메인 페이지에서 뒤로가기 - 앱 종료 확인');
+            this.handleAppExit();
+        }
+    }
+
+    // PWA 앱 종료 처리
+    handleAppExit() {
+        // 종료 확인 다이얼로그
+        const confirmExit = confirm('마카오 여행 앱을 종료하시겠습니까?');
+        
+        if (confirmExit) {
+            // 앱 종료
+            if (window.navigator.standalone) {
+                // iOS PWA에서는 다른 페이지로 이동
+                window.location.href = 'about:blank';
+            } else {
+                // 일반 브라우저에서는 창 닫기 시도
+                window.close();
+            }
+        } else {
+            // 취소 시 히스토리 상태 복원
+            history.pushState({ page: 'main' }, '', window.location.href);
         }
     }
 
