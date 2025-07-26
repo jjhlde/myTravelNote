@@ -2057,6 +2057,57 @@ body {
     background: #f9fafb;
 }
 
+/* 메모 카드 스타일 */
+.scrap-memo-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 120px;
+    max-height: 160px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.scrap-memo-card:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+}
+
+.scrap-memo-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.scrap-memo-text {
+    flex: 1;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    font-weight: 500;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.scrap-memo-date {
+    font-size: 10px;
+    color: #b45309;
+    text-align: center;
+    margin-top: auto;
+    opacity: 0.8;
+}
+
 .scrap-card-menu {
     position: absolute;
     top: 6px;
@@ -4837,5 +4888,131 @@ body {
         background: #1f2937;
         border-color: #374151;
         color: #d1d5db;
+    }
+}
+
+/* 메모 팝업 스타일 */
+.memo-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.memo-popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.memo-popup-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 400px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: scale(0.9);
+    transition: transform 0.2s ease;
+}
+
+.memo-popup-overlay.show .memo-popup-content {
+    transform: scale(1);
+}
+
+.memo-popup-header {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 16px 20px;
+    border-bottom: 1px solid #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.memo-popup-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #92400e;
+}
+
+.memo-popup-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #92400e;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.memo-popup-close:hover {
+    background: rgba(146, 64, 14, 0.1);
+}
+
+.memo-popup-body {
+    padding: 20px;
+}
+
+.memo-full-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #374151;
+    margin-bottom: 16px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.memo-date {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 480px) {
+    .memo-popup-overlay {
+        padding: 10px;
+    }
+    
+    .memo-popup-content {
+        max-width: none;
+        margin: 0;
+    }
+    
+    .memo-popup-header {
+        padding: 12px 16px;
+    }
+    
+    .memo-popup-header h3 {
+        font-size: 16px;
+    }
+    
+    .memo-popup-body {
+        padding: 16px;
+    }
+    
+    .memo-full-text {
+        font-size: 14px;
     }
 }

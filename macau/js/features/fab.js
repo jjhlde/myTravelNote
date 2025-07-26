@@ -320,14 +320,18 @@ function saveScrapData() {
  */
 function updateScrapAddButton() {
     const linkInput = getElement('#scrapLinkInput');
+    const memoInput = getElement('#scrapMemoInput');
     const addBtn = getElement('#scrapAddBtn');
     
-    if (!linkInput || !addBtn) return;
+    if (!linkInput || !memoInput || !addBtn) return;
     
     const url = linkInput.value.trim();
-    const isValid = url && isValidURL(url);
+    const memo = memoInput.value.trim();
     
-    addBtn.disabled = !isValid;
+    // URL이 있으면 유효성 검사, 없으면 메모만 있어도 허용
+    const isValidInput = (url && isValidURL(url)) || (!url && memo);
+    
+    addBtn.disabled = !isValidInput;
 }
 
 /**
@@ -343,7 +347,7 @@ function isValidURL(string) {
 }
 
 /**
- * 링크 추가
+ * 링크/메모 추가
  */
 async function addScrapLink() {
     const linkInput = getElement('#scrapLinkInput');
@@ -355,33 +359,51 @@ async function addScrapLink() {
     const url = linkInput.value.trim();
     const memo = memoInput.value.trim();
     
-    if (!url || !isValidURL(url)) {
+    // URL과 메모 둘 다 없으면 에러
+    if (!url && !memo) {
+        showScrapToast('URL 또는 메모를 입력해주세요.', 'error');
+        return;
+    }
+    
+    // URL이 있는데 유효하지 않으면 에러
+    if (url && !isValidURL(url)) {
         showScrapToast('올바른 URL을 입력해주세요.', 'error');
         return;
     }
     
     // 버튼 비활성화 및 로딩 상태
     addBtn.disabled = true;
-    addBtn.textContent = '추가 중...';
+    addBtn.textContent = url ? '추가 중...' : '메모 추가 중...';
     
     try {
-        // 로딩 카드 표시
-        showScrapLoadingCard();
+        let scrapItem;
         
-        // 메타데이터 추출
-        const metadata = await extractScrapMetadata(url);
-        
-        // 스크랩 데이터에 추가
-        const scrapItem = {
-            id: Date.now().toString(),
-            url: url,
-            memo: memo,
-            title: metadata.title || '제목 없음',
-            description: metadata.description || '',
-            image: metadata.image || '',
-            favicon: metadata.favicon || '',
-            addedAt: new Date().toISOString()
-        };
+        if (url) {
+            // URL이 있는 경우 - 기존 로직
+            showScrapLoadingCard();
+            const metadata = await extractScrapMetadata(url);
+            
+            scrapItem = {
+                id: Date.now().toString(),
+                type: 'link',
+                url: url,
+                memo: memo,
+                title: metadata.title || '제목 없음',
+                description: metadata.description || '',
+                image: metadata.image || '',
+                favicon: metadata.favicon || '',
+                addedAt: new Date().toISOString()
+            };
+        } else {
+            // 메모만 있는 경우
+            scrapItem = {
+                id: Date.now().toString(),
+                type: 'memo',
+                memo: memo,
+                title: memo.length > 20 ? memo.substring(0, 20) + '...' : memo,
+                addedAt: new Date().toISOString()
+            };
+        }
         
         scrapData.unshift(scrapItem); // 최신 항목을 맨 앞에 추가
         saveScrapData();
@@ -394,11 +416,11 @@ async function addScrapLink() {
         renderScrapGrid();
         
         // 성공 피드백
-        showScrapToast('링크가 추가되었습니다! 🎉', 'success');
+        showScrapToast(url ? '링크가 추가되었습니다! 🎉' : '메모가 추가되었습니다! 📝', 'success');
         
     } catch (error) {
-        console.error('링크 추가 실패:', error);
-        showScrapToast('링크 추가에 실패했습니다.', 'error');
+        console.error('추가 실패:', error);
+        showScrapToast(url ? '링크 추가에 실패했습니다.' : '메모 추가에 실패했습니다.', 'error');
         hideScrapLoadingCard();
     } finally {
         addBtn.disabled = false;
@@ -516,9 +538,35 @@ function renderScrapGrid() {
     
     // 카드 생성
     scrapData.forEach(item => {
-        const card = createScrapLinkCard(item);
+        const card = item.type === 'memo' ? createScrapMemoCard(item) : createScrapLinkCard(item);
         grid.appendChild(card);
     });
+}
+
+/**
+ * 메모 카드 생성
+ */
+function createScrapMemoCard(item) {
+    const card = document.createElement('div');
+    card.className = 'scrap-memo-card';
+    
+    const shortMemo = item.memo.length > 40 ? item.memo.substring(0, 40) + '...' : item.memo;
+    
+    card.innerHTML = `
+        <button class="scrap-card-menu" onclick="event.stopPropagation(); showScrapDeleteModal('${item.id}')" title="삭제">
+            ⋯
+        </button>
+        <div class="scrap-memo-icon">📝</div>
+        <div class="scrap-memo-text">${escapeHtml(shortMemo)}</div>
+        <div class="scrap-memo-date">${formatDate(item.addedAt)}</div>
+    `;
+    
+    // 카드 클릭으로 메모 팝업 열기
+    card.addEventListener('click', () => {
+        showMemoPopup(item);
+    });
+    
+    return card;
 }
 
 /**
@@ -561,6 +609,93 @@ function createScrapLinkCard(item) {
     });
     
     return card;
+}
+
+/**
+ * 메모 팝업 표시
+ */
+function showMemoPopup(item) {
+    // 기존 팝업 제거
+    const existingPopup = document.querySelector('.memo-popup-overlay');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    const popup = document.createElement('div');
+    popup.className = 'memo-popup-overlay';
+    popup.innerHTML = `
+        <div class="memo-popup-content">
+            <div class="memo-popup-header">
+                <h3>📝 메모</h3>
+                <button class="memo-popup-close">✕</button>
+            </div>
+            <div class="memo-popup-body">
+                <div class="memo-full-text">${escapeHtml(item.memo)}</div>
+                <div class="memo-date">작성일: ${formatDate(item.addedAt)}</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // 애니메이션
+    setTimeout(() => addClass(popup, 'show'), 10);
+    
+    // 뒤로가기 버튼으로 닫기 등록
+    if (typeof window.registerPopup === 'function') {
+        window.registerPopup('memo', () => {
+            closeMemoPopup(popup);
+        });
+    }
+    
+    // 이벤트 리스너
+    const closeBtn = popup.querySelector('.memo-popup-close');
+    
+    function closeMemoPopup(popupElement) {
+        removeClass(popupElement, 'show');
+        setTimeout(() => popupElement.remove(), 200);
+        if (typeof window.unregisterPopup === 'function') {
+            window.unregisterPopup('memo');
+        }
+    }
+    
+    if (closeBtn) {
+        addEventListener(closeBtn, 'click', () => closeMemoPopup(popup));
+    }
+    
+    // 팝업 배경 클릭으로 닫기
+    addEventListener(popup, 'click', (e) => {
+        if (e.target === popup) {
+            closeMemoPopup(popup);
+        }
+    });
+}
+
+/**
+ * 날짜 포맷팅
+ */
+function formatDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            return '오늘';
+        } else if (diffDays === 2) {
+            return '어제';
+        } else if (diffDays <= 7) {
+            return `${diffDays - 1}일 전`;
+        } else {
+            return date.toLocaleDateString('ko-KR', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    } catch (error) {
+        return '날짜 미상';
+    }
 }
 
 /**
