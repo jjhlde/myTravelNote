@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>링크 스크랩 - 마카오 여행</title>
+    
+    <!-- CSS 파일 -->
+    <link rel="stylesheet" href="../macau/macau.css">
+    
+    <style>
+        /* 스크랩 페이지 전용 스타일 */
+        .scrap-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .scrap-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .scrap-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 0 15px 0;
+        }
+        
+        .scrap-title h1 {
+            font-size: 24px;
+            color: #2d3748;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: #4338CA;
+            transform: translateY(-1px);
+        }
+        
+        .add-link-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .link-input, .memo-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .link-input:focus, .memo-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
+        
+        .add-btn {
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+        }
+        
+        .add-btn:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .add-btn:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+        }
+        
+        .scrap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .scrap-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .scrap-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .scrap-container {
+                padding: 15px;
+            }
+        }
+        
+        .link-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border-color: #4F46E5;
+        }
+        
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4F46E5, #7C3AED);
+        }
+        
+        .link-memo {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 8px;
+            font-weight: 500;
+            background: #F3F4F6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .link-favicon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .link-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .link-description {
+            font-size: 14px;
+            color: #718096;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .link-url {
+            font-size: 12px;
+            color: #4F46E5;
+            text-decoration: none;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .link-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+        
+        .link-card:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .delete-btn:hover {
+            background: #DC2626;
+            transform: scale(1.1);
+        }
+        
+        .loading-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            color: #6B7280;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #E5E7EB;
+            border-top: 3px solid #4F46E5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6B7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="scrap-container">
+        <!-- 헤더 -->
+        <div class="scrap-header">
+            <div class="scrap-title">
+                <h1>🔗 링크 스크랩</h1>
+                <button class="back-btn" onclick="goBack()">
+                    ← 돌아가기
+                </button>
+            </div>
+            
+            <!-- 링크 추가 폼 -->
+            <div class="add-link-form">
+                <div class="form-row">
+                    <input type="url" 
+                           class="link-input" 
+                           id="linkInput" 
+                           placeholder="웹사이트 URL을 입력하세요"
+                           autocomplete="off">
+                    <input type="text" 
+                           class="memo-input" 
+                           id="memoInput" 
+                           placeholder="메모 (선택사항)"
+                           maxlength="30">
+                    <button class="add-btn" id="addBtn" onclick="addLink()">추가</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 링크 카드 그리드 -->
+        <div class="scrap-grid" id="scrapGrid">
+            <!-- 빈 상태 -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">📂</div>
+                <div class="empty-state-text">저장된 링크가 없습니다</div>
+                <div class="empty-state-subtitle">위에서 링크를 추가해보세요</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 스크랩 데이터 관리
+        let scrapData = JSON.parse(localStorage.getItem('macauScrapData') || '[]');
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            renderScrapGrid();
+            initFormEvents();
+        });
+        
+        // 폼 이벤트 초기화
+        function initFormEvents() {
+            const linkInput = document.getElementById('linkInput');
+            const memoInput = document.getElementById('memoInput');
+            const addBtn = document.getElementById('addBtn');
+            
+            // 입력 필드 이벤트
+            [linkInput, memoInput].forEach(input => {
+                input.addEventListener('input', updateAddButton);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        addLink();
+                    }
+                });
+            });
+            
+            // 초기 버튼 상태
+            updateAddButton();
+        }
+        
+        // 추가 버튼 상태 업데이트
+        function updateAddButton() {
+            const linkInput = document.getElementById('linkInput');
+            const addBtn = document.getElementById('addBtn');
+            
+            const isValidUrl = linkInput.value.trim() && isValidURL(linkInput.value.trim());
+            addBtn.disabled = !isValidUrl;
+        }
+        
+        // URL 유효성 검사
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        // 링크 추가
+        async function addLink() {
+            const linkInput = document.getElementById('linkInput');
+            const memoInput = document.getElementById('memoInput');
+            const addBtn = document.getElementById('addBtn');
+            
+            const url = linkInput.value.trim();
+            const memo = memoInput.value.trim();
+            
+            if (!url || !isValidURL(url)) {
+                alert('올바른 URL을 입력해주세요.');
+                return;
+            }
+            
+            // 버튼 비활성화 및 로딩 상태
+            addBtn.disabled = true;
+            addBtn.textContent = '추가 중...';
+            
+            try {
+                // 로딩 카드 표시
+                showLoadingCard();
+                
+                // 메타데이터 추출
+                const metadata = await extractMetadata(url);
+                
+                // 스크랩 데이터에 추가
+                const scrapItem = {
+                    id: Date.now().toString(),
+                    url: url,
+                    memo: memo,
+                    title: metadata.title || '제목 없음',
+                    description: metadata.description || '',
+                    image: metadata.image || '',
+                    favicon: metadata.favicon || '',
+                    addedAt: new Date().toISOString()
+                };
+                
+                scrapData.unshift(scrapItem); // 최신 항목을 맨 앞에 추가
+                saveScrapData();
+                
+                // 폼 초기화
+                linkInput.value = '';
+                memoInput.value = '';
+                
+                // 그리드 다시 렌더링
+                renderScrapGrid();
+                
+                // 성공 피드백
+                showToast('링크가 추가되었습니다! 🎉', 'success');
+                
+            } catch (error) {
+                console.error('링크 추가 실패:', error);
+                showToast('링크 추가에 실패했습니다.', 'error');
+                hideLoadingCard();
+            } finally {
+                addBtn.disabled = false;
+                addBtn.textContent = '추가';
+                updateAddButton();
+            }
+        }
+        
+        // 메타데이터 추출 (CORS 우회용 프록시 서비스 사용)
+        async function extractMetadata(url) {
+            try {
+                // AllOrigins CORS 프록시 사용
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                if (!data.contents) {
+                    throw new Error('페이지 내용을 가져올 수 없습니다.');
+                }
+                
+                // HTML 파싱
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, 'text/html');
+                
+                // 메타데이터 추출
+                const metadata = {
+                    title: getMetaContent(doc, 'og:title') || 
+                           getMetaContent(doc, 'twitter:title') || 
+                           doc.title || 
+                           url,
+                    description: getMetaContent(doc, 'og:description') || 
+                                getMetaContent(doc, 'twitter:description') || 
+                                getMetaContent(doc, 'description') || '',
+                    image: getMetaContent(doc, 'og:image') || 
+                           getMetaContent(doc, 'twitter:image') || '',
+                    favicon: getFavicon(doc, url)
+                };
+                
+                return metadata;
+                
+            } catch (error) {
+                console.warn('메타데이터 추출 실패, 기본값 사용:', error);
+                
+                // 기본값 반환
+                return {
+                    title: new URL(url).hostname,
+                    description: '',
+                    image: '',
+                    favicon: `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`
+                };
+            }
+        }
+        
+        // 메타 태그 내용 추출
+        function getMetaContent(doc, property) {
+            const meta = doc.querySelector(`meta[property="${property}"], meta[name="${property}"]`);
+            return meta ? meta.getAttribute('content') : null;
+        }
+        
+        // 파비콘 추출
+        function getFavicon(doc, url) {
+            const favicon = doc.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
+            if (favicon) {
+                const href = favicon.getAttribute('href');
+                if (href.startsWith('http')) {
+                    return href;
+                } else {
+                    const urlObj = new URL(url);
+                    return urlObj.origin + (href.startsWith('/') ? href : '/' + href);
+                }
+            }
+            
+            // 기본 파비콘
+            const urlObj = new URL(url);
+            return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
+        }
+        
+        // 로딩 카드 표시
+        function showLoadingCard() {
+            const grid = document.getElementById('scrapGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            
+            const loadingCard = document.createElement('div');
+            loadingCard.className = 'loading-card';
+            loadingCard.id = 'loadingCard';
+            loadingCard.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div>링크 정보를 가져오는 중...</div>
+            `;
+            
+            grid.insertBefore(loadingCard, grid.firstChild);
+        }
+        
+        // 로딩 카드 숨기기
+        function hideLoadingCard() {
+            const loadingCard = document.getElementById('loadingCard');
+            if (loadingCard) {
+                loadingCard.remove();
+            }
+        }
+        
+        // 스크랩 그리드 렌더링
+        function renderScrapGrid() {
+            const grid = document.getElementById('scrapGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            // 로딩 카드 제거
+            hideLoadingCard();
+            
+            if (scrapData.length === 0) {
+                emptyState.style.display = 'block';
+                // 기존 카드들 제거
+                Array.from(grid.children).forEach(child => {
+                    if (child.id !== 'emptyState') {
+                        child.remove();
+                    }
+                });
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // 기존 카드들 제거 (빈 상태 제외)
+            Array.from(grid.children).forEach(child => {
+                if (child.id !== 'emptyState') {
+                    child.remove();
+                }
+            });
+            
+            // 카드 생성
+            scrapData.forEach(item => {
+                const card = createLinkCard(item);
+                grid.appendChild(card);
+            });
+        }
+        
+        // 링크 카드 생성
+        function createLinkCard(item) {
+            const card = document.createElement('div');
+            card.className = 'link-card';
+            card.onclick = () => openLink(item.url);
+            
+            let imageHtml = '';
+            if (item.image) {
+                imageHtml = `<img src="${item.image}" alt="미리보기" class="link-image" onerror="this.style.display='none'">`;
+            }
+            
+            let memoHtml = '';
+            if (item.memo) {
+                memoHtml = `<div class="link-memo">${escapeHtml(item.memo)}</div>`;
+            }
+            
+            let faviconHtml = '';
+            if (item.favicon) {
+                faviconHtml = `<img src="${item.favicon}" alt="파비콘" class="link-favicon" onerror="this.style.display='none'">`;
+            }
+            
+            card.innerHTML = `
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteLink('${item.id}')" title="삭제">
+                    ×
+                </button>
+                ${memoHtml}
+                ${imageHtml}
+                <div class="link-title">
+                    ${faviconHtml}${escapeHtml(item.title)}
+                </div>
+                <div class="link-description">${escapeHtml(item.description)}</div>
+                <div class="link-url">${escapeHtml(item.url)}</div>
+            `;
+            
+            return card;
+        }
+        
+        // HTML 이스케이프
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 링크 열기
+        function openLink(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        
+        // 링크 삭제
+        function deleteLink(id) {
+            if (confirm('이 링크를 삭제하시겠습니까?')) {
+                scrapData = scrapData.filter(item => item.id !== id);
+                saveScrapData();
+                renderScrapGrid();
+                showToast('링크가 삭제되었습니다.', 'info');
+            }
+        }
+        
+        // 스크랩 데이터 저장
+        function saveScrapData() {
+            localStorage.setItem('macauScrapData', JSON.stringify(scrapData));
+        }
+        
+        // 토스트 메시지 표시
+        function showToast(message, type = 'info') {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.scrap-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `scrap-toast scrap-toast-${type}`;
+            toast.textContent = message;
+            
+            // 토스트 스타일
+            Object.assign(toast.style, {
+                position: 'fixed',
+                bottom: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#6B7280',
+                color: 'white',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                fontWeight: '600',
+                zIndex: '10000',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                transition: 'all 0.3s ease',
+                opacity: '0',
+                transform: 'translateX(-50%) translateY(20px)'
+            });
+            
+            document.body.appendChild(toast);
+            
+            // 애니메이션
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            }, 100);
+            
+            // 자동 제거
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // 뒤로가기
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '../index.html';
+            }
+        }
+        
+        // 안드로이드 뒤로가기 버튼 처리
+        window.addEventListener('popstate', () => {
+            // 메인 페이지로 이동
+            window.location.href = '../index.html';
+        });
+    </script>
+</body>
+</html>

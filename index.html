@@ -435,10 +435,61 @@
                 <span class="fab-item-icon">🗺️</span>
                 <span class="fab-item-label">갤럭시맵</span>
             </button>
+            
+            <!-- 링크 스크랩 -->
+            <button class="fab-item fab-scrap" id="fabScrap" data-action="scrap">
+                <span class="fab-item-icon">🔗</span>
+                <span class="fab-item-label">스크랩</span>
+            </button>
         </div>
         
         <!-- FAB 배경 오버레이 -->
         <div class="fab-overlay" id="fabOverlay"></div>
+    </div>
+
+    <!-- 링크 스크랩 Bottom Sheet -->
+    <div class="scrap-bottom-sheet" id="scrapBottomSheet">
+        <div class="scrap-sheet-container">
+            <!-- 드래그 핸들 -->
+            <div class="sheet-handle"></div>
+            
+            <!-- 헤더 -->
+            <div class="scrap-sheet-header">
+                <h3 class="scrap-sheet-title">🔗 링크 스크랩</h3>
+                <button class="scrap-sheet-close" id="scrapSheetClose">✕</button>
+            </div>
+            
+            <!-- 링크 추가 폼 -->
+            <div class="scrap-add-form">
+                <div class="scrap-form-row">
+                    <input type="url" 
+                           class="scrap-link-input" 
+                           id="scrapLinkInput" 
+                           placeholder="웹사이트 URL을 입력하세요"
+                           autocomplete="off">
+                </div>
+                <div class="scrap-form-row">
+                    <input type="text" 
+                           class="scrap-memo-input" 
+                           id="scrapMemoInput" 
+                           placeholder="메모 (선택사항)"
+                           maxlength="30">
+                    <button class="scrap-add-btn" id="scrapAddBtn" disabled>추가</button>
+                </div>
+            </div>
+            
+            <!-- 스크랩 목록 -->
+            <div class="scrap-content">
+                <div class="scrap-grid" id="scrapGrid">
+                    <!-- 빈 상태 -->
+                    <div class="scrap-empty-state" id="scrapEmptyState">
+                        <div class="scrap-empty-icon">📂</div>
+                        <div class="scrap-empty-text">저장된 링크가 없습니다</div>
+                        <div class="scrap-empty-subtitle">위에서 링크를 추가해보세요</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 갤럭시 맵 모달 -->
