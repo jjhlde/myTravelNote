@@ -447,24 +447,74 @@ class DynamicImageLoader {
 // 전역 이미지 로더 인스턴스
 let imageLoader;
 
-// 전역 함수: 2025년 표준 Google Maps 딥링크 (api=1 필수)
+// 전역 함수: 개선된 Google Maps 딥링크 (Place ID 우선, 앱 직접 연결)
 function openMobileMap(placeName, lat, lng, placeId = null) {
-    console.log(`🗺️ 구글맵 열기 요청: ${placeName}`);
+    console.log(`🗺️ 구글맵 열기 요청: ${placeName}, placeId: ${placeId}`);
     
-    // 장소명만 사용하는 간단한 검색 URL (2025년 표준)
-    // 모든 Google Maps URL에는 api=1 파라미터가 필수
-    const searchQuery = encodeURIComponent(placeName);
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+    let mapUrl;
     
-    // PWA에서 새 탭으로 구글맵 열기
+    // 1순위: Place ID가 있으면 가장 정확한 방법 사용
+    if (placeId && placeId !== 'null' && placeId.trim() !== '') {
+        // Place ID 기반 URL (가장 정확함)
+        mapUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+        console.log(`📍 Place ID 기반 URL 생성: ${placeId}`);
+    }
+    // 2순위: 좌표가 있으면 좌표 기반 네비게이션
+    else if (lat && lng && lat !== 'null' && lng !== 'null') {
+        // 좌표 기반 URL (네비게이션 모드로 바로 앱 연결)
+        mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+        console.log(`📍 좌표 기반 네비게이션 URL 생성: ${lat}, ${lng}`);
+    }
+    // 3순위: 장소명으로 검색
+    else {
+        // 장소명 검색 (마카오 지역 한정)
+        const searchQuery = encodeURIComponent(`${placeName} 마카오`);
+        mapUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+        console.log(`📍 장소명 기반 URL 생성: ${placeName}`);
+    }
+    
+    // 구글맵 앱 직접 연결 시도
     try {
-        window.open(mapUrl, '_blank', 'noopener,noreferrer');
+        // 모바일에서 앱 우선 연결을 위한 설정
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        if (isAndroid) {
+            // Android: 구글맵 앱 우선 연결
+            const androidUrl = mapUrl.replace('https://www.google.com/maps', 'geo:0,0?q=');
+            if (placeId) {
+                // Place ID가 있으면 정확한 앱 딥링크 사용
+                const appUrl = `google.navigation:q=place_id:${placeId}`;
+                window.location.href = appUrl;
+                
+                // 앱이 없으면 웹으로 폴백
+                setTimeout(() => {
+                    window.open(mapUrl, '_blank', 'noopener,noreferrer');
+                }, 1000);
+            } else {
+                window.open(mapUrl, '_blank', 'noopener,noreferrer');
+            }
+        } else if (isIOS) {
+            // iOS: Apple Maps 또는 Google Maps 선택
+            const iosUrl = `maps://maps.google.com/maps?${new URL(mapUrl).searchParams.toString()}`;
+            window.location.href = iosUrl;
+            
+            // 앱이 없으면 웹으로 폴백
+            setTimeout(() => {
+                window.open(mapUrl, '_blank', 'noopener,noreferrer');
+            }, 1000);
+        } else {
+            // 데스크톱: 새 탭으로 구글맵 웹 열기
+            window.open(mapUrl, '_blank', 'noopener,noreferrer');
+        }
+        
         console.log(`✅ 구글맵 URL 생성 성공: ${mapUrl}`);
     } catch (error) {
         console.error('❌ 구글맵 열기 실패:', error);
         
         // 폴백: 단순 구글 검색
-        const fallbackUrl = `https://www.google.com/search?q=${searchQuery}+map`;
+        const searchQuery = encodeURIComponent(`${placeName} 마카오 위치`);
+        const fallbackUrl = `https://www.google.com/search?q=${searchQuery}`;
         window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
         console.log(`🔄 폴백 URL 사용: ${fallbackUrl}`);
     }
